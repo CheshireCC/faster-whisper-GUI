@@ -10,6 +10,7 @@ __pycache__/
 .Python
 build/
 test_cpu/
+.vscode/
 develop-eggs/
 dist/
 downloads/
