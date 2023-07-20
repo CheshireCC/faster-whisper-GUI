@@ -2,7 +2,7 @@
 Author: CheshireCC 36411617+CheshireCC@users.noreply.github.com
 Date: 2023-07-19 05:07:50
 LastEditors: CheshireCC 36411617+CheshireCC@users.noreply.github.com
-LastEditTime: 2023-07-19 22:25:24
+LastEditTime: 2023-07-20 13:52:26
 FilePath: \fatser_whsiper_GUI\test_GUI.py
 Description: 
 '''
@@ -11,12 +11,13 @@ Description:
 import sys
 import os
 
-from PySide6.QtCore import  Qt
-from PySide6.QtWidgets import QApplication, QFileDialog, QFrame, QWidget, QStackedWidget, QVBoxLayout, QLabel, QStyle
+
+from PySide6.QtCore import  QObject, Qt, Signal
+from PySide6.QtWidgets import  QFileDialog, QWidget, QStackedWidget, QVBoxLayout, QLabel, QStyle
 from PySide6.QtWidgets import QHBoxLayout, QGridLayout, QCompleter, QTextBrowser
 from PySide6.QtGui import QIcon
 
-from qfluentwidgets import Pivot, setTheme, Theme, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton, TextEdit
+from qfluentwidgets import Pivot, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton, TextEdit
 from qframelesswindow import FramelessMainWindow , StandardTitleBar
 from config import Language_dict, Preciese_list, Model_names, Device_list
 from resource import Image_rc
@@ -38,6 +39,10 @@ class mainWin(FramelessMainWindow):
         userDir = os.path.expanduser("~")
         cache_dir = os.path.join(userDir,".cache","huggingface","hub").replace("\\", "/")
         self.download_cache_path = cache_dir
+        self.oubak = sys.stdout
+        self.errbak = sys.stderr
+
+        self.FasterWhisperModel = None
 
         self.initWin()
 
@@ -91,6 +96,7 @@ class mainWin(FramelessMainWindow):
         self.setupUI()
         # 信号和槽处理
         self.singleAndSlotProcess()
+        
 
     def initWin(self):
         # setTheme(Theme.LIGHT)
@@ -375,20 +381,16 @@ class mainWin(FramelessMainWindow):
         self.label_online_model_name = QLabel()    
         self.label_online_model_name.setText("模型名称")
         self.combox_online_model = EditableComboBox()
-
         # 下拉框设置项目
         self.combox_online_model.addItems(self.model_names)
-
         # 下拉框设置自动完成
         completer = QCompleter(self.model_names, self)
         self.combox_online_model.setCompleter(completer)
         self.combox_online_model.setCurrentIndex(0)
-
         self.hBoxLayout_online_model.addWidget(self.label_online_model_name)
         self.hBoxLayout_online_model.addWidget(self.combox_online_model)
 
         self.setModelLocationLayout()
-        
 
         GridLayout_model_param = QGridLayout()
         self.vBoxLayout_model_param.addLayout(GridLayout_model_param)
@@ -413,7 +415,6 @@ class mainWin(FramelessMainWindow):
         GridLayout_model_param.addWidget(label_device_index,1,0)
         GridLayout_model_param.addWidget(LineEdit_device_index,1,1)
 
-
         # 计算精度
         VLayout_preciese = QHBoxLayout()
         label_preciese = QLabel()
@@ -427,7 +428,6 @@ class mainWin(FramelessMainWindow):
         GridLayout_model_param.addWidget(label_preciese,2,0)
         GridLayout_model_param.addWidget(preciese_combox,2,1)
 
-
         label_cpu_threads = QLabel()
         label_cpu_threads.setText("线程数（CPU）")
         LineEdit_cpu_threads = LineEdit()
@@ -436,7 +436,6 @@ class mainWin(FramelessMainWindow):
         self.LineEdit_cpu_threads = LineEdit_cpu_threads
         GridLayout_model_param.addWidget(label_cpu_threads,3,0)
         GridLayout_model_param.addWidget(LineEdit_cpu_threads,3,1)
-
 
         label_num_workers = QLabel()
         label_num_workers.setText("并发数")
@@ -450,13 +449,13 @@ class mainWin(FramelessMainWindow):
         button_download_root = PushButton()
         button_download_root.setText("下载缓存目录")
         button_download_root.clicked.connect(self.getDownloadCacheDir)
-        LineEdit_download_root = LineEdit()
-        LineEdit_download_root.setToolTip("模型下载保存的目录。如果未修改,\n则模型将保存在标准Hugging Face缓存目录中。")
-        LineEdit_download_root.setText(self.download_cache_path)
-        self.LineEdit_download_root = LineEdit_download_root
+        self.LineEdit_download_root = LineEdit()
+        self.LineEdit_download_root.setToolTip("模型下载保存的目录。如果未修改,\n则模型将保存在标准Hugging Face缓存目录中。")
+        self.LineEdit_download_root.setText(self.download_cache_path)
+        self.LineEdit_download_root = self.LineEdit_download_root
         self.button_download_root = button_download_root
         GridLayout_model_param.addWidget(button_download_root,5,0)
-        GridLayout_model_param.addWidget(LineEdit_download_root,5,1)
+        GridLayout_model_param.addWidget(self.LineEdit_download_root,5,1)
 
 
         label_local_files_only =QLabel()
@@ -468,6 +467,15 @@ class mainWin(FramelessMainWindow):
         self.combox_local_files_only = combox_local_files_only
         GridLayout_model_param.addWidget(label_local_files_only,6,0)
         GridLayout_model_param.addWidget(combox_local_files_only,6,1)
+
+        self.modelLoderBrower = QTextBrowser()
+        self.vBoxLayout_model_param.addWidget(self.modelLoderBrower)
+
+        self.button_model_lodar = PushButton()
+        self.button_model_lodar.setText("加载模型")
+        self.vBoxLayout_model_param.addWidget(self.button_model_lodar)
+
+        self.vBoxLayout_model_param.setStretchFactor(self.modelLoderBrower,4)
 
         # GridLayout_model_param.setContentsMargins(10,10,10,10)
         self.page_model.setStyleSheet("#pageModelParameter{border:1px solid red; padding: 5px;}")
@@ -593,14 +601,14 @@ class mainWin(FramelessMainWindow):
     def setModelLocationLayout(self):
         num_widgets_layout = self.hBoxLayout_local_model.count()
             # print(num_widgets_layout)
-            # 遍历并移除存在于布局上的控件
+            
         for i in range(num_widgets_layout):
             widget = self.hBoxLayout_local_model.itemAt(i).widget()
             widget.setEnabled(self.model_local_RadioButton.isChecked())
         
         num_widgets_layout = self.hBoxLayout_online_model.count()
             # print(num_widgets_layout)
-            # 遍历并移除存在于布局上的控件
+            
         for i in range(num_widgets_layout):
             widget = self.hBoxLayout_online_model.itemAt(i).widget()
             widget.setEnabled(self.model_online_RadioButton.isChecked())
@@ -608,7 +616,7 @@ class mainWin(FramelessMainWindow):
     def setVADUILayout(self):
         num_widgets_layout = self.GridLayout_VAD_param.count()
             # print(num_widgets_layout)
-            # 遍历并移除存在于布局上的控件
+            
         for i in range(num_widgets_layout):
             widget = self.GridLayout_VAD_param.itemAt(i).widget()
             widget.setEnabled(not (widget.isEnabled()))
@@ -619,7 +627,7 @@ class mainWin(FramelessMainWindow):
         """
         path = QFileDialog.getExistingDirectory(self,"选择缓存文件夹", self.LineEdit_download_root.text())
         if path:
-            self.lineEdit_model_path.setText(path)
+            self.LineEdit_download_root.setText(path)
             self.download_cache_path = path
     
     def getFileName(self):
@@ -629,6 +637,82 @@ class mainWin(FramelessMainWindow):
         fileName, _ = QFileDialog.getOpenFileName(self, "选择音频文件", r"./", "Wave file(*.wav)")
         if fileName:
             self.fileNameLineEdit.setText(fileName)
+            
+
+    def onModelLoadClicked(self):
+
+        self.FasterWhisperModel = None
+        from modelLoad import loadModel
+        self.modelLoderBrower.setText("")
+
+        # 重定向输出
+        sys.stdout = RedirectOutputSignalStore()
+        sys.stdout.outputSignal.connect(self.modelLoderBrower.insertPlainText)
+        sys.stderr = RedirectOutputSignalStore()
+        sys.stderr.outputSignal.connect(self.modelLoderBrower.insertPlainText)
+
+        # for i in range(5):
+        #     print(".", flush=True)
+
+        model_param = self.getParam_model()
+
+        for key ,value in model_param.items():
+            print(f"{key} : {value}")
+
+        from threading import Thread
+
+        def go():
+            self.FasterWhisperModel = loadModel(model_size_or_path=model_param["model_size_or_path"],
+                        device=model_param["device"],
+                        device_index=model_param["device_index"],
+                        compute_type=model_param["compute_type"],
+                        cpu_threads=model_param["cpu_threads"],
+                        num_workers=model_param["num_workers"],
+                        download_root=model_param["download_root"],
+                        local_files_only=model_param["local_files_only"])
+        
+        thread_go = Thread(target= go, daemon=True)
+        thread_go.start()
+
+        # sys.stdout = self.oubak
+        # sys.stderr = self.errbak
+
+    def getParam_model(self):
+        """
+        获取模型参数
+        """
+        if self.model_local_RadioButton.isChecked():
+            model_size_or_path = self.lineEdit_model_path.text()
+        else:
+            model_size_or_path = self.combox_online_model.currentText()
+        device: str = self.device_combox.currentText()
+        device_index:str = self.LineEdit_device_index.text().strip()
+        device_index = [int(index) for index in device_index.split(",")]
+        if len(device_index) == 1:
+            device_index = device_index[0]
+
+        compute_type: str = self.preciese_combox.currentText()
+        cpu_threads: int = int(self.LineEdit_cpu_threads.text().strip())
+        num_workers: int = int(self.LineEdit_num_workers.text().strip())
+        download_root: str = self.LineEdit_download_root.text().strip()
+        local_files_only: str = self.combox_local_files_only.currentText()
+        if local_files_only == "False":
+            local_files_only = False
+        else:
+            local_files_only = True
+        
+        model_dict : dict = {
+                    "model_size_or_path" : model_size_or_path,
+                    "device" : device,
+                    "device_index" : device_index,
+                    "compute_type" : compute_type,
+                    "cpu_threads" : cpu_threads,
+                    "num_workers" : num_workers,
+                    "download_root" : download_root,
+                    "local_files_only" : local_files_only
+        }
+        
+        return model_dict
 
 
     def singleAndSlotProcess(self):
@@ -641,14 +725,17 @@ class mainWin(FramelessMainWindow):
         self.model_online_RadioButton.clicked.connect(self.setModelLocationLayout)
         self.VAD_check.clicked.connect(self.setVADUILayout)
 
+        self.button_model_lodar.clicked.connect(self.onModelLoadClicked)
+    
 
-if __name__ == '__main__':
-    # enable dpi scale
-    QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
-    # QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
-    # QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+class RedirectOutputSignalStore(QObject):
 
-    app = QApplication(sys.argv)
-    w = mainWin()
-    w.show()
-    app.exec()
+    outputSignal = Signal(str)
+    def flush( self ):
+        pass
+    def fileno( self ):
+        return -1
+    def write( self, text ):
+        if ( not self.signalsBlocked() ):
+            self.outputSignal.emit(str(text))
+
