@@ -1,15 +1,15 @@
 '''
-Author: CheshireCC 36411617+CheshireCC@users.noreply.github.com
+Author: CheshireCC 
 Date: 2023-07-18 22:27:35
-LastEditors: CheshireCC 36411617+CheshireCC@users.noreply.github.com
-LastEditTime: 2023-07-18 22:48:44
+LastEditors: CheshireCC 
+LastEditTime: 2023-07-20 23:33:10
 FilePath: \fatser_whsiper_GUI\faster_whsiper_GUI\FasterWhisperGUI.py
-Description: 
+Description: main program 
 '''
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication
 import sys
-from UI_MainWindows import mainWin
+from faster_whsiper_GUI.UI_MainWindows import mainWin
 
 # import necessary models
 from PySide6.QtWidgets import QApplication

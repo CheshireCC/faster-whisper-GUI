@@ -1,8 +1,8 @@
 '''
-Author: CheshireCC 36411617+CheshireCC@users.noreply.github.com
+Author: CheshireCC 
 Date: 2023-07-19 05:07:50
-LastEditors: CheshireCC 36411617+CheshireCC@users.noreply.github.com
-LastEditTime: 2023-07-20 13:52:26
+LastEditors: CheshireCC 
+LastEditTime: 2023-07-20 23:32:10
 FilePath: \fatser_whsiper_GUI\test_GUI.py
 Description: 
 '''
@@ -11,15 +11,24 @@ Description:
 import sys
 import os
 
+sys.path.append("..")
 
 from PySide6.QtCore import  QObject, Qt, Signal
-from PySide6.QtWidgets import  QFileDialog, QWidget, QStackedWidget, QVBoxLayout, QLabel, QStyle
-from PySide6.QtWidgets import QHBoxLayout, QGridLayout, QCompleter, QTextBrowser
+from PySide6.QtWidgets import  QFileDialog, QWidget, QStackedWidget, QVBoxLayout, QStyle
+from PySide6.QtWidgets import QHBoxLayout, QGridLayout, QCompleter, QTextBrowser, QLabel
 from PySide6.QtGui import QIcon
 
 from qfluentwidgets import Pivot, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton, TextEdit
 from qframelesswindow import FramelessMainWindow , StandardTitleBar
-from config import Language_dict, Preciese_list, Model_names, Device_list
+
+from .config import Language_dict, Preciese_list, Model_names, Device_list, Task_list, STR_BOOL
+from .modelLoad import loadModel
+from .convertModel import ConvertModel
+
+from .transcribe import Transcribe
+
+from threading import Thread
+
 from resource import Image_rc
 
 
@@ -89,8 +98,8 @@ class mainWin(FramelessMainWindow):
         # self.stackedWidget.setGeometry(50,50,500,500)
         # 设置当前的子界面
         self.stackedWidget.currentChanged.connect(self.onCurrentIndexChanged)
-        self.stackedWidget.setCurrentWidget(self.page_transcribes)
-        self.pivot.setCurrentItem(self.page_transcribes.objectName())
+        self.stackedWidget.setCurrentWidget(self.page_model)
+        self.pivot.setCurrentItem(self.page_model.objectName())
 
         # UI设置
         self.setupUI()
@@ -110,6 +119,9 @@ class mainWin(FramelessMainWindow):
                                 background: rgb(242,242,242);
                                 border-radius: 8px
                                     }
+                            QTextBrowser{
+                                font: 15px 'TimesNewRoman';
+                                        }
                             """
                             )
 
@@ -166,9 +178,9 @@ class mainWin(FramelessMainWindow):
         label_1.setText("目标音频文件")
         hBoxLayout_Audio_File.addWidget(label_1)
 
-        self.fileNameLineEdit = LineEdit()
-        self.fileNameLineEdit.setToolTip("要转写的音频文件路径")
-        hBoxLayout_Audio_File.addWidget(self.fileNameLineEdit)
+        self.LineEdit_audio_fileName = LineEdit()
+        self.LineEdit_audio_fileName.setToolTip("要转写的音频文件路径")
+        hBoxLayout_Audio_File.addWidget(self.LineEdit_audio_fileName)
 
         fileChosePushButton = ToolButton()
         self.fileOpenPushButton = fileChosePushButton
@@ -468,6 +480,23 @@ class mainWin(FramelessMainWindow):
         GridLayout_model_param.addWidget(label_local_files_only,6,0)
         GridLayout_model_param.addWidget(combox_local_files_only,6,1)
 
+        hBoxLayout_model_convert = QHBoxLayout()
+        self.vBoxLayout_model_param.addLayout(hBoxLayout_model_convert)
+
+        self.button_set_model_out_dir =  PushButton()
+        self.button_set_model_out_dir.setText("模型输出目录")
+        hBoxLayout_model_convert.addWidget(self.button_set_model_out_dir)
+
+        self.LineEdit_model_out_dir = LineEdit()
+        self.LineEdit_model_out_dir.setToolTip("转换模型的保存目录，不会自动创建子目录")
+        hBoxLayout_model_convert.addWidget(self.LineEdit_model_out_dir)
+
+        self.button_convert_model = PushButton()
+        self.button_convert_model.setText("转换模型")
+        self.button_convert_model.setToolTip("转换 OpenAi 模型到本地格式，\n必须选择在线模型")
+        hBoxLayout_model_convert.addWidget(self.button_convert_model)
+
+
         self.modelLoderBrower = QTextBrowser()
         self.vBoxLayout_model_param.addWidget(self.modelLoderBrower)
 
@@ -481,7 +510,7 @@ class mainWin(FramelessMainWindow):
         self.page_model.setStyleSheet("#pageModelParameter{border:1px solid red; padding: 5px;}")
         self.vBoxLayout_model_param.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-    
+
     def setupVADUI(self):
 
         # VAD 模型引入以及 VAD 参数
@@ -636,20 +665,22 @@ class mainWin(FramelessMainWindow):
         """
         fileName, _ = QFileDialog.getOpenFileName(self, "选择音频文件", r"./", "Wave file(*.wav)")
         if fileName:
-            self.fileNameLineEdit.setText(fileName)
+            self.LineEdit_audio_fileName.setText(fileName)
             
+    def redirectOutput(self, target : callable):
+        # 重定向输出
+        sys.stdout = RedirectOutputSignalStore()
+        sys.stdout.outputSignal.connect(target)
+        sys.stderr = RedirectOutputSignalStore()
+        sys.stderr.outputSignal.connect(target)
 
     def onModelLoadClicked(self):
 
         self.FasterWhisperModel = None
-        from modelLoad import loadModel
         self.modelLoderBrower.setText("")
 
         # 重定向输出
-        sys.stdout = RedirectOutputSignalStore()
-        sys.stdout.outputSignal.connect(self.modelLoderBrower.insertPlainText)
-        sys.stderr = RedirectOutputSignalStore()
-        sys.stderr.outputSignal.connect(self.modelLoderBrower.insertPlainText)
+        self.redirectOutput(self.modelLoderBrower.insertPlainText)
 
         # for i in range(5):
         #     print(".", flush=True)
@@ -658,8 +689,6 @@ class mainWin(FramelessMainWindow):
 
         for key ,value in model_param.items():
             print(f"{key} : {value}")
-
-        from threading import Thread
 
         def go():
             self.FasterWhisperModel = loadModel(model_size_or_path=model_param["model_size_or_path"],
@@ -677,7 +706,7 @@ class mainWin(FramelessMainWindow):
         # sys.stdout = self.oubak
         # sys.stderr = self.errbak
 
-    def getParam_model(self):
+    def getParam_model(self) -> dict:
         """
         获取模型参数
         """
@@ -686,15 +715,15 @@ class mainWin(FramelessMainWindow):
         else:
             model_size_or_path = self.combox_online_model.currentText()
         device: str = self.device_combox.currentText()
-        device_index:str = self.LineEdit_device_index.text().strip()
+        device_index:str = self.LineEdit_device_index.text().replace(" ", "")
         device_index = [int(index) for index in device_index.split(",")]
         if len(device_index) == 1:
             device_index = device_index[0]
 
         compute_type: str = self.preciese_combox.currentText()
-        cpu_threads: int = int(self.LineEdit_cpu_threads.text().strip())
-        num_workers: int = int(self.LineEdit_num_workers.text().strip())
-        download_root: str = self.LineEdit_download_root.text().strip()
+        cpu_threads: int = int(self.LineEdit_cpu_threads.text().replace(" ", ""))
+        num_workers: int = int(self.LineEdit_num_workers.text().replace(" ", ""))
+        download_root: str = self.LineEdit_download_root.text().replace(" ", "")
         local_files_only: str = self.combox_local_files_only.currentText()
         if local_files_only == "False":
             local_files_only = False
@@ -714,11 +743,219 @@ class mainWin(FramelessMainWindow):
         
         return model_dict
 
+    def onButtonProcessClicked(self):
+        """
+        process button clicked
+        """
+
+        self.processResultText.setText("")
+
+        # 重定向输出
+        sys.stdout = RedirectOutputSignalStore()
+        sys.stdout.outputSignal.connect(self.processResultText.insertPlainText)
+        sys.stderr = RedirectOutputSignalStore()
+        sys.stderr.outputSignal.connect(self.processResultText.insertPlainText)
+
+        VAD_param :dict = self.getVADparam()
+
+        # vad 启用标识
+        vad_filter = VAD_param["vad_filter"]
+        print(f"vad_filter : {vad_filter}")
+        
+        if vad_filter:
+            # VAD 参数
+            VAD_param = VAD_param["param"]
+            for key, Value in VAD_param.items():
+                print(f"  {key:<24} : {Value}")
+        else:
+            VAD_param = {}
+
+        # 转写参数
+        Transcribe_params : dict = self.getParamTranscribe()
+        print("Transcribes options:")
+        for key, value in Transcribe_params.items():
+            print(f"  {key} : {value}")
+
+        if self.FasterWhisperModel == None:
+            print("模型未加载！进程退出")
+            return
+        
+        if not os.path.exists(Transcribe_params["audio"]):
+            print("需要有效的音频文件！")
+            return
+        
+        segment_info = {}
+        def go():
+            Transcribe(model=self.FasterWhisperModel,
+                       parameters=Transcribe_params,
+                       vad_filter=vad_filter,
+                       vad_parameters=VAD_param)
+        
+        thread_go = Thread(target=go, daemon=True)
+        thread_go.start()
+
+        # print(segment_info["info"])
+                    
+
+
+
+
+    def getParamTranscribe(self) -> dict:
+        Transcribe_params = {}
+
+        audio = self.LineEdit_audio_fileName.text().replace(" ", "")
+        Transcribe_params["audio"] = audio
+
+        language = self.combox_language.text().split(" ")[-1]
+        if language == "Auto":
+            language = None
+        Transcribe_params["language"] = language
+
+        task = self.combox_Translate_to_English.currentText()
+        task = STR_BOOL[task]
+        task = Task_list[int(task)]
+        Transcribe_params["task"] = task
+        
+        beam_size = int(self.LineEdit_beam_size.text().replace(" ", ""))
+        Transcribe_params["beam_size"] = beam_size
+
+        best_of = int(self.LineEdit_best_of.text().replace(" ", ""))
+        Transcribe_params["best_of"] = best_of
+
+        patience = float(self.LineEdit_patience.text().replace(" ", ""))
+        Transcribe_params["patience"] = patience
+        
+        length_penalty = float(self.LineEdit_length_penalty.text().replace(" ", ""))
+        Transcribe_params["length_penalty"] = length_penalty
+
+        temperature = self.LineEdit_temperature.text().replace(" ", "")
+        temperature = [float(t) for t in temperature.split(",")]
+        Transcribe_params["temperature"] = temperature 
+
+        compression_ratio_threshold = float(self.LineEdit_compression_ratio_threshold.text().replace(" ", ""))
+        Transcribe_params["compression_ratio_threshold"] = compression_ratio_threshold
+
+        log_prob_threshold = float(self.LineEdit_log_prob_threshold.text().replace(" ", ""))
+        Transcribe_params["log_prob_threshold"] = log_prob_threshold
+
+        no_speech_threshold = float(self.LineEdit_no_speech_threshold.text().replace(" ", ""))
+        Transcribe_params["no_speech_threshold"] = no_speech_threshold
+
+        condition_on_previous_text = self.combox_condition_on_previous_text.currentText()
+        condition_on_previous_text = STR_BOOL[condition_on_previous_text]
+        Transcribe_params["condition_on_previous_text"] = condition_on_previous_text
+        
+        initial_prompt = self.LineEdit_initial_prompt.text().replace(" ", "")
+        if not initial_prompt:
+            initial_prompt = None
+        else:
+            lambda_initial_prompt = lambda w : int(w) if (w.isdigit()) else w
+            initial_prompt = [lambda_initial_prompt(w) for w in initial_prompt.split(",")]
+        Transcribe_params["initial_prompt"] = initial_prompt
+
+        prefix = self.LineEdit_prefix.text().replace(" ", "")
+        if not prefix:
+            prefix = None
+        Transcribe_params["prefix"] = prefix
+
+        suppress_blank = self.combox_suppress_blank.currentText()
+        suppress_blank = STR_BOOL[suppress_blank]
+        Transcribe_params["suppress_blank"] = suppress_blank
+
+        suppress_tokens = self.LineEdit_suppress_tokens.text().replace(" ", "")
+        suppress_tokens = [int(s) for s in suppress_tokens.split(",")]
+        Transcribe_params["suppress_tokens"] = suppress_tokens
+
+        without_timestamps = self.combox_without_timestamps.currentText()
+        without_timestamps = STR_BOOL[without_timestamps]
+        Transcribe_params["without_timestamps"] = without_timestamps
+
+        max_initial_timestamp = self.LineEdit_max_initial_timestamp.text().replace(" ", "")
+        max_initial_timestamp = float(max_initial_timestamp)
+        Transcribe_params["max_initial_timestamp"] = max_initial_timestamp
+
+        word_timestamps = self.combox_word_timestamps.currentText()
+        word_timestamps = STR_BOOL[word_timestamps]
+        Transcribe_params["word_timestamps"] = word_timestamps
+
+        prepend_punctuations = self.LineEdit_prepend_punctuations.text().replace(" ", "")
+        Transcribe_params["prepend_punctuations"] = prepend_punctuations
+        
+        append_punctuations = self.LineEdit_append_punctuations.text().replace(" ","")
+        Transcribe_params["append_punctuations"] = append_punctuations
+
+        return Transcribe_params
+        
+
+    def getVADparam(self) -> dict:
+        """
+        get param of VAD
+        """
+
+        vad_filter = self.VAD_check.isChecked()
+        # print(vad_filter)
+        VAD_param = {"vad_filter":vad_filter} 
+
+        if not vad_filter:
+            return VAD_param
+        
+        threshold = float(self.LineEdit_VAD_param_threshold.text().replace(" ", ""))
+        min_speech_duration_ms = int(self.LineEdit_VAD_patam_min_speech_duration_ms.text().replace(" ", ""))
+        max_speech_duration_s = float(self.LineEdit_VAD_patam_max_speech_duration_s.text().replace(" ", ""))
+        min_silence_duration_ms = int(self.LineEdit_VAD_patam_min_silence_duration_ms.text().replace(" ", ""))
+        window_size_samples = int(self.combox_VAD_patam_window_size_samples.currentText())
+        speech_pad_ms = int(self.LineEdit_VAD_patam_speech_pad_ms.text().replace(" ", ""))
+
+        VAD_param["param"] = {}
+
+        VAD_param["param"]["threshold"] = threshold
+        VAD_param["param"]["min_speech_duration_ms"] = min_speech_duration_ms
+        VAD_param["param"]["max_speech_duration_s"] = max_speech_duration_s
+        VAD_param["param"]["min_silence_duration_ms"] = min_silence_duration_ms
+        VAD_param["param"]["window_size_samples"] = window_size_samples
+        VAD_param["param"]["speech_pad_ms"] = speech_pad_ms
+
+        return VAD_param
+
+    def onButtonConvertModelClicked(self):
+        
+        self.modelLoderBrower.setText("")
+        # 重定向输出
+        self.redirectOutput(self.modelLoderBrower.insertPlainText)
+
+        if not self.model_online_RadioButton.isChecked():
+            # QMessageBox.warning(self, "错误", "必须选择在线模型时才能使用本功能", QMessageBox.Yes, QMessageBox.Yes)
+            print("必须选择在线模型时才能使用本功能")
+            return
+
+        model_name_or_path = self.combox_online_model.currentText()
+        model_output_dir = self.LineEdit_model_out_dir.text().replace(" ", "")
+        download_cache_dir = self.LineEdit_download_root.text().replace(" ", "")
+        quantization = self.preciese_combox.currentText()
+        use_local_files = self.combox_local_files_only.currentText()
+        use_local_files = STR_BOOL[use_local_files]
+
+        print("模型转换：")
+        print(f"  model_name_or_path : {model_name_or_path}")
+        print(f"  model_output_dir   : {model_output_dir}")
+        print(f"  download_cache_dir : {download_cache_dir}")
+        print(f"  quantization       : {quantization}")
+        print(f"  use_local_files    : {use_local_files}")
+
+        if model_output_dir == "":
+            print(f"\n输出目录是必须的！")
+            return
+    
+        thread_go = Thread(target=ConvertModel, daemon=True, args=[model_name_or_path, download_cache_dir,model_output_dir, quantization, use_local_files])
+        thread_go.start()
 
     def singleAndSlotProcess(self):
         """
         process single connect and others
         """
+
+        self.button_convert_model.clicked.connect(self.onButtonConvertModelClicked)
+        self.button_set_model_out_dir.clicked.connect(lambda: self.LineEdit_model_out_dir.setText(QFileDialog.getExistingDirectory(self,"选择转换模型输出目录",r"./")))
 
         self.fileOpenPushButton.clicked.connect(self.getFileName)
         self.model_local_RadioButton.clicked.connect(self.setModelLocationLayout)
@@ -726,6 +963,7 @@ class mainWin(FramelessMainWindow):
         self.VAD_check.clicked.connect(self.setVADUILayout)
 
         self.button_model_lodar.clicked.connect(self.onModelLoadClicked)
+        self.button_process.clicked.connect(self.onButtonProcessClicked)
     
 
 class RedirectOutputSignalStore(QObject):

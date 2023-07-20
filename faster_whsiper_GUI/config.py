@@ -112,3 +112,6 @@ Model_names = ["tiny", "tiny.en", "base", "base.en", "small",
                                             "small.en", "medium", "medium.en", "large-v1", "large-v2"]
 
 Device_list = ["cpu", "cuda", "auto"]
+Task_list = ["transcribe" , "translate"]
+
+STR_BOOL = {"False":False,"True":True}
