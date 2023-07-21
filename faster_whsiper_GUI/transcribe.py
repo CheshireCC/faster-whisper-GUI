@@ -91,7 +91,7 @@ def Transcribe(model: WhisperModel, parameters: dict, vad_filter: bool, vad_para
             f.write(f"{index} \n {start_time} -> {end_time} \n {text} \n\n")
             index += 1
     
-    print("【结束】")
+        print("【结束】")
 
 def getSaveFileName(audioFile: str):
     path, fileName = os.path.split(audioFile)

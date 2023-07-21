@@ -13,6 +13,7 @@ test_cpu/
 .vscode/
 develop-eggs/
 dist/
+python39/
 downloads/
 eggs/
 .eggs/

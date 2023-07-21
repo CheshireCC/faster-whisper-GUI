@@ -1,8 +1,8 @@
 '''
 Author: CheshireCC 
 Date: 2023-07-19 22:55:25
-LastEditors: CheshireCC 
-LastEditTime: 2023-07-20 23:29:08
+LastEditors: CheshireCC 36411617+CheshireCC@users.noreply.github.com
+LastEditTime: 2023-07-21 10:16:03
 FilePath: \fatser_whsiper_GUI\faster_whsiper_GUI\modelLoad.py
 Description: 
 '''
@@ -46,9 +46,8 @@ def loadModel(model_size_or_path: str,
 
     while(Thread_go.is_alive()):
         if os.path.isdir(model_size_or_path):
-            for i in range(6):
-                print(".", end="", flush=True)
-                time.sleep(0.2)         
+            print(".", end="", flush=True)
+            time.sleep(0.5)         
         else:
             pass       
     

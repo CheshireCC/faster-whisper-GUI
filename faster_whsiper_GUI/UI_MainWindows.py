@@ -1,8 +1,8 @@
 '''
 Author: CheshireCC 
 Date: 2023-07-19 05:07:50
-LastEditors: CheshireCC 
-LastEditTime: 2023-07-20 23:32:10
+LastEditors: CheshireCC 36411617+CheshireCC@users.noreply.github.com
+LastEditTime: 2023-07-21 12:03:17
 FilePath: \fatser_whsiper_GUI\test_GUI.py
 Description: 
 '''
@@ -16,7 +16,7 @@ sys.path.append("..")
 from PySide6.QtCore import  QObject, Qt, Signal
 from PySide6.QtWidgets import  QFileDialog, QWidget, QStackedWidget, QVBoxLayout, QStyle
 from PySide6.QtWidgets import QHBoxLayout, QGridLayout, QCompleter, QTextBrowser, QLabel
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QTextCursor
 
 from qfluentwidgets import Pivot, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton, TextEdit
 from qframelesswindow import FramelessMainWindow , StandardTitleBar
@@ -964,7 +964,9 @@ class mainWin(FramelessMainWindow):
 
         self.button_model_lodar.clicked.connect(self.onModelLoadClicked)
         self.button_process.clicked.connect(self.onButtonProcessClicked)
-    
+
+        self.modelLoderBrower.textChanged.connect(lambda: self.modelLoderBrower.moveCursor(QTextCursor.End))
+        self.processResultText.textChanged.connect(lambda: self.processResultText.moveCursor(QTextCursor.End))
 
 class RedirectOutputSignalStore(QObject):
 
