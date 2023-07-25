@@ -9,9 +9,14 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+build-0725
+python38/
 test_cpu/
 .vscode/
+model/
 develop-eggs/
+*report*.xml
+*.bak
 dist/
 python39/
 downloads/

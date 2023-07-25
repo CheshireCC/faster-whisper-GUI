@@ -2,17 +2,19 @@
 Author: CheshireCC 
 Date: 2023-07-19 22:55:25
 LastEditors: CheshireCC 36411617+CheshireCC@users.noreply.github.com
-LastEditTime: 2023-07-21 10:16:03
+LastEditTime: 2023-07-25 18:52:53
 FilePath: \fatser_whsiper_GUI\faster_whsiper_GUI\modelLoad.py
 Description: 
 '''
 
-from typing import List, Optional, Union
-from faster_whisper import WhisperModel
-import faster_whisper
+# print("    4.1")
 import time
 import os
 from threading import Thread
+from typing import (List, Optional, Union)
+
+# print("    4.2")
+from faster_whisper import WhisperModel
 
 def loadModel(model_size_or_path: str,
         device: str = "auto",

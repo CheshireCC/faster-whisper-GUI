@@ -1,8 +1,11 @@
-from faster_whisper import WhisperModel
 from threading import Thread
 import time
-from .config import Language_dict
 import os
+
+from faster_whisper import WhisperModel
+
+from .config import Language_dict
+
 
 def Transcribe(model: WhisperModel, parameters: dict, vad_filter: bool, vad_parameters: dict):
 
@@ -80,7 +83,7 @@ def Transcribe(model: WhisperModel, parameters: dict, vad_filter: bool, vad_para
         return
     
     print("开始转写：")
-    srtFile = getSaveFileName(parameters["audio"])
+    srtFile = getSaveFileName(parameters["audio"], not(parameters["without_timestamps"]))
     index = 1
     with open(srtFile, "w") as f:
         for segment in segmenter_info["segment"]:
@@ -88,15 +91,29 @@ def Transcribe(model: WhisperModel, parameters: dict, vad_filter: bool, vad_para
             end_time = segment.end
             text = segment.text
             print("[%.2fs -> %.2fs] %s" % (start_time, end_time, text))
-            f.write(f"{index} \n {start_time} -> {end_time} \n {text} \n\n")
-            index += 1
-    
-        print("【结束】")
 
-def getSaveFileName(audioFile: str):
+            if not parameters['without_timestamps']:
+                start_time = secondsToHMS(start_time)
+                end_time = secondsToHMS(end_time)
+                f.write(f"{index} \n {start_time} -> {end_time} \n {text} \n\n")
+                
+            else:
+                f.write(f"{text} \n\n")
+            
+            index += 1
+                
+        print("【结束】")
+    
+    del segmenter_info
+
+def getSaveFileName(audioFile: str, isSrt : bool):
     path, fileName = os.path.split(audioFile)
     fileName = fileName.split(".")
-    fileName[-1] = "srt"
+    if isSrt:
+        fileName[-1] = "srt"
+    else:
+        fileName[-1] = "txt"
+
     fileName = ".".join(fileName)
 
     saveFileName = os.path.join(path, fileName).replace("\\", "/")

@@ -1,17 +1,20 @@
 '''
 Author: CheshireCC 
 Date: 2023-07-20 20:15:57
-LastEditors: CheshireCC 36411617+CheshireCC@users.noreply.github.com
-LastEditTime: 2023-07-21 11:37:21
+LastEditors: CheshireCC 
+LastEditTime: 2023-07-23 04:54:48
 FilePath: \fatser_whsiper_GUI\faster_whsiper_GUI\convertModel.py
 Description: 转换文件
 '''
 
-from ctranslate2.converters import TransformersConverter as cvter
 import os 
-from .config import Model_names
 import time
 from threading import Thread
+
+from ctranslate2.converters import TransformersConverter as cvter
+
+from .config import Model_names
+
 
 def ConvertModel(model_name_or_path:str,cache_dir: str, output_dir:str, quantization:str, use_local_file : bool = True):
 
@@ -47,9 +50,11 @@ def ConvertModel(model_name_or_path:str,cache_dir: str, output_dir:str, quantiza
             return
         else:
             model_name_or_path = "openai/whisper-" + model_name_or_path
-            print(f"下载模型： {model_name_or_path} ")
+            print(f"下载模型 :  {model_name_or_path} ")
 
+    print(f"目标模型 : {model_name_or_path}")
     print("初始化转换器", end="")
+    
     cvter_01 = {}
     def go(cvter_ : dict):
         cvter_1 = cvter(model_name_or_path=model_name_or_path, 
@@ -79,10 +84,10 @@ def ConvertModel(model_name_or_path:str,cache_dir: str, output_dir:str, quantiza
     def go_2():
         cvter_01.convert(output_dir=output_dir, quantization=quantization, force=True)
     
-    Thread_go = Thread(target=go_2, daemon=True)
-    Thread_go.start()
+    Thread_go_2 = Thread(target=go_2, daemon=True)
+    Thread_go_2.start()
 
-    while(Thread_go.is_alive()):
+    while(Thread_go_2.is_alive()):
         print(".", end="", flush=True)
         time.sleep(0.5)
 

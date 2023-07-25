@@ -1,7 +1,17 @@
-
 # fatser_whsiper_GUI
 
 faster_whisper GUI with PySide6
+
+
+faster_whisper:
+
+[https://github.com/guillaumekln/faster-whisper](https://github.com/guillaumekln/faster-whisper)
+
+
+PySide6-Fluent-Widgets:
+
+[https://github.com/zhiyiYo/PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)
+
 
 ## 1. 参数：
 

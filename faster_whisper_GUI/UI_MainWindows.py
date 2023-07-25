@@ -2,34 +2,51 @@
 Author: CheshireCC 
 Date: 2023-07-19 05:07:50
 LastEditors: CheshireCC 36411617+CheshireCC@users.noreply.github.com
-LastEditTime: 2023-07-21 12:03:17
+LastEditTime: 2023-07-25 18:54:52
 FilePath: \fatser_whsiper_GUI\test_GUI.py
 Description: 
 '''
-
+# print("  1")
 # coding:utf-8
 import sys
 import os
 
-sys.path.append("..")
+# print("  2")
+from PySide6.QtCore import  (QObject, Qt, Signal)
+from PySide6.QtWidgets import  (QFileDialog, QWidget, QStackedWidget, QVBoxLayout, QStyle, QHBoxLayout, QGridLayout, QCompleter, QTextBrowser, QLabel)
+from PySide6.QtGui import (QIcon, QTextCursor)
+from qfluentwidgets import (Pivot, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton, TextEdit)
+from qframelesswindow import (FramelessMainWindow , StandardTitleBar)
 
-from PySide6.QtCore import  QObject, Qt, Signal
-from PySide6.QtWidgets import  QFileDialog, QWidget, QStackedWidget, QVBoxLayout, QStyle
-from PySide6.QtWidgets import QHBoxLayout, QGridLayout, QCompleter, QTextBrowser, QLabel
-from PySide6.QtGui import QIcon, QTextCursor
+# print("  3")
+from .config import (Language_dict, Preciese_list, Model_names, Device_list, Task_list, STR_BOOL)
 
-from qfluentwidgets import Pivot, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton, TextEdit
-from qframelesswindow import FramelessMainWindow , StandardTitleBar
-
-from .config import Language_dict, Preciese_list, Model_names, Device_list, Task_list, STR_BOOL
+# print("  4")
 from .modelLoad import loadModel
+
+# print("  5")
 from .convertModel import ConvertModel
 
+# print("  6")
 from .transcribe import Transcribe
 
+# print("  7")
 from threading import Thread
 
+# print("  8")
 from resource import Image_rc
+
+
+class RedirectOutputSignalStore(QObject):
+
+    outputSignal = Signal(str)
+    def flush( self ):
+        pass
+    def fileno( self ):
+        return -1
+    def write( self, text ):
+        if ( not self.signalsBlocked() ):
+            self.outputSignal.emit(str(text))
 
 
 class mainWin(FramelessMainWindow):
@@ -663,10 +680,18 @@ class mainWin(FramelessMainWindow):
         """
         get a file name from a dialog
         """
-        fileName, _ = QFileDialog.getOpenFileName(self, "选择音频文件", r"./", "Wave file(*.wav)")
+        fileName, _ = QFileDialog.getOpenFileName(self, "选择音频文件", r"./", "Wave file(*.wav);;All file type(*.*)")
         if fileName:
             self.LineEdit_audio_fileName.setText(fileName)
-            
+    
+    def setTextAndMoveCursorToModelBrowser(self, text:str):
+        self.modelLoderBrower.moveCursor(QTextCursor.MoveOperation.End, QTextCursor.MoveMode.MoveAnchor)
+        self.modelLoderBrower.insertPlainText(text)
+
+    def setTextAndMoveCursorToProcessBrowser(self, text:str):
+        self.processResultText.moveCursor(QTextCursor.MoveOperation.End, QTextCursor.MoveMode.MoveAnchor)
+        self.processResultText.insertPlainText(text)
+
     def redirectOutput(self, target : callable):
         # 重定向输出
         sys.stdout = RedirectOutputSignalStore()
@@ -680,7 +705,7 @@ class mainWin(FramelessMainWindow):
         self.modelLoderBrower.setText("")
 
         # 重定向输出
-        self.redirectOutput(self.modelLoderBrower.insertPlainText)
+        self.redirectOutput(self.setTextAndMoveCursorToModelBrowser)
 
         # for i in range(5):
         #     print(".", flush=True)
@@ -751,10 +776,7 @@ class mainWin(FramelessMainWindow):
         self.processResultText.setText("")
 
         # 重定向输出
-        sys.stdout = RedirectOutputSignalStore()
-        sys.stdout.outputSignal.connect(self.processResultText.insertPlainText)
-        sys.stderr = RedirectOutputSignalStore()
-        sys.stderr.outputSignal.connect(self.processResultText.insertPlainText)
+        self.redirectOutput(self.setTextAndMoveCursorToProcessBrowser)
 
         VAD_param :dict = self.getVADparam()
 
@@ -782,6 +804,7 @@ class mainWin(FramelessMainWindow):
         
         if not os.path.exists(Transcribe_params["audio"]):
             print("需要有效的音频文件！")
+            print(f"Erro FileName : {Transcribe_params['audio']}")
             return
         
         segment_info = {}
@@ -803,7 +826,7 @@ class mainWin(FramelessMainWindow):
     def getParamTranscribe(self) -> dict:
         Transcribe_params = {}
 
-        audio = self.LineEdit_audio_fileName.text().replace(" ", "")
+        audio = self.LineEdit_audio_fileName.text().strip()
         Transcribe_params["audio"] = audio
 
         language = self.combox_language.text().split(" ")[-1]
@@ -921,7 +944,7 @@ class mainWin(FramelessMainWindow):
         
         self.modelLoderBrower.setText("")
         # 重定向输出
-        self.redirectOutput(self.modelLoderBrower.insertPlainText)
+        self.redirectOutput(self.setTextAndMoveCursorToModelBrowser)
 
         if not self.model_online_RadioButton.isChecked():
             # QMessageBox.warning(self, "错误", "必须选择在线模型时才能使用本功能", QMessageBox.Yes, QMessageBox.Yes)
@@ -965,17 +988,6 @@ class mainWin(FramelessMainWindow):
         self.button_model_lodar.clicked.connect(self.onModelLoadClicked)
         self.button_process.clicked.connect(self.onButtonProcessClicked)
 
-        self.modelLoderBrower.textChanged.connect(lambda: self.modelLoderBrower.moveCursor(QTextCursor.End))
-        self.processResultText.textChanged.connect(lambda: self.processResultText.moveCursor(QTextCursor.End))
-
-class RedirectOutputSignalStore(QObject):
-
-    outputSignal = Signal(str)
-    def flush( self ):
-        pass
-    def fileno( self ):
-        return -1
-    def write( self, text ):
-        if ( not self.signalsBlocked() ):
-            self.outputSignal.emit(str(text))
+        self.modelLoderBrower.textChanged.connect(lambda: self.modelLoderBrower.moveCursor(QTextCursor.MoveOperation.End, mode=QTextCursor.MoveMode.MoveAnchor))
+        self.processResultText.textChanged.connect(lambda: self.processResultText.moveCursor(QTextCursor.MoveOperation.End, mode=QTextCursor.MoveMode.MoveAnchor))
 
