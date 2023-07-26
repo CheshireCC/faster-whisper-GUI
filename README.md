@@ -2,7 +2,6 @@
 
 faster_whisper GUI with PySide6
 
-
 faster_whisper:
 
 [https://github.com/guillaumekln/faster-whisper](https://github.com/guillaumekln/faster-whisper)
@@ -73,3 +72,4 @@ PySide6-Fluent-Widgets:
 - `num_workers`: 当从多个 `Python`线程调用 `transcribe()`时，具有多个工作线程可以在运行模型时实现真正的并行性(对 `self.model.generate()` 的并发调用将并行运行)。这可以以增加内存使用为代价提高整体吞吐量。
 - `download_root`: 模型应该保存的目录。如果未设置，则模型将保存在标准 *Hugging Face* 缓存目录中。
 - `local_files_only`: 如果为 `True`，避免下载文件，并在本地缓存的文件存在时返回其路径。
+>>>>>>> main
