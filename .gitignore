@@ -8,11 +8,22 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+
 build/
-resource/
+build-0725
+not_open_file/
+python38/
 test_cpu/
-develop-eggs/
+model/
 dist/
+python39/
+
+.vscode/
+
+develop-eggs/
+*report*.xml
+*.bak
+
 downloads/
 eggs/
 .eggs/
