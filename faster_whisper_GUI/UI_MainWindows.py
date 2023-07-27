@@ -2,7 +2,7 @@
 Author: CheshireCC 
 Date: 2023-07-19 05:07:50
 LastEditors: CheshireCC 36411617+CheshireCC@users.noreply.github.com
-LastEditTime: 2023-07-25 18:54:52
+LastEditTime: 2023-07-27 15:59:25
 FilePath: \fatser_whsiper_GUI\test_GUI.py
 Description: 
 '''
@@ -221,6 +221,13 @@ class mainWin(FramelessMainWindow):
         completer_language.setFilterMode(Qt.MatchFlag.MatchContains)
         self.combox_language.setCompleter(completer_language)
         self.combox_language.setToolTip("音频中的语言。如果选择 Auto，则自动在音频的前30秒内检测语言。")
+
+        # TODO: this is a bug here,click ClearButton ,all items will be cleared ,not only the lineEdit
+        self.combox_language.setClearButtonEnabled(True)
+        # 暂时修复上述问题 采用以下方法进行 断开现有信号连接并重设该信号的 Slot
+        self.combox_language.clearButton.clicked.disconnect(self.combox_language.clear)
+        self.combox_language.clearButton.clicked.connect(lambda : self.combox_language.setText(""))
+
         GridBoxLayout_other_paramters.addWidget(Label_language, 0, 0)
         GridBoxLayout_other_paramters.addWidget(self.combox_language, 0, 1)
         
@@ -976,9 +983,11 @@ class mainWin(FramelessMainWindow):
         """
         process single connect and others
         """
-
+        
         self.button_convert_model.clicked.connect(self.onButtonConvertModelClicked)
-        self.button_set_model_out_dir.clicked.connect(lambda: self.LineEdit_model_out_dir.setText(QFileDialog.getExistingDirectory(self,"选择转换模型输出目录",r"./")))
+
+        set_model_output_dir = lambda path: path if path != "" else self.LineEdit_model_out_dir.text()
+        self.button_set_model_out_dir.clicked.connect(lambda:self.LineEdit_model_out_dir.setText(set_model_output_dir(QFileDialog.getExistingDirectory(self,"选择转换模型输出目录", self.LineEdit_model_out_dir.text()))) )
 
         self.fileOpenPushButton.clicked.connect(self.getFileName)
         self.model_local_RadioButton.clicked.connect(self.setModelLocationLayout)
