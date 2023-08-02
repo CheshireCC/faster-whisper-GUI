@@ -1,8 +1,8 @@
 '''
 Author: CheshireCC 
 Date: 2023-07-19 22:55:25
-LastEditors: CheshireCC 36411617+CheshireCC@users.noreply.github.com
-LastEditTime: 2023-07-25 18:52:53
+LastEditors: CheshireCC 
+LastEditTime: 2023-07-29 22:37:22
 FilePath: \fatser_whsiper_GUI\faster_whsiper_GUI\modelLoad.py
 Description: 
 '''
@@ -64,6 +64,7 @@ def loadModel(model_size_or_path: str,
         print("time_precision: ", model.time_precision)
         print("tokens_per_second: ", model.tokens_per_second)
         print("input_stride: ", model.input_stride)
+
         
     except:
         print("加载失败！")

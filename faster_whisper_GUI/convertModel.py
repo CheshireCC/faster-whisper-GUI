@@ -2,7 +2,7 @@
 Author: CheshireCC 
 Date: 2023-07-20 20:15:57
 LastEditors: CheshireCC 
-LastEditTime: 2023-07-23 04:54:48
+LastEditTime: 2023-07-29 22:14:05
 FilePath: \fatser_whsiper_GUI\faster_whsiper_GUI\convertModel.py
 Description: 转换文件
 '''
@@ -50,7 +50,7 @@ def ConvertModel(model_name_or_path:str,cache_dir: str, output_dir:str, quantiza
             return
         else:
             model_name_or_path = "openai/whisper-" + model_name_or_path
-            print(f"下载模型 :  {model_name_or_path} ")
+            print(f"下载模型 : {model_name_or_path} ")
 
     print(f"目标模型 : {model_name_or_path}")
     print("初始化转换器", end="")
@@ -70,8 +70,6 @@ def ConvertModel(model_name_or_path:str,cache_dir: str, output_dir:str, quantiza
             time.sleep(0.5)
         else:
             pass
-
-
     try:
         cvter_01 = cvter_01["result"]
         print("\n初始化完成！")
@@ -93,3 +91,4 @@ def ConvertModel(model_name_or_path:str,cache_dir: str, output_dir:str, quantiza
 
     print("\n处理结束")
 
+    

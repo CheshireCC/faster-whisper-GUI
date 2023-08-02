@@ -2,7 +2,7 @@
 Author: CheshireCC 
 Date: 2023-07-19 05:07:50
 LastEditors: CheshireCC 36411617+CheshireCC@users.noreply.github.com
-LastEditTime: 2023-07-27 15:59:25
+LastEditTime: 2023-07-30 01:48:11
 FilePath: \fatser_whsiper_GUI\test_GUI.py
 Description: 
 '''
@@ -12,10 +12,10 @@ import sys
 import os
 
 # print("  2")
-from PySide6.QtCore import  (QObject, Qt, Signal)
+from PySide6.QtCore import  (QObject, Qt, Signal, QCoreApplication)
 from PySide6.QtWidgets import  (QFileDialog, QWidget, QStackedWidget, QVBoxLayout, QStyle, QHBoxLayout, QGridLayout, QCompleter, QTextBrowser, QLabel)
 from PySide6.QtGui import (QIcon, QTextCursor)
-from qfluentwidgets import (Pivot, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton, TextEdit)
+from qfluentwidgets import (Pivot, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton)
 from qframelesswindow import (FramelessMainWindow , StandardTitleBar)
 
 # print("  3")
@@ -36,6 +36,8 @@ from threading import Thread
 # print("  8")
 from resource import Image_rc
 
+# _translater = QCoreApplication.translate
+
 
 class RedirectOutputSignalStore(QObject):
 
@@ -53,6 +55,8 @@ class mainWin(FramelessMainWindow):
 
     def __init__(self):
         super().__init__()
+
+        
 
         self.model_path = r"./model/whsiper-large-v2-ct2-f32"
         self.model_names = Model_names
@@ -210,7 +214,7 @@ class mainWin(FramelessMainWindow):
         GridBoxLayout_other_paramters = QGridLayout()
         VBoxLayout_Transcribes.addLayout(GridBoxLayout_other_paramters)
 
-        Label_language = QLabel("Language")
+        Label_language = QLabel("语言")
         self.combox_language = EditableComboBox()
         self.combox_language.addItem("Auto")
         for key, value in self.LANGUAGES_DICT.items():
