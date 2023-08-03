@@ -84,11 +84,14 @@ def Transcribe(model: WhisperModel, parameters: dict, vad_filter: bool, vad_para
     print("开始转写：")
     srtFile = getSaveFileName(parameters["audio"], not(parameters["without_timestamps"]))
     index = 1
-    with open(srtFile, "w") as f:
+    with open(srtFile, "w", encoding="utf8") as f:
         for segment in segmenter_info["segment"]:
             start_time = segment.start
             end_time = segment.end
             text = segment.text
+            # 重编码为 utf-8 
+            text = text.encode("utf8").decode("utf8")
+
             print("%.2fs --> %.2fs %s" % (start_time, end_time, text))
 
             if not parameters['without_timestamps']:
