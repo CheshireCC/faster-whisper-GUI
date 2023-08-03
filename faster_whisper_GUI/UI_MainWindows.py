@@ -1,42 +1,28 @@
 '''
 Author: CheshireCC 
 Date: 2023-07-19 05:07:50
-LastEditors: CheshireCC 36411617+CheshireCC@users.noreply.github.com
-LastEditTime: 2023-07-30 01:48:11
+LastEditors: CheshireCC 
+LastEditTime: 2023-08-03 14:11:35
 FilePath: \fatser_whsiper_GUI\test_GUI.py
 Description: 
 '''
-# print("  1")
 # coding:utf-8
+
 import sys
 import os
 
-# print("  2")
-from PySide6.QtCore import  (QObject, Qt, Signal, QCoreApplication)
+from PySide6.QtCore import  (QObject, Qt, Signal)
 from PySide6.QtWidgets import  (QFileDialog, QWidget, QStackedWidget, QVBoxLayout, QStyle, QHBoxLayout, QGridLayout, QCompleter, QTextBrowser, QLabel)
 from PySide6.QtGui import (QIcon, QTextCursor)
 from qfluentwidgets import (Pivot, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton)
 from qframelesswindow import (FramelessMainWindow , StandardTitleBar)
 
-# print("  3")
 from .config import (Language_dict, Preciese_list, Model_names, Device_list, Task_list, STR_BOOL)
-
-# print("  4")
 from .modelLoad import loadModel
-
-# print("  5")
 from .convertModel import ConvertModel
-
-# print("  6")
 from .transcribe import Transcribe
-
-# print("  7")
 from threading import Thread
-
-# print("  8")
 from resource import Image_rc
-
-# _translater = QCoreApplication.translate
 
 
 class RedirectOutputSignalStore(QObject):

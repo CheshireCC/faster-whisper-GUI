@@ -2,9 +2,7 @@ from threading import Thread
 import time
 import os
 
-from PySide6.QtWidgets import QMessageBox
 from faster_whisper import WhisperModel
-
 from .config import Language_dict
 
 
@@ -91,12 +89,12 @@ def Transcribe(model: WhisperModel, parameters: dict, vad_filter: bool, vad_para
             start_time = segment.start
             end_time = segment.end
             text = segment.text
-            print("%.2fs -> %.2fs %s" % (start_time, end_time, text))
+            print("%.2fs --> %.2fs %s" % (start_time, end_time, text))
 
             if not parameters['without_timestamps']:
                 start_time = secondsToHMS(start_time)
                 end_time = secondsToHMS(end_time)
-                f.write(f"{index}\n{start_time} -> {end_time}\n{text}\n\n")
+                f.write(f"{index}\n{start_time} --> {end_time}\n{text}\n\n")
                 
             else:
                 f.write(f"{text} \n\n")

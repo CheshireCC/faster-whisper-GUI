@@ -1,7 +1,7 @@
 '''
 Author: CheshireCC 
 Date: 2023-07-18 22:27:35
-LastEditors: CheshireCC 36411617+CheshireCC@users.noreply.github.com
+LastEditors: CheshireCC 
 LastEditTime: 2023-07-25 18:52:01
 FilePath: \fatser_whsiper_GUI\faster_whsiper_GUI\FasterWhisperGUI.py
 Description: main program 

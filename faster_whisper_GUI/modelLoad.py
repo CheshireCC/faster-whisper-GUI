@@ -7,13 +7,11 @@ FilePath: \fatser_whsiper_GUI\faster_whsiper_GUI\modelLoad.py
 Description: 
 '''
 
-# print("    4.1")
 import time
 import os
 from threading import Thread
 from typing import (List, Optional, Union)
 
-# print("    4.2")
 from faster_whisper import WhisperModel
 
 def loadModel(model_size_or_path: str,
