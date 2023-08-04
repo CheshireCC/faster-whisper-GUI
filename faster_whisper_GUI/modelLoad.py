@@ -24,10 +24,10 @@ def loadModel(model_size_or_path: str,
         local_files_only: bool = False,):
     
     if os.path.isdir(model_size_or_path):
-        print("加载本地模型", end="")
+        print("Load local model", end="")
     
     else:
-        print("下载网络模型")
+        print("download online model")
     
     model_dict = {}
     def go(model : dict):
@@ -55,7 +55,7 @@ def loadModel(model_size_or_path: str,
     try:
         model = model_dict["model"]
 
-        print("\n模型加载完成")
+        print("\nLoad over")
         print(model_size_or_path)
         print("max_length: ",model.max_length)
         print("num_samples_per_token: ", model.num_samples_per_token)
@@ -65,7 +65,7 @@ def loadModel(model_size_or_path: str,
 
         
     except:
-        print("加载失败！")
+        print("Failed to load model")
         return None
     
     return model

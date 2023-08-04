@@ -1,8 +1,8 @@
 '''
 Author: CheshireCC 
 Date: 2023-07-20 20:15:57
-LastEditors: CheshireCC 
-LastEditTime: 2023-07-29 22:14:05
+LastEditors: CheshireCC 36411617+CheshireCC@users.noreply.github.com
+LastEditTime: 2023-08-04 22:12:01
 FilePath: \fatser_whsiper_GUI\faster_whsiper_GUI\convertModel.py
 Description: 转换文件
 '''
@@ -13,8 +13,12 @@ from threading import Thread
 
 from ctranslate2.converters import TransformersConverter as cvter
 
+from PySide6.QtCore import QCoreApplication
+
 from .config import Model_names
 
+def __tr(text:str) -> str:
+    return QCoreApplication.translate("ConvertModel", text)
 
 def ConvertModel(model_name_or_path:str,cache_dir: str, output_dir:str, quantization:str, use_local_file : bool = True):
 
@@ -35,25 +39,32 @@ def ConvertModel(model_name_or_path:str,cache_dir: str, output_dir:str, quantiza
             if os.path.exists(model_path):
                 model_name_or_path = model_path
 
-            print(f"使用本地文件已开启，找到适用的本地缓存 {model_name_or_path}")
+            print(__tr('Use local file is True, found applicable local cache:'))
+            print(f"  {model_name_or_path}")
             
         else:
             if not (model_name_or_path in Model_names):
-                print(f"{model_name_or_path} 不是有效的模型名称！")
+                print(__tr('Not a valid model name:'))
+                print(f"  {model_name_or_path}")
                 return
             else:
                 model_name_or_path = "openai/whisper-" + model_name_or_path
-                print(f"未找到有效本地缓存，将下载 {model_name_or_path} 模型")
+                print(__tr('No valid local cache was found and will download:'))
+                print(f"  {model_name_or_path}")
     else:
         if not (model_name_or_path in Model_names):
-            print(f"{model_name_or_path} 不是有效的模型名称！")
+            print(__tr('Not a valid model name:'))
+            print(f"  {model_name_or_path}")
+
             return
         else:
             model_name_or_path = "openai/whisper-" + model_name_or_path
-            print(f"下载模型 : {model_name_or_path} ")
+            print(__tr('Download model: '))
+            print(f"  {model_name_or_path} ")
 
-    print(f"目标模型 : {model_name_or_path}")
-    print("初始化转换器", end="")
+    print(__tr('target model: '))
+    print(f"  {model_name_or_path}")
+    print(__tr("Initializing"), end="")
     
     cvter_01 = {}
     def go(cvter_ : dict):
@@ -72,12 +83,12 @@ def ConvertModel(model_name_or_path:str,cache_dir: str, output_dir:str, quantiza
             pass
     try:
         cvter_01 = cvter_01["result"]
-        print("\n初始化完成！")
+        print(__tr("\nInitialization complete!"))
     except:
-        print("\n初始化失败！")
+        print(__tr("\nFailed to complete initialization!"))
         return
     
-    print("开始转换",end="")
+    print(__tr("Convert"),end="")
 
     def go_2():
         cvter_01.convert(output_dir=output_dir, quantization=quantization, force=True)
@@ -89,6 +100,6 @@ def ConvertModel(model_name_or_path:str,cache_dir: str, output_dir:str, quantiza
         print(".", end="", flush=True)
         time.sleep(0.5)
 
-    print("\n处理结束")
+    print(__tr("\nOver"))
 
     

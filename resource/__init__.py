@@ -1,3 +1,3 @@
 
-from ._rc import Image_rc
-
+from ._rc import rc_Image
+from ._rc import rc_Translater

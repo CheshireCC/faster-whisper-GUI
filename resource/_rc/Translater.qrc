@@ -1,6 +1,5 @@
-
 <RCC>
   <qresource prefix="/resource">
-    <file>Image/microphone.png</file>
+    <file>Translater/en.qm</file>
   </qresource>
 </RCC>
