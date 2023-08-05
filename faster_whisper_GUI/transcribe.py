@@ -84,7 +84,7 @@ def Transcribe(model: WhisperModel, parameters: dict, vad_filter: bool, vad_para
         print("文件解析失败！")
         return
     
-    print("【开始转写】: ")
+    print("【Start Transcribe】: ")
     srtFile = getSaveFileName(parameters["audio"], not(parameters["without_timestamps"]))
     index = 1
     with open(srtFile, "w", encoding="utf8") as f:
@@ -105,7 +105,8 @@ def Transcribe(model: WhisperModel, parameters: dict, vad_filter: bool, vad_para
             else:
                 f.write(f"{text} \n\n")
             index += 1
-                
+    
+    print("【Over】")
     # segmenter_info = None
 
 def getSaveFileName(audioFile: str, isSrt : bool):
