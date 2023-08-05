@@ -9,12 +9,14 @@ __pycache__/
 # Distribution / packaging
 .Python
 
+cuBLAS/
+cuDNN/
 build/
 build-0725
 not_open_file/
 python38/
 test_cpu/
-model/
+models/
 dist/
 python39/
 

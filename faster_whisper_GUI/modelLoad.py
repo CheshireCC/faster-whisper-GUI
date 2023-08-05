@@ -1,11 +1,4 @@
-'''
-Author: CheshireCC 
-Date: 2023-07-19 22:55:25
-LastEditors: CheshireCC 
-LastEditTime: 2023-07-29 22:37:22
-FilePath: \fatser_whsiper_GUI\faster_whsiper_GUI\modelLoad.py
-Description: 
-'''
+# coding:utf-8
 
 import time
 import os
@@ -39,6 +32,7 @@ def loadModel(model_size_or_path: str,
                             num_workers=num_workers,
                             download_root=download_root,
                             local_files_only=local_files_only)
+        
         model["model"] = model_
 
     Thread_go = Thread(target=go, daemon=True, args=[model_dict])
@@ -57,8 +51,8 @@ def loadModel(model_size_or_path: str,
 
         print("\nLoad over")
         print(model_size_or_path)
-        print("max_length: ",model.max_length)
-        print("num_samples_per_token: ", model.num_samples_per_token)
+        print(f"{'max_length: ':23}",model.max_length)
+        print(f"{'num_samples_per_token: ':23}", model.num_samples_per_token)
         print("time_precision: ", model.time_precision)
         print("tokens_per_second: ", model.tokens_per_second)
         print("input_stride: ", model.input_stride)

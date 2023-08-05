@@ -1,11 +1,4 @@
-'''
-Author: CheshireCC 
-Date: 2023-07-20 20:15:57
-LastEditors: CheshireCC 36411617+CheshireCC@users.noreply.github.com
-LastEditTime: 2023-08-04 22:12:01
-FilePath: \fatser_whsiper_GUI\faster_whsiper_GUI\convertModel.py
-Description: 转换文件
-'''
+# coding:utf-8
 
 import os 
 import time

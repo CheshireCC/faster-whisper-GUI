@@ -1,12 +1,16 @@
+# coding:utf-8
+
 from threading import Thread
 import time
 import os
+import sys
 
 from faster_whisper import WhisperModel
 from .config import Language_dict
 
-
 def Transcribe(model: WhisperModel, parameters: dict, vad_filter: bool, vad_parameters: dict):
+
+    sys.path.append(r"D:\py_workspace\fatser_whsiper_GUI\cudnn")
 
     segmenter_info = {}
 
@@ -71,7 +75,6 @@ def Transcribe(model: WhisperModel, parameters: dict, vad_filter: bool, vad_para
         print(".", end="")
         time.sleep(0.5)
     
-    
     try:
         info = segmenter_info["info"]
         print("\n")
@@ -81,7 +84,7 @@ def Transcribe(model: WhisperModel, parameters: dict, vad_filter: bool, vad_para
         print("文件解析失败！")
         return
     
-    print("开始转写：")
+    print("【开始转写】: ")
     srtFile = getSaveFileName(parameters["audio"], not(parameters["without_timestamps"]))
     index = 1
     with open(srtFile, "w", encoding="utf8") as f:
@@ -103,10 +106,7 @@ def Transcribe(model: WhisperModel, parameters: dict, vad_filter: bool, vad_para
                 f.write(f"{text} \n\n")
             index += 1
                 
-        print("【结束】")
-        
-    
-    del segmenter_info
+    # segmenter_info = None
 
 def getSaveFileName(audioFile: str, isSrt : bool):
     path, fileName = os.path.split(audioFile)

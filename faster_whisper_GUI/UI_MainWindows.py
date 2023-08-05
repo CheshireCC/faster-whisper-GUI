@@ -1,18 +1,13 @@
-'''
-Author: CheshireCC 
-Date: 2023-07-19 05:07:50
-LastEditors: CheshireCC 36411617+CheshireCC@users.noreply.github.com
-LastEditTime: 2023-08-04 20:12:35
-FilePath: \fatser_whsiper_GUI\test_GUI.py
-Description: 
-'''
+
 # coding:utf-8
 
 import sys
 import os
+from threading import Thread
 
+from pathlib import Path
 from PySide6.QtCore import  (QObject, Qt, Signal, QCoreApplication)
-from PySide6.QtWidgets import  (QFileDialog, QWidget, QStackedWidget, QVBoxLayout, QStyle, QHBoxLayout, QGridLayout, QCompleter, QTextBrowser, QLabel)
+from PySide6.QtWidgets import  (QFileDialog, QMessageBox, QWidget, QStackedWidget, QVBoxLayout, QStyle, QHBoxLayout, QGridLayout, QCompleter, QTextBrowser, QLabel)
 from PySide6.QtGui import (QIcon, QTextCursor)
 from qfluentwidgets import (Pivot, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton)
 from qframelesswindow import (FramelessMainWindow , StandardTitleBar)
@@ -21,7 +16,7 @@ from .config import (Language_dict, Preciese_list, Model_names, Device_list, Tas
 from .modelLoad import loadModel
 from .convertModel import ConvertModel
 from .transcribe import Transcribe
-from threading import Thread
+
 from resource import rc_Image
 
 
@@ -45,8 +40,7 @@ class mainWin(FramelessMainWindow):
     def __init__(self):
         super().__init__()
 
-
-        self.model_path = r"./model/whsiper-large-v2-ct2-f32"
+        self.model_path = ""
         self.model_names = Model_names
         # 模型支持的计算设备
         self.device_list = Device_list
@@ -54,6 +48,7 @@ class mainWin(FramelessMainWindow):
         self.preciese_list = Preciese_list
         # 语言支持
         self.LANGUAGES_DICT = Language_dict
+
         userDir = os.path.expanduser("~")
         cache_dir = os.path.join(userDir,".cache","huggingface","hub").replace("\\", "/")
         self.download_cache_path = cache_dir
@@ -129,7 +124,7 @@ class mainWin(FramelessMainWindow):
                                 border-radius: 8px
                                     }
                             QTextBrowser{
-                                font: 15px 'TimesNewRoman';
+                                font: 15px 'Times New Roman';
                                         }
                             """
                             )
@@ -137,7 +132,7 @@ class mainWin(FramelessMainWindow):
         # self.resize(800, 500)
         self.setGeometry(500,50,800,500)
 
-        # 添加标题栏 但是不知道为甚么它不显示
+        # 添加标题栏 
         self.setTitleBar(StandardTitleBar(self))
         self.setWindowTitle("FasterWhisper")
         # self.setWindowIcon(self.style().standardPixmap(QStyle.StandardPixmap.SP_TrashIcon))
@@ -638,7 +633,17 @@ class mainWin(FramelessMainWindow):
         """
         get path of local model dir
         """
-        path = QFileDialog.getExistingDirectory(self,self.__tr("选择模型文件所在的文件夹"),r"./")
+
+        model_path = self.model_path
+        
+        if model_path:
+            print(model_path)
+            model_path = Path(model_path).absolute().resolve().parent.as_posix()
+            # print(model_path)
+            path = QFileDialog.getExistingDirectory(self,self.__tr("选择模型文件所在的文件夹"), model_path)
+        else:
+            path = QFileDialog.getExistingDirectory(self,self.__tr("选择模型文件所在的文件夹"),r"./")
+
         if path:
             self.lineEdit_model_path.setText(path)
             self.model_path = path
@@ -768,6 +773,7 @@ class mainWin(FramelessMainWindow):
         return model_dict
 
     def onButtonProcessClicked(self):
+
         """
         process button clicked
         """
@@ -818,9 +824,6 @@ class mainWin(FramelessMainWindow):
 
         # print(segment_info["info"])
                     
-
-
-
 
     def getParamTranscribe(self) -> dict:
         Transcribe_params = {}
@@ -992,3 +995,15 @@ class mainWin(FramelessMainWindow):
         self.modelLoderBrower.textChanged.connect(lambda: self.modelLoderBrower.moveCursor(QTextCursor.MoveOperation.End, mode=QTextCursor.MoveMode.MoveAnchor))
         self.processResultText.textChanged.connect(lambda: self.processResultText.moveCursor(QTextCursor.MoveOperation.End, mode=QTextCursor.MoveMode.MoveAnchor))
 
+    def closeEvent(self, event) -> None:
+        reply = QMessageBox.question(self,
+                                    '本程序',
+                                    "是否要退出程序？",
+                                    QMessageBox.Yes | QMessageBox.No,
+                                    QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            # del self.FasterWhisperModel
+            event.accept()
+        else:
+            event.ignore()
+        
