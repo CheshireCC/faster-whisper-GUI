@@ -26,9 +26,13 @@
 
 -   ### Load Model / Download Model / Convert Model
 
+![image-20230806072050188](./README.assets/image-20230806072050188.png)
+
 ![软件使用-模型参数](./README.assets/软件使用-模型参数.png)
 
 -   ### paraments of faster-whisper model
+
+![image-20230806072114168](./README.assets/image-20230806072114168.png)
 
 ![软件使用-转写参数](./README.assets/软件使用-转写参数.png)
 
