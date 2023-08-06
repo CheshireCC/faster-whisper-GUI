@@ -84,29 +84,29 @@ def Transcribe(model: WhisperModel, parameters: dict, vad_filter: bool, vad_para
         print("文件解析失败！")
         return
     
-    print("【Start Transcribe】: ")
+    print("\n【Start Transcribe】: \n")
     srtFile = getSaveFileName(parameters["audio"], not(parameters["without_timestamps"]))
     index = 1
     with open(srtFile, "w", encoding="utf8") as f:
         for segment in segmenter_info["segment"]:
-            start_time = segment.start
-            end_time = segment.end
-            text = segment.text
+            start_time:float = segment.start
+            end_time:float = segment.end
+            text:str = segment.text
             # 重编码为 utf-8 
-            text = text.encode("utf8").decode("utf8")
+            text:str = text.encode("utf8").decode("utf8")
 
             print("%.2fs --> %.2fs %s" % (start_time, end_time, text))
 
             if not parameters['without_timestamps']:
-                start_time = secondsToHMS(start_time)
-                end_time = secondsToHMS(end_time)
-                f.write(f"{index}\n{start_time} --> {end_time}\n{text}\n\n")
+                start_time:str = secondsToHMS(start_time)
+                end_time:str = secondsToHMS(end_time)
+                f.write(f"{index}\n{start_time} --> {end_time}\n{text.lstrip()}\n\n")
                 
             else:
                 f.write(f"{text} \n\n")
             index += 1
     
-    print("【Over】")
+    print("\n【Over】")
     # segmenter_info = None
 
 def getSaveFileName(audioFile: str, isSrt : bool):
@@ -135,9 +135,21 @@ def secondsToHMS(t:str) -> str:
     M = int((t_f - H * 3600) // 60)
     S = (t_f - H *3600 - M *60)
     
+    
     H = str(H)
     M = str(M)
-    S = str(round(S,2))
+    S = str(round(S,4))
+    S = S.replace(".", ",")
+    S = S.split(",")
+    
+    if len(S) < 2 :
+        S.append("000")
+    
+    if len(S[1]) < 3:
+        while(len(S[1]) < 3):
+            S[1] = S[1] + "0"
+    
+    S = ",".join(S)
     
     if len(H) < 2:
         H = "0" + H
