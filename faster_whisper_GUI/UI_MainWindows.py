@@ -12,7 +12,7 @@ from PySide6.QtGui import (QIcon, QTextCursor)
 from qfluentwidgets import (Pivot, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton)
 from qframelesswindow import (FramelessMainWindow , StandardTitleBar)
 
-from .config import (Language_dict, Preciese_list, Model_names, Device_list, Task_list, STR_BOOL)
+from .config import (Language_dict, Preciese_list, Model_names, Device_list, Task_list, STR_BOOL, SUbTITLE_FORMAT)
 from .modelLoad import loadModel
 from .convertModel import ConvertModel
 from .transcribe import Transcribe
@@ -124,7 +124,7 @@ class mainWin(FramelessMainWindow):
                                 border-radius: 8px
                                     }
                             QTextBrowser{
-                                font: 15px 'Times New Roman';
+                                font: 15px 'TimesNewRoman';
                                         }
                             """
                             )
@@ -168,11 +168,12 @@ class mainWin(FramelessMainWindow):
         self.button_process.setStyleSheet("#processButton{background:242 242 242}")
 
         
-
     def setupTranscribesUI(self):
 
         VBoxLayout_Transcribes = QVBoxLayout()
         self.page_transcribes.setLayout(VBoxLayout_Transcribes)
+
+        # ------------------------------------------------------------------------------------------
 
         hBoxLayout_Audio_File = QHBoxLayout()
         hBoxLayout_Audio_File.setSpacing(10)
@@ -194,8 +195,49 @@ class mainWin(FramelessMainWindow):
         hBoxLayout_Audio_File.addWidget(fileChosePushButton)
         VBoxLayout_Transcribes.addLayout(hBoxLayout_Audio_File)
 
+        # -----------------------------------------------------------------------------------------
+        
+        hBoxLayout_output_File = QHBoxLayout()
+        hBoxLayout_output_File.setSpacing(10)
+        hBoxLayout_output_File.setContentsMargins(10,10,10,10)
+
+        label_output_file = QLabel()
+        label_output_file.setText(self.__tr("输出文件目录"))
+        hBoxLayout_output_File.addWidget(label_output_file)
+
+        self.LineEdit_output_dir = LineEdit()
+        self.LineEdit_output_dir.setToolTip(self.__tr("输出文件保存的目录"))
+        self.LineEdit_output_dir.setClearButtonEnabled(True)
+        hBoxLayout_output_File.addWidget(self.LineEdit_output_dir)
+
+        outputDirChoseButton = ToolButton()
+        self.outputDirChoseButton = outputDirChoseButton
+        outputDirChoseButton.setToolTip(self.__tr("选择输出目录"))
+        outputDirChoseButton.setIcon(self.style().standardPixmap(QStyle.StandardPixmap.SP_DirIcon))
+        outputDirChoseButton.resize(385,420)
+        hBoxLayout_output_File.addWidget(outputDirChoseButton)
+        VBoxLayout_Transcribes.addLayout(hBoxLayout_output_File)
+
+        # =========================================================================================
+        
         GridBoxLayout_other_paramters = QGridLayout()
         VBoxLayout_Transcribes.addLayout(GridBoxLayout_other_paramters)
+
+        # -----------------------------------------------------------------------------------------
+
+        label_format = QLabel()
+        label_format.setText(self.__tr("输出文件格式"))
+        GridBoxLayout_other_paramters.addWidget(label_format,0, 0)
+
+        self.combox_output_format = ComboBox()
+        self.combox_output_format.setToolTip(self.__tr("输出字幕文件的格式"))
+        GridBoxLayout_other_paramters.addWidget(self.combox_output_format,0, 1)
+        
+        self.combox_output_format.addItems(["All"] + SUbTITLE_FORMAT)
+        self.combox_output_format.setCurrentIndex(0)
+
+        # --------------------------------------------------------------------------------------------
+
 
         Label_language = QLabel(self.__tr("语言"))
         self.combox_language = EditableComboBox()
@@ -215,123 +257,123 @@ class mainWin(FramelessMainWindow):
         self.combox_language.clearButton.clicked.disconnect(self.combox_language.clear)
         self.combox_language.clearButton.clicked.connect(lambda : self.combox_language.setText(""))
 
-        GridBoxLayout_other_paramters.addWidget(Label_language, 0, 0)
-        GridBoxLayout_other_paramters.addWidget(self.combox_language, 0, 1)
+        GridBoxLayout_other_paramters.addWidget(Label_language, 1, 0)
+        GridBoxLayout_other_paramters.addWidget(self.combox_language, 1, 1)
         
         label_Translate_to_English = QLabel(self.__tr("翻译为英语"))
         self.combox_Translate_to_English = ComboBox()
         self.combox_Translate_to_English.addItems(["False", "True"])
         self.combox_Translate_to_English.setCurrentIndex(0)
         self.combox_Translate_to_English.setToolTip(self.__tr("输出转写结果翻译为英语的翻译结果"))
-        GridBoxLayout_other_paramters.addWidget(label_Translate_to_English,1,0)
-        GridBoxLayout_other_paramters.addWidget(self.combox_Translate_to_English, 1, 1)
+        GridBoxLayout_other_paramters.addWidget(label_Translate_to_English,2,0)
+        GridBoxLayout_other_paramters.addWidget(self.combox_Translate_to_English, 2, 1)
 
         label_beam_size = QLabel(self.__tr("分块大小"))
         self.LineEdit_beam_size = LineEdit()
         self.LineEdit_beam_size.setText("5")
         self.LineEdit_beam_size.setToolTip(self.__tr("用于解码的音频块的大小。"))
-        GridBoxLayout_other_paramters.addWidget(label_beam_size ,2,0)
-        GridBoxLayout_other_paramters.addWidget(self.LineEdit_beam_size, 2, 1)
+        GridBoxLayout_other_paramters.addWidget(label_beam_size ,3,0)
+        GridBoxLayout_other_paramters.addWidget(self.LineEdit_beam_size, 3, 1)
 
         label_best_of = QLabel(self.__tr("最佳热度"))
         self.LineEdit_best_of = LineEdit()
         self.LineEdit_best_of.setText("5")
         self.LineEdit_best_of.setToolTip(self.__tr("采样时使用非零热度的候选数"))
-        GridBoxLayout_other_paramters.addWidget(label_best_of ,3,0)
-        GridBoxLayout_other_paramters.addWidget(self.LineEdit_best_of, 3, 1)
+        GridBoxLayout_other_paramters.addWidget(label_best_of ,4,0)
+        GridBoxLayout_other_paramters.addWidget(self.LineEdit_best_of, 4, 1)
 
         label_patience = QLabel(self.__tr("搜索耐心"))
         self.LineEdit_patience = LineEdit()
         self.LineEdit_patience.setToolTip(self.__tr("搜索音频块时的耐心因子"))
         self.LineEdit_patience.setText("1.0")
-        GridBoxLayout_other_paramters.addWidget(label_patience, 4,0)
-        GridBoxLayout_other_paramters.addWidget(self.LineEdit_patience, 4, 1)
+        GridBoxLayout_other_paramters.addWidget(label_patience, 5,0)
+        GridBoxLayout_other_paramters.addWidget(self.LineEdit_patience, 5, 1)
 
         label_length_penalty = QLabel(self.__tr("惩罚常数"))
         self.LineEdit_length_penalty = LineEdit()
         self.LineEdit_length_penalty.setText("1.0")
         self.LineEdit_length_penalty.setToolTip(self.__tr("指数形式的长度惩罚常数"))
-        GridBoxLayout_other_paramters.addWidget(label_length_penalty, 5,0)
-        GridBoxLayout_other_paramters.addWidget(self.LineEdit_length_penalty, 5,1)
+        GridBoxLayout_other_paramters.addWidget(label_length_penalty, 6,0)
+        GridBoxLayout_other_paramters.addWidget(self.LineEdit_length_penalty, 6,1)
 
         label_temperature = QLabel(self.__tr("采样热度候选"))
         self.LineEdit_temperature = LineEdit()
         self.LineEdit_temperature.setText("0.0,0.2,0.4,0.6,0.8,1.0")
         self.LineEdit_temperature.setToolTip(self.__tr("采样的温度。\n当程序因为压缩比参数或者采样标记概率参数失败时会依次使用"))
-        GridBoxLayout_other_paramters.addWidget(label_temperature, 6, 0)
-        GridBoxLayout_other_paramters.addWidget(self.LineEdit_temperature, 6, 1)
+        GridBoxLayout_other_paramters.addWidget(label_temperature, 7, 0)
+        GridBoxLayout_other_paramters.addWidget(self.LineEdit_temperature, 7, 1)
         
 
         label_compression_ratio_threshold = QLabel(self.__tr("gzip 压缩比阈值"))
         self.LineEdit_compression_ratio_threshold = LineEdit()
         self.LineEdit_compression_ratio_threshold.setText("2.4")
         self.LineEdit_compression_ratio_threshold.setToolTip(self.__tr("如果音频的gzip压缩比高于此值，则视为失败。"))
-        GridBoxLayout_other_paramters.addWidget(label_compression_ratio_threshold, 7, 0)
-        GridBoxLayout_other_paramters.addWidget(self.LineEdit_compression_ratio_threshold, 7, 1)
+        GridBoxLayout_other_paramters.addWidget(label_compression_ratio_threshold, 8, 0)
+        GridBoxLayout_other_paramters.addWidget(self.LineEdit_compression_ratio_threshold, 8, 1)
 
         label_log_prob_threshold = QLabel(self.__tr("采样概率阈值"))
         self.LineEdit_log_prob_threshold = LineEdit()
         self.LineEdit_log_prob_threshold.setText("-1.0")
         self.LineEdit_log_prob_threshold.setToolTip(self.__tr("如果采样标记的平均对数概率阈值低于此值，则视为失败"))
-        GridBoxLayout_other_paramters.addWidget(label_log_prob_threshold, 8, 0)
-        GridBoxLayout_other_paramters.addWidget(self.LineEdit_log_prob_threshold, 8 ,1)
+        GridBoxLayout_other_paramters.addWidget(label_log_prob_threshold, 9, 0)
+        GridBoxLayout_other_paramters.addWidget(self.LineEdit_log_prob_threshold, 9 ,1)
 
         label_no_speech_threshold  = QLabel(self.__tr("静音阈值"))
         self.LineEdit_no_speech_threshold = LineEdit()
         self.LineEdit_no_speech_threshold.setText("0.6")
         self.LineEdit_no_speech_threshold.setToolTip(self.__tr("音频段的如果非语音概率高于此值，\n并且对采样标记的平均对数概率低于阈值，\n则将该段视为静音。"))
-        GridBoxLayout_other_paramters.addWidget(label_no_speech_threshold, 9, 0)
-        GridBoxLayout_other_paramters.addWidget(self.LineEdit_no_speech_threshold, 9,1)
+        GridBoxLayout_other_paramters.addWidget(label_no_speech_threshold, 10, 0)
+        GridBoxLayout_other_paramters.addWidget(self.LineEdit_no_speech_threshold, 10,1)
 
         label_condition_on_previous_text = QLabel(self.__tr("循环提示"))
         self.combox_condition_on_previous_text = ComboBox()
         self.combox_condition_on_previous_text.addItems(["True", "False"])
         self.combox_condition_on_previous_text.setCurrentIndex(0)
         self.combox_condition_on_previous_text.setToolTip(self.__tr("如果启用，则将模型的前一个输出作为下一个音频段的提示;\n禁用可能会导致文本在段与段之间不一致，\n但模型不太容易陷入失败循环，\n比如重复循环或时间戳失去同步。"))
-        GridBoxLayout_other_paramters.addWidget(label_condition_on_previous_text, 10,0)
-        GridBoxLayout_other_paramters.addWidget(self.combox_condition_on_previous_text, 10, 1)
+        GridBoxLayout_other_paramters.addWidget(label_condition_on_previous_text, 11,0)
+        GridBoxLayout_other_paramters.addWidget(self.combox_condition_on_previous_text, 11, 1)
 
         label_initial_prompt = QLabel(self.__tr("初始提示词"))
         self.LineEdit_initial_prompt = LineEdit()
         self.LineEdit_initial_prompt.setToolTip(self.__tr("为第一个音频段提供的可选文本字符串或词元 id 提示词，可迭代项。"))
-        GridBoxLayout_other_paramters.addWidget(label_initial_prompt, 11, 0)
-        GridBoxLayout_other_paramters.addWidget(self.LineEdit_initial_prompt, 11 ,1)
+        GridBoxLayout_other_paramters.addWidget(label_initial_prompt, 12, 0)
+        GridBoxLayout_other_paramters.addWidget(self.LineEdit_initial_prompt, 12, 1)
 
         label_prefix = QLabel(self.__tr("初始文本前缀"))
         self.LineEdit_prefix = LineEdit()
         self.LineEdit_prefix.setToolTip(self.__tr("为第初始音频段提供的可选文本前缀。"))
-        GridBoxLayout_other_paramters.addWidget(label_prefix, 12, 0)
-        GridBoxLayout_other_paramters.addWidget(self.LineEdit_prefix, 12, 1)
+        GridBoxLayout_other_paramters.addWidget(label_prefix, 13, 0)
+        GridBoxLayout_other_paramters.addWidget(self.LineEdit_prefix, 13, 1)
 
         label_suppress_blank = QLabel(self.__tr("空白抑制"))
         self.combox_suppress_blank = ComboBox()
         self.combox_suppress_blank.addItems(["True", "False"])
         self.combox_suppress_blank.setCurrentIndex(0)
         self.combox_suppress_blank.setToolTip(self.__tr("在采样开始时抑制空白输出。"))
-        GridBoxLayout_other_paramters.addWidget(label_suppress_blank, 13, 0)
-        GridBoxLayout_other_paramters.addWidget(self.combox_suppress_blank, 13 ,1)
+        GridBoxLayout_other_paramters.addWidget(label_suppress_blank, 14, 0)
+        GridBoxLayout_other_paramters.addWidget(self.combox_suppress_blank, 14, 1)
 
         label_suppress_tokens = QLabel(self.__tr("特定标记抑制"))
         self.LineEdit_suppress_tokens = LineEdit()
         self.LineEdit_suppress_tokens.setText("-1")
         self.LineEdit_suppress_tokens.setToolTip(self.__tr("要抑制的标记ID列表。 \n-1 将抑制模型配置文件 config.json 中定义的默认符号集。"))
-        GridBoxLayout_other_paramters.addWidget(label_suppress_tokens, 14, 0)
-        GridBoxLayout_other_paramters.addWidget(self.LineEdit_suppress_tokens, 14, 1)
+        GridBoxLayout_other_paramters.addWidget(label_suppress_tokens, 15, 0)
+        GridBoxLayout_other_paramters.addWidget(self.LineEdit_suppress_tokens, 15, 1)
 
         label_without_timestamps  = QLabel(self.__tr("关闭时间戳"))
         self.combox_without_timestamps = ComboBox()
         self.combox_without_timestamps.addItems(["False", "True"])
         self.combox_without_timestamps.setCurrentIndex(0)
         self.combox_without_timestamps.setToolTip(self.__tr("开启时将会仅输出文本不输出时间戳"))
-        GridBoxLayout_other_paramters.addWidget(label_without_timestamps, 15, 0)
-        GridBoxLayout_other_paramters.addWidget(self.combox_without_timestamps, 15, 1)
+        GridBoxLayout_other_paramters.addWidget(label_without_timestamps, 16, 0)
+        GridBoxLayout_other_paramters.addWidget(self.combox_without_timestamps, 16, 1)
 
         label_max_initial_timestamp = QLabel(self.__tr("最晚初始时间戳"))
         self.LineEdit_max_initial_timestamp = LineEdit()
         self.LineEdit_max_initial_timestamp.setText("1.0")
         self.LineEdit_max_initial_timestamp.setToolTip(self.__tr("首个时间戳不能晚于此时间。"))
-        GridBoxLayout_other_paramters.addWidget(label_max_initial_timestamp, 16, 0)
-        GridBoxLayout_other_paramters.addWidget(self.LineEdit_max_initial_timestamp, 16, 1)
+        GridBoxLayout_other_paramters.addWidget(label_max_initial_timestamp, 17, 0)
+        GridBoxLayout_other_paramters.addWidget(self.LineEdit_max_initial_timestamp, 17, 1)
 
 
         label_word_timestamps = QLabel(self.__tr("单词级时间戳"))
@@ -339,22 +381,22 @@ class mainWin(FramelessMainWindow):
         self.combox_word_timestamps.addItems(["False", "True"])
         self.combox_word_timestamps.setCurrentIndex(0)
         self.combox_word_timestamps.setToolTip(self.__tr("用交叉注意力模式和动态时间规整提取单词级时间戳，\n并在每个段的每个单词中包含时间戳。"))
-        GridBoxLayout_other_paramters.addWidget(label_word_timestamps, 17, 0)
-        GridBoxLayout_other_paramters.addWidget(self.combox_word_timestamps, 17,1)
+        GridBoxLayout_other_paramters.addWidget(label_word_timestamps, 18, 0)
+        GridBoxLayout_other_paramters.addWidget(self.combox_word_timestamps, 18, 1)
         
         label_prepend_punctuations = QLabel(self.__tr("标点向后合并"))
         self.LineEdit_prepend_punctuations = LineEdit()
         self.LineEdit_prepend_punctuations.setText("\"'“¿([{-")
         self.LineEdit_prepend_punctuations.setToolTip(self.__tr("如果开启单词级时间戳，\n则将这些标点符号与下一个单词合并。"))
-        GridBoxLayout_other_paramters.addWidget(label_prepend_punctuations, 18, 0)
-        GridBoxLayout_other_paramters.addWidget(self.LineEdit_prepend_punctuations, 18, 1)
+        GridBoxLayout_other_paramters.addWidget(label_prepend_punctuations, 19, 0)
+        GridBoxLayout_other_paramters.addWidget(self.LineEdit_prepend_punctuations, 19, 1)
 
         label_append_punctuations = QLabel(self.__tr("标点向前合并"))
         self.LineEdit_append_punctuations = LineEdit()
         self.LineEdit_append_punctuations.setText("\"'.。,，!！?？:：”)]}、")
         self.LineEdit_append_punctuations.setToolTip(self.__tr("如果开启单词级时间戳，\n则将这些标点符号与前一个单词合并。"))
-        GridBoxLayout_other_paramters.addWidget(label_append_punctuations, 19,0)
-        GridBoxLayout_other_paramters.addWidget(self.LineEdit_append_punctuations, 19, 1)
+        GridBoxLayout_other_paramters.addWidget(label_append_punctuations, 20,0)
+        GridBoxLayout_other_paramters.addWidget(self.LineEdit_append_punctuations, 20, 1)
         
         self.page_transcribes.setStyleSheet("#pageTranscribesParameter{border: 1px solid blue; padding: 5px}")
         VBoxLayout_Transcribes.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -684,9 +726,12 @@ class mainWin(FramelessMainWindow):
         """
         get a file name from a dialog
         """
-        fileName, _ = QFileDialog.getOpenFileName(self, self.__tr("选择音频文件"), r"./", "All file type(*.*);;Wave file(*.wav);;MPEG 4(*.mp4)")
-        if fileName:
-            self.LineEdit_audio_fileName.setText(fileName)
+        fileNames, _ = QFileDialog.getOpenFileNames(self, self.__tr("选择音频文件"), r"./", "All file type(*.*);;Wave file(*.wav);;MPEG 4(*.mp4)")
+        if fileNames:
+            self.LineEdit_audio_fileName.setText(";;".join(fileNames))
+        
+        rootDir = Path(fileNames[0]).absolute().resolve().parent.as_posix()
+        self.LineEdit_output_dir.setText(rootDir)
     
     def setTextAndMoveCursorToModelBrowser(self, text:str):
         self.modelLoderBrower.moveCursor(QTextCursor.MoveOperation.End, QTextCursor.MoveMode.MoveAnchor)
@@ -807,17 +852,35 @@ class mainWin(FramelessMainWindow):
             print(self.__tr("模型未加载！进程退出"))
             return
         
-        if not os.path.exists(Transcribe_params["audio"]):
-            print(self.__tr("需要有效的音频文件！"))
-            print(f"Erro FileName : {Transcribe_params['audio']}")
+        files_exist = [os.path.exists(file) for file in Transcribe_params["audio"]]
+        if not all(files_exist):
+            ignore_file = [file for file in Transcribe_params['audio'] if not os.path.exists(file)]
+            print(self.__tr("存在无效文件："))
+            new_line = "\n                    "
+            print(f"  Error FilesName : {new_line.join(ignore_file)}")
+            new_line = "\n                "
+            print(f"  ignore files: {new_line.join(ignore_file)}")
+            Transcribe_params['audio'] = [file for file in Transcribe_params['audio'] if os.path.exists(file)]
+        
+        # print(Transcribe_params['audio'])
+        if len(Transcribe_params['audio']) == 0:
             return
         
-        segment_info = {}
+        try:
+            num_worker = int(self.LineEdit_num_workers.text())
+        except:
+            num_worker = 1
+
+        # return
+        # segment_info = {}
         def go():
             Transcribe(model=self.FasterWhisperModel,
                        parameters=Transcribe_params,
                        vad_filter=vad_filter,
-                       vad_parameters=VAD_param)
+                       vad_parameters=VAD_param,
+                       num_worker=num_worker,
+                       output_format=self.combox_output_format.currentText(),
+                       output_dir=self.LineEdit_output_dir.text())
         
         thread_go = Thread(target=go, daemon=True)
         thread_go.start()
@@ -828,7 +891,7 @@ class mainWin(FramelessMainWindow):
     def getParamTranscribe(self) -> dict:
         Transcribe_params = {}
 
-        audio = self.LineEdit_audio_fileName.text().strip()
+        audio = self.LineEdit_audio_fileName.text().strip().split(";;")
         Transcribe_params["audio"] = audio
 
         language = self.combox_language.text().split(" ")[-1]
@@ -994,15 +1057,18 @@ class mainWin(FramelessMainWindow):
 
         self.modelLoderBrower.textChanged.connect(lambda: self.modelLoderBrower.moveCursor(QTextCursor.MoveOperation.End, mode=QTextCursor.MoveMode.MoveAnchor))
         self.processResultText.textChanged.connect(lambda: self.processResultText.moveCursor(QTextCursor.MoveOperation.End, mode=QTextCursor.MoveMode.MoveAnchor))
+        
+        set_output_file = lambda path: path if path != "" else self.LineEdit_output_dir.text()
+        self.outputDirChoseButton.clicked.connect(lambda:self.LineEdit_output_dir.setText(set_output_file(QFileDialog.getExistingDirectory(self,"选择输出文件存放目录", self.LineEdit_output_dir.text()))) )
 
     def closeEvent(self, event) -> None:
         reply = QMessageBox.question(self,
-                                    '本程序',
-                                    "是否要退出程序？",
+                                    self.__tr('退出'),
+                                    self.__tr("是否要退出程序？"),
                                     QMessageBox.Yes | QMessageBox.No,
                                     QMessageBox.No)
         if reply == QMessageBox.Yes:
-            # del self.FasterWhisperModel
+            del self.FasterWhisperModel
             event.accept()
         else:
             event.ignore()

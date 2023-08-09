@@ -13,10 +13,10 @@
 
 
 
--   ## Whis this
+-   ## What's this
 
     -   this is a GUI software of faster-whisper , you can:
-        -   Transcrib audio or video files to srt/txt file
+        -   Transcrib audio or video files to srt/txt/smi/vtt/lrc file
         -   convert online OpenAI-whisper-models to ct2 format
         -   provide all paraments of VAD-model and whisper-model
 
@@ -39,3 +39,8 @@
 -   ### process a video file
 
 ![转写执行效果](./README.assets/转写执行效果.png)
+
+-   ### words-level timestamps —— karaoka lyrics (work in `VTT`/`LRC`/`SMI` format)
+
+    ![image-20230811130449688](./README.assets/image-20230811130449688.png)
+

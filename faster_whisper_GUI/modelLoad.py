@@ -41,7 +41,7 @@ def loadModel(model_size_or_path: str,
     while(Thread_go.is_alive()):
         if os.path.isdir(model_size_or_path):
             print(".", end="", flush=True)
-            time.sleep(0.5)         
+            time.sleep(1)         
         else:
             pass       
     

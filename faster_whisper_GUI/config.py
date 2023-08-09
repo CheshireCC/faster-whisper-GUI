@@ -115,3 +115,6 @@ Device_list = ["cpu", "cuda", "auto"]
 Task_list = ["transcribe" , "translate"]
 
 STR_BOOL = {"False":False,"True":True}
+
+SUbTITLE_FORMAT = ["SRT", "TXT", "VTT", "LRC", "SMI"]
+

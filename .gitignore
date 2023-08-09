@@ -12,7 +12,6 @@ __pycache__/
 cuBLAS/
 cuDNN/
 build/
-build-0725
 not_open_file/
 python38/
 test_cpu/
@@ -69,6 +68,7 @@ cover/
 # Translations
 *.mo
 *.pot
+*.ts
 
 # Django stuff:
 *.log

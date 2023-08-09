@@ -6,8 +6,10 @@ charset-normalizer==3.2.0
 colorama==0.4.6
 coloredlogs==15.0.1
 colorthief==0.2.1
+cssutils==2.7.1
 ctranslate2==3.17.1
 darkdetect==0.8.0
+docopt==0.6.2
 faster-whisper==0.7.1
 fastjsonschema==2.16.1
 filelock==3.12.2
@@ -60,13 +62,14 @@ shiboken6==6.4.3
 snowballstemmer==2.0.0
 sympy==1.12
 tinycss2==1.1.1
-tokenizers 
-torch 
+tokenizers @ file:///D:/bld/tokenizers_1680703821699/work/bindings/python
+torch @ file:///G:/PyTorch_t/torch-2.0.1%2Bcpu-cp38-cp38-win_amd64.whl#sha256=2ac4382ff090035f9045b18afe5763e2865dd35f2d661c02e51f658d95c8065a
 tqdm==4.65.0
 traitlets==5.3.0
-transformers
+transformers @ file:///D:/Downloads/transformers-4.31.0-py3-none-any.whl#sha256=8487aab0195ce1c2a5ae189305118b9720daddbc7b688edb09ccd79e3b149f6b
 typing_extensions==4.7.1
 ujson==3.2.0
 urllib3==2.0.4
+webvtt-py==0.4.6
 yapf==0.30.0
 zstandard==0.21.0
