@@ -12,7 +12,7 @@ class MySplashScreen(QSplashScreen):
     # 鼠标点击事件
     def mousePressEvent(self, event):
         pass
-
+    
 from resource import rc_Image
 
 # 启动一个Qt程序，并使用传入的系统参数
@@ -32,7 +32,7 @@ app.processEvents()  # 处理主进程事件
 
 from faster_whisper_GUI.UI_MainWindows import mainWin
 from resource import rc_Translater
-from resource import rc_Image
+
 
 # 主程序入口
 if __name__ == "__main__":
