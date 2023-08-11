@@ -6,6 +6,7 @@ import os
 from threading import Thread
 
 from pathlib import Path
+
 from PySide6.QtCore import  (QObject, Qt, Signal, QCoreApplication)
 from PySide6.QtWidgets import  (QFileDialog, QMessageBox, QWidget, QStackedWidget, QVBoxLayout, QStyle, QHBoxLayout, QGridLayout, QCompleter, QTextBrowser, QLabel)
 from PySide6.QtGui import (QIcon, QTextCursor)
@@ -31,6 +32,24 @@ class RedirectOutputSignalStore(QObject):
         if ( not self.signalsBlocked() ):
             self.outputSignal.emit(str(text))
 
+class QWidget_subpage(QWidget):
+    def __init__(self) -> None:
+        super().__init__()
+        self.setStyleSheet(
+                            """
+                            QWidget_subpage{
+                                background: rgb(242,242,242); 
+                                }
+                            QLabel{
+                                font: 15px 'Segoe UI';
+                                background: rgb(242,242,242);
+                                border-radius: 8px
+                                    }
+                            QTextBrowser{
+                                font: 15px 'TimesNewRoman';
+                                        }
+                            """
+        )
 
 class mainWin(FramelessMainWindow):
 
@@ -57,6 +76,12 @@ class mainWin(FramelessMainWindow):
 
         self.FasterWhisperModel = None
 
+        self.modelPageSVG = r":/resource/Image/BookShelf_black.svg"
+        self.VADPageSVG = r":/resource/Image/wave-16x16.svg"
+        self.transcribePageSVG = r":/resource/Image/robot-16x16.svg"
+        self.processPageSVG = r":/resource/Image/speak-16x24.svg"
+        self.whisperTranscribesSVG = r":/resource/Image/headphone.svg"
+
         self.initWin()
 
         # 创建窗体中心控件
@@ -70,6 +95,17 @@ class mainWin(FramelessMainWindow):
 
         # 创建窗体导航枢 和 stacke 控件 以及放置控件的垂直布局
         self.pivot = Pivot(self)
+        self.pivot.setObjectName("pivot")
+        # self.pivot.setStyleSheet(""" 
+        #                         #pivot{
+        #                             border:1px solid black; 
+        #                             font: 15px 'Segoe UI';
+        #                             background: rgb(0,242,0);
+        #                             padding: 5px;
+        #                             }
+        #                         """
+        #                     )
+        
         self.stackedWidget = QStackedWidget(self)
         self.vBoxLayout = QVBoxLayout()
 
@@ -79,20 +115,23 @@ class mainWin(FramelessMainWindow):
         # 设置窗体中心控件
         self.setCentralWidget(self.mainWindowsWidget)
         # 设置中心控件上边距
-        # self.mainWindowsWidget.setStyleSheet("#mainWidget{margin-top:30px}")
+        # self.mainWindowsWidget.setStyleSheet("#mainWidget{margin-top:30}")
 
         # 设置层到最后避免遮挡窗体按钮
         self.mainWindowsWidget.lower()
+        self.lower()
+        
 
         # 添加子界面
         self.page_model = QWidget()
-        self.addSubInterface(self.page_model, "pageModelParameter", self.__tr("模型参数"))
+        self.addSubInterface(self.page_model, "pageModelParameter", self.__tr("模型参数"), icon=QIcon(self.modelPageSVG))
         self.page_VAD = QWidget()
-        self.addSubInterface(self.page_VAD, "pageVADParameter", self.__tr("VAD 参数"))
+        self.addSubInterface(self.page_VAD, "pageVADParameter", self.__tr("VAD 参数"), icon=QIcon(self.VADPageSVG))
         self.page_transcribes = QWidget()
-        self.addSubInterface(self.page_transcribes, "pageTranscribesParameter", self.__tr("转写参数"))
+        self.addSubInterface(self.page_transcribes, "pageTranscribesParameter", self.__tr("转写参数"), icon=QIcon(self.transcribePageSVG))
         self.page_process = QWidget()
-        self.addSubInterface(self.page_process, "pageProcess", self.__tr("执行转写"))
+        self.addSubInterface(self.page_process, "pageProcess", self.__tr("执行转写"), icon=QIcon(self.whisperTranscribesSVG))
+        
 
         # 将导航枢 和 stacke 添加到窗体布局
         self.vBoxLayout.addWidget(self.pivot, 0, Qt.AlignmentFlag.AlignHCenter)
@@ -113,10 +152,12 @@ class mainWin(FramelessMainWindow):
 
     def initWin(self):
         # setTheme(Theme.LIGHT)
+        # super().setStyleSheet("{background-color: rgba(1,1,1,0); }")
+        self.setObjectName("FramlessMainWin")
         self.setStyleSheet(
                             """
-                            mainWin{
-                                background: white; 
+                            #FramlessMainWin{
+                                background: rgb(255,255,255);
                                 }
                             QLabel{
                                 font: 15px 'Segoe UI';
@@ -127,10 +168,10 @@ class mainWin(FramelessMainWindow):
                                 font: 15px 'TimesNewRoman';
                                         }
                             """
-                            )
-
+                        )
+        
         # self.resize(800, 500)
-        self.setGeometry(500,50,800,500)
+        self.setGeometry(500,10,800,500)
 
         # 添加标题栏 
         self.setTitleBar(StandardTitleBar(self))
@@ -155,17 +196,21 @@ class mainWin(FramelessMainWindow):
         # self.processResultText.setText("Hello Whsiper")
         VBoxLayout.addWidget(self.processResultText)
 
-        self.button_process = PushButton()
-        self.button_process.setText("Transcribes")
-        VBoxLayout.addWidget(self.button_process)
+        HBoxLayout = QHBoxLayout()
 
+        self.button_process = PushButton()
+        self.button_process.setObjectName("processButton")
+        self.button_process.setText("Transcribes")
+        self.button_process.setIcon(QIcon(self.processPageSVG))
+        HBoxLayout.addWidget(self.button_process)
+
+        VBoxLayout.addLayout(HBoxLayout)
         VBoxLayout.setStretch(0,10)
-        VBoxLayout.setStretch(1,2)
+        VBoxLayout.setStretch(1,5)
 
         self.page_process.setStyleSheet("#pageProcess{border: 1px solid cyan; padding: 5px;}")
 
-        self.button_process.setObjectName("processButton")
-        self.button_process.setStyleSheet("#processButton{background:242 242 242}")
+        # self.button_process.setStyleSheet("#processButton{background:242 242 242}")
 
         
     def setupTranscribesUI(self):
@@ -654,14 +699,15 @@ class mainWin(FramelessMainWindow):
         self.page_VAD.setStyleSheet("#pageVADParameter{border:1px solid green; padding: 5px;}")
         
     
-    def addSubInterface(self, layout: QWidget, objectName, text: str ):
+    def addSubInterface(self, layout: QWidget, objectName, text: str, icon:QIcon=None ):
         layout.setObjectName(objectName)
 #         layout.setAlignment(Qt.AlignCenter)
         self.stackedWidget.addWidget(layout)
         self.pivot.addItem(
-            routeKey=objectName,
-            text=text,
-            onClick=lambda: self.stackedWidget.setCurrentWidget(layout)
+            routeKey=objectName
+            ,text=text
+            ,onClick=lambda: self.stackedWidget.setCurrentWidget(layout)
+            ,icon=icon
         )
         
 
@@ -670,6 +716,10 @@ class mainWin(FramelessMainWindow):
             index = self.stackedWidget.currentIndex()
         widget = self.stackedWidget.widget(index)
         self.pivot.setCurrentItem(widget.objectName())
+        
+        # currentItem = self.pivot.items[widget.objectName()]
+        # print(currentItem)
+        # currentItem.setStyleSheet(f"#{widget.objectName()}{'{'}background-color: rgba(0,242,0,255){'}'}")
 
     def getLocalModelPath(self):
         """

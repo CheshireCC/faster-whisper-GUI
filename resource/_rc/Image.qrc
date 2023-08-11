@@ -2,5 +2,14 @@
 <RCC>
   <qresource prefix="/resource">
     <file>Image/microphone.png</file>
+    <file>Image/BookShelf_black.svg</file>
+    <file>Image/headphone.svg</file>
+    <file>Image/robot-16x16.svg</file>
+    <file>Image/speak.svg</file>
+    <file>Image/whisper.svg</file>
+    <file>Image/whisper-16x16.svg</file>
+    <file>Image/wave-16x16.svg</file>
+    <file>Image/speak-16x24.svg</file>
+    <file>Image/FasterWhisper.png</file>
   </qresource>
 </RCC>

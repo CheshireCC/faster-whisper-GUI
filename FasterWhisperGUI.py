@@ -3,15 +3,36 @@
 import os
 import sys
 import locale
-
-# from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont, QPixmap
+from PySide6.QtWidgets import QApplication, QSplashScreen
 from PySide6.QtCore import QTranslator
+
+class MySplashScreen(QSplashScreen):
+    # 鼠标点击事件
+    def mousePressEvent(self, event):
+        pass
+
+from resource import rc_Image
+
+# 启动一个Qt程序，并使用传入的系统参数
+app = QApplication(sys.argv)
+#设置启动界面
+splash = MySplashScreen()
+#初始图片
+splash.setPixmap(QPixmap(r":/resource/Image/FasterWhisper.png")) 
+#初始文本
+splash.showMessage("加载...", Qt.AlignmentFlag.AlignRight | Qt.AlignBottom, Qt.black)
+# 设置字体
+splash.setFont(QFont('微软雅黑', 10))
+# 显示启动界面
+splash.show()
+app.processEvents()  # 处理主进程事件
 
 
 from faster_whisper_GUI.UI_MainWindows import mainWin
 from resource import rc_Translater
-
+from resource import rc_Image
 
 # 主程序入口
 if __name__ == "__main__":
@@ -29,9 +50,6 @@ if __name__ == "__main__":
     cuBLAS_dir = ";" + os.path.join(BASE_DIR, 'cuBLAS')
     os.environ["path"] += cuBLAS_dir
 
-    # 启动一个Qt程序，并使用传入的系统参数
-    app = QApplication(sys.argv)
-
     # 获取当前计算机语言
     language_localtion, _ = locale.getdefaultlocale()
     language = language_localtion.split("_")[0]
@@ -41,12 +59,16 @@ if __name__ == "__main__":
         translator = QTranslator(app)
         if translator.load(":/resource/Translater/en.qm"):
             app.installTranslator(translator)
-    
+
     # 实例化窗体
     mainWindows = mainWin()
-
     # 显示窗体
     mainWindows.show()
+
+    # 隐藏启动界面
+    splash.finish(mainWindows)  
+    # 将启动界面标记为稍后删除
+    splash.deleteLater()
 
     # 退出程序，并使用app实例的退出代码
     sys.exit(app.exec())
