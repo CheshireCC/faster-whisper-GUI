@@ -35,6 +35,14 @@ def Transcribe(model: WhisperModel,
                num_worker:int = 1, 
                output_format: str = "srt", 
                output_dir:dir = ""):
+    '''
+        parameters: dict, parameters of fasterWhisper 
+        vad_filter: bool, if true, use VAD model
+        vad_parameters: dict, parameters of VAD model
+        num_worker:int = 1, 
+        output_format: str = "srt", 
+        output_dir:dir = ""
+    '''
 
     # 检查输出目录
     if os.path.exists(output_dir):
@@ -44,15 +52,17 @@ def Transcribe(model: WhisperModel,
         print(f"\nCreate output dir : {output_dir}")
 
     files = parameters["audio"]
-    # print(files[0].split(".")[-1])
-    files = [file for file in files if file.split(".")[-1] not in ["txt", "srt"]]
-    ingnore_files = [file for file in files if file.split(".")[-1] in ["txt", "srt"]]
-
+    
+    # 忽略掉输入文件中可能存在的所有的字幕文件
+    files = [file for file in files if file.split(".")[-1].upper() not in SUbTITLE_FORMAT]
+    ingnore_files = [file for file in files if file.split(".")[-1].upper() in SUbTITLE_FORMAT]
+    
+    # print
     if len(ingnore_files) != 0:
         new_line = "\n              "
         print(f"ignore files: {new_line.join(ingnore_files)}")
-    # print(files)
-
+    
+    
     def transcribe_file(file):
         print("\n\n")
         print(f"current task: {file}")
@@ -61,7 +71,6 @@ def Transcribe(model: WhisperModel,
                 container = av.open(file) # 尝试打开文件      
                 print("  解析成功！")
                 container.close()
-
         except av.AVError as e: # 捕获异常
                 print(f'    {file.split("/")[-1]} 不是一个有效的音视频文件\n    错误信息：{e}')
                 print(f"    ignore File : {file} \n")
@@ -100,8 +109,8 @@ def Transcribe(model: WhisperModel,
             return
         
         # segments = list(segments)
-        segmentsTranscribe = []
-        # 输出
+        segmentsTranscribe : List[segment_Transcribe] = []
+        # 遍历生成器，并获取转写内容
         print(f"Transcription for {file.split('/')[-1]}")
         for segment in segments:
             print('  [' + str(segment.start) + 's --> ' + str(segment.end) + 's] ' + segment.text.lstrip())
@@ -109,6 +118,10 @@ def Transcribe(model: WhisperModel,
 
         return segmentsTranscribe
 
+    # 在线程池中并发执行相关任务，默认状况下使用单 GPU 该并发线程数为 1 ，
+    # 提高线程数并不能明显增大吞吐量， 且可能因为线程调度的原因反而造成转写时间变长
+    # 多 GPU 或多核心 CPU 可通过输入设备号列表并增大并发线程数的方式增加吞吐量，实现多任务并发处理
+    # 但会造成内存或显存占用增多
     with futures.ThreadPoolExecutor(num_worker) as executor:
         results = executor.map(transcribe_file, files)
         new_line = "\n"
@@ -166,19 +179,25 @@ def writeSubtitles(fileName:str, segments:List[segment_Transcribe], format:str, 
     print(f"write over | {fileName}")
 
 def writeSMI(fileName:str, segments:List[segment_Transcribe], language:str):
-    # 创建一个空的 smi 字幕字符串
+
+    # 获取音频或视频的名称
     _, baseName = os.path.split(fileName)
     baseName = baseName.split('.')[0]
+    # 创建字幕的样式类
+    language_type_CC = f"{language.upper()}CC"
+
+    # 创建一个空的 smi 字幕字符串
     smi = ""
     # 添加 smi 字幕的头部标签
     smi += "<SAMI>\n"
     # 添加 smi 字幕的元数据和样式信息
     smi += "<HEAD>\n"
+    # 标题
     smi += f"<TITLE>{baseName}</TITLE>\n"
+    # 样式
     smi += "<STYLE TYPE=\"text/css\">\n"
     smi += "<!--\n"
     smi += "P { font-family: Arial; font-weight: normal; color: white; background-color: black; text-align: center; }\n"
-    language_type_CC = f"{language.upper()}CC"
     smi += f"#{language_type_CC} {'{'} name: {Language_dict[language]}; lang: {language}; SAMIType: CC; {'}'}\n"
     smi += "-->\n"
     smi += "</STYLE>\n"
@@ -205,6 +224,10 @@ def writeSMI(fileName:str, segments:List[segment_Transcribe], language:str):
     # 添加 smi 字幕的尾部标签
     smi += "</BODY>\n"
     smi += "</SAMI>\n"
+
+    # 使用 utf-8 重新编码字幕字符串
+    smi:str = smi.encode("utf8").decode("utf8")
+    # 将SMI字幕写入文件
     with open(fileName, "w", encoding="utf-8") as f:
         f.write(smi)
     # return smi
@@ -231,6 +254,7 @@ def wirteLRC(fileName:str, segments:List[segment_Transcribe]):
                 text += f"<{secondsToMS(segment.end)}>"
             else:
                 text:str = f"[{secondsToMS(segment.start)}]{segment.text}"
+
             # 重编码为 utf-8 
             text:str = text.encode("utf8").decode("utf8")
 
@@ -267,6 +291,7 @@ def writeVTT(fileName:str, segments:List[segment_Transcribe]):
         vtt.captions.append(cue)
     
     vtt.save(fileName)
+
 
 def writeTXT(fileName:str, segments):
     with open(fileName, "w", encoding="utf8") as f:
@@ -314,9 +339,9 @@ def getSaveFileName(audioFile: str, isSrt : bool, format:str = "srt", rootDir:st
     return saveFileName
 
 
-def secondsToHMS(t:str) -> str:
+def secondsToHMS(t) -> str:
     try:
-        t_f = float(t)
+        t_f:float = float(t)
     except:
         print("time transform error")
         return
@@ -350,9 +375,9 @@ def secondsToHMS(t:str) -> str:
     
     return H + ":" + M + ":" + S
 
-def secondsToMS(t:str) -> str:
+def secondsToMS(t) -> str:
     try:
-        t_f = float(t)
+        t_f:float = float(t)
     except:
         print("time transform error")
         return
