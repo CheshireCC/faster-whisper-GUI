@@ -113,7 +113,7 @@ def Transcribe(model: WhisperModel,
         # 遍历生成器，并获取转写内容
         print(f"Transcription for {file.split('/')[-1]}")
         for segment in segments:
-            print('  [' + str(segment.start) + 's --> ' + str(segment.end) + 's] ' + segment.text.lstrip())
+            print('  [' + str(round(segment.start),5) + 's --> ' + str(round(segment.end, 5)) + 's] ' + segment.text.lstrip())
             segmentsTranscribe.append(segment_Transcribe(segment))#.start, segment.end, segment.text))
 
         return segmentsTranscribe
