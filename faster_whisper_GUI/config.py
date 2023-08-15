@@ -118,3 +118,25 @@ STR_BOOL = {"False":False,"True":True}
 
 SUbTITLE_FORMAT = ["SRT", "TXT", "VTT", "LRC", "SMI"]
 
+CAPTURE_PARA = [
+    {"rate": 44100
+    ,"channel": 2
+    ,"dType": 16
+    ,"quality": "CD Quality"
+    },
+    {"rate": 48000
+    ,"channel": 2
+    ,"dType": 16
+    ,"quality": "DVD Quality"
+    },
+    {"rate": 44100
+    ,"channel": 2
+    ,"dType": 24
+    ,"quality": "Studio Quality"
+    },
+    {"rate": 48000
+    ,"channel": 2
+    ,"dType": 24
+    ,"quality": "Studio Quality"
+    }
+]

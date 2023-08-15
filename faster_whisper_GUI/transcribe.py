@@ -103,7 +103,7 @@ def Transcribe(model: WhisperModel,
                                     )
         try:
             print(f"Detected language {Language_dict[info.language]} with probability {info.language_probability*100:.2f}%")
-        # print(segmenter_info["info"])
+        
         except:
             print(f"{file} 处理失败!")
             return
@@ -116,7 +116,7 @@ def Transcribe(model: WhisperModel,
             print('  [' + str(round(segment.start),5) + 's --> ' + str(round(segment.end, 5)) + 's] ' + segment.text.lstrip())
             segmentsTranscribe.append(segment_Transcribe(segment))#.start, segment.end, segment.text))
 
-        return segmentsTranscribe
+        return info, segmentsTranscribe
 
     # 在线程池中并发执行相关任务，默认状况下使用单 GPU 该并发线程数为 1 ，
     # 提高线程数并不能明显增大吞吐量， 且可能因为线程调度的原因反而造成转写时间变长
@@ -125,8 +125,8 @@ def Transcribe(model: WhisperModel,
     with futures.ThreadPoolExecutor(num_worker) as executor:
         results = executor.map(transcribe_file, files)
         new_line = "\n"
-        for path, segments in zip(files, results):
-            
+        for path, results in zip(files, results):
+            (info, segments) = results
             if segments == None:
                 continue
 
@@ -138,15 +138,15 @@ def Transcribe(model: WhisperModel,
 
             if output_format == "All" and not(parameters["without_timestamps"]):
                 for format in SUbTITLE_FORMAT:
-                    file_out = getSaveFileName( path, 
-                                                not(parameters["without_timestamps"])
+                    file_out = getSaveFileName( path
+                                                , not(parameters["without_timestamps"])
                                                 , format=format
                                                 , rootDir=output_dir
                                             )
                     writeSubtitles(file_out
                                     ,segments=segments
                                     , format=format
-                                    , language=parameters["language"]
+                                    , language=info.language
                                 )
             else:
                 file_out = getSaveFileName( path
@@ -157,8 +157,9 @@ def Transcribe(model: WhisperModel,
                 writeSubtitles(file_out
                                 , segments=segments
                                 , format=output_format
-                                , language=parameters["language"]
+                                , language=info.language
                             )
+            segments = None
             
     print("\n【Over】")
 
@@ -173,7 +174,7 @@ def writeSubtitles(fileName:str, segments:List[segment_Transcribe], format:str, 
     elif format == "LRC":
         wirteLRC(fileName, segments)
     elif format == "SMI":
-        writeSMI(fileName, segments, language)
+        writeSMI(fileName, segments, language=language)
 
     
     print(f"write over | {fileName}")

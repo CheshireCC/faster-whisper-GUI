@@ -8,12 +8,12 @@ from threading import Thread
 from pathlib import Path
 
 from PySide6.QtCore import  (QObject, Qt, Signal, QCoreApplication)
-from PySide6.QtWidgets import  (QFileDialog, QMessageBox, QWidget, QStackedWidget, QVBoxLayout, QStyle, QHBoxLayout, QGridLayout, QCompleter, QTextBrowser, QLabel)
+from PySide6.QtWidgets import  (QFileDialog, QMessageBox, QSpacerItem, QWidget, QStackedWidget, QVBoxLayout, QStyle, QHBoxLayout, QGridLayout, QCompleter, QTextBrowser, QLabel)
 from PySide6.QtGui import (QIcon, QTextCursor)
 from qfluentwidgets import (Pivot, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton)
 from qframelesswindow import (FramelessMainWindow , StandardTitleBar)
 
-from .config import (Language_dict, Preciese_list, Model_names, Device_list, Task_list, STR_BOOL, SUbTITLE_FORMAT)
+from .config import (Language_dict, Preciese_list, Model_names, Device_list, Task_list, STR_BOOL, SUbTITLE_FORMAT, CAPTURE_PARA)
 from .modelLoad import loadModel
 from .convertModel import ConvertModel
 from .transcribe import Transcribe
@@ -31,25 +31,6 @@ class RedirectOutputSignalStore(QObject):
     def write( self, text ):
         if ( not self.signalsBlocked() ):
             self.outputSignal.emit(str(text))
-
-class QWidget_subpage(QWidget):
-    def __init__(self) -> None:
-        super().__init__()
-        self.setStyleSheet(
-                            """
-                            QWidget_subpage{
-                                background: rgb(242,242,242); 
-                                }
-                            QLabel{
-                                font: 15px 'Segoe UI';
-                                background: rgb(242,242,242);
-                                border-radius: 8px
-                                    }
-                            QTextBrowser{
-                                font: 15px 'TimesNewRoman';
-                                        }
-                            """
-        )
 
 class mainWin(FramelessMainWindow):
 
@@ -114,8 +95,6 @@ class mainWin(FramelessMainWindow):
 
         # 设置窗体中心控件
         self.setCentralWidget(self.mainWindowsWidget)
-        # 设置中心控件上边距
-        # self.mainWindowsWidget.setStyleSheet("#mainWidget{margin-top:30}")
 
         # 设置层到最后避免遮挡窗体按钮
         self.mainWindowsWidget.lower()
@@ -132,8 +111,10 @@ class mainWin(FramelessMainWindow):
         self.page_process = QWidget()
         self.addSubInterface(self.page_process, "pageProcess", self.__tr("执行转写"), icon=QIcon(self.whisperTranscribesSVG))
         
-
+        # 创建一个空对象 用于改善布局顶部
+        self.spacer_main = QSpacerItem(0,15)
         # 将导航枢 和 stacke 添加到窗体布局
+        self.vBoxLayout.addItem(self.spacer_main)
         self.vBoxLayout.addWidget(self.pivot, 0, Qt.AlignmentFlag.AlignHCenter)
         self.vBoxLayout.addWidget(self.stackedWidget)
         self.vBoxLayout.setContentsMargins(30, 0, 30, 30)
@@ -160,13 +141,17 @@ class mainWin(FramelessMainWindow):
                                 background: rgb(255,255,255);
                                 }
                             QLabel{
-                                font: 15px 'Segoe UI';
-                                background: rgb(242,242,242);
-                                border-radius: 8px
+                                font : 15px 'Segoe UI';
+                                background-color : rgb(242,242,242);
+                                border-radius : 8px;
+                                qproperty-alignment: AlignCenter;
                                     }
                             QTextBrowser{
                                 font: 15px 'TimesNewRoman';
                                         }
+                            PushButton{
+                                background-color : rgb(242,242,242);
+                            }
                             """
                         )
         
@@ -176,8 +161,7 @@ class mainWin(FramelessMainWindow):
         # 添加标题栏 
         self.setTitleBar(StandardTitleBar(self))
         self.setWindowTitle("FasterWhisper")
-        # self.setWindowIcon(self.style().standardPixmap(QStyle.StandardPixmap.SP_TrashIcon))
-        # self.setWindowIcon(self.style().standardPixmap(":/resource/Image/microphone.png"))
+        
         self.setWindowIcon(QIcon(":/resource/Image/microphone.png"))
         self.titleBar.setAttribute(Qt.WA_StyledBackground)
 
@@ -190,6 +174,81 @@ class mainWin(FramelessMainWindow):
 
     def setupProcessUI(self):
         VBoxLayout = QVBoxLayout()
+
+        self.gridBoxLayout_transcribe_capture = QGridLayout()
+        self.transceibe_Files_RadioButton = RadioButton()
+        self.transceibe_Files_RadioButton.setText(self.__tr("转写文件"))
+        self.transceibe_Files_RadioButton.setChecked(True)
+        self.gridBoxLayout_transcribe_capture.addWidget(self.transceibe_Files_RadioButton, 0 ,0)
+
+        self.audio_capture_RadioButton = RadioButton()
+        self.audio_capture_RadioButton.setText(self.__tr("音频采集"))
+        self.gridBoxLayout_transcribe_capture.addWidget(self.audio_capture_RadioButton, 0, 1)
+        
+        self.gridBoxLayout_transcribe_capture.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        self.hBoxLayout_Audio_capture_para = QHBoxLayout()
+        self.label_capture = QLabel(self.__tr("音频采集参数"))
+        self.combox_capture = ComboBox()
+        self.combox_capture.addItems([f"{x['channel']} channel, {x['dType']} bit, {x['rate']} Hz ({x['quality']})" for x in CAPTURE_PARA])
+        self.combox_capture.setCurrentIndex(1)
+        spacer = QSpacerItem(8, 0) #, QSizePolicy.Preferred)#, QSizePolicy.Expanding)
+        
+        self.hBoxLayout_Audio_capture_para.addWidget(self.label_capture)
+        self.hBoxLayout_Audio_capture_para.addItem(spacer)
+        self.hBoxLayout_Audio_capture_para.addWidget(self.combox_capture)
+
+        self.gridBoxLayout_transcribe_capture.addItem(self.hBoxLayout_Audio_capture_para, 0, 2)
+        
+        VBoxLayout.addLayout(self.gridBoxLayout_transcribe_capture)
+        
+        self.GridBoxLayout_targetFiles = QGridLayout()
+        VBoxLayout.addLayout(self.GridBoxLayout_targetFiles)
+        # hBoxLayout_Audio_File = QHBoxLayout()
+        # hBoxLayout_Audio_File.setSpacing(10)
+        # hBoxLayout_Audio_File.setContentsMargins(10,10,10,10)
+
+        label_1 = QLabel()
+        label_1.setText(self.__tr("目标音频文件"))
+        self.GridBoxLayout_targetFiles.addWidget(label_1,0, 0)
+        # hBoxLayout_Audio_File.addWidget(label_1)
+
+        self.LineEdit_audio_fileName = LineEdit()
+        self.LineEdit_audio_fileName.setToolTip(self.__tr("要转写的音频文件路径"))
+        self.GridBoxLayout_targetFiles.addWidget(self.LineEdit_audio_fileName,0,1)
+
+        fileChosePushButton = ToolButton()
+        self.fileOpenPushButton = fileChosePushButton
+        fileChosePushButton.setToolTip(self.__tr("选择要转写的音频文件"))
+        fileChosePushButton.setIcon(self.style().standardPixmap(QStyle.StandardPixmap.SP_FileIcon))
+        fileChosePushButton.resize(385,420)
+        self.GridBoxLayout_targetFiles.addWidget(fileChosePushButton, 0, 2)
+        # VBoxLayout_Transcribes.addLayout(hBoxLayout_Audio_File)
+
+        # -----------------------------------------------------------------------------------------
+        
+        # hBoxLayout_output_File = QHBoxLayout()
+        # hBoxLayout_output_File.setSpacing(10)
+        # hBoxLayout_output_File.setContentsMargins(10,10,10,10)
+
+        label_output_file = QLabel()
+        label_output_file.setText(self.__tr("输出文件目录"))
+        self.GridBoxLayout_targetFiles.addWidget(label_output_file, 1, 0 )
+
+        self.LineEdit_output_dir = LineEdit()
+        self.LineEdit_output_dir.setToolTip(self.__tr("输出文件保存的目录"))
+        self.LineEdit_output_dir.setClearButtonEnabled(True)
+        self.GridBoxLayout_targetFiles.addWidget(self.LineEdit_output_dir, 1, 1)
+
+        outputDirChoseButton = ToolButton()
+        self.outputDirChoseButton = outputDirChoseButton
+        outputDirChoseButton.setToolTip(self.__tr("选择输出目录"))
+        outputDirChoseButton.setIcon(self.style().standardPixmap(QStyle.StandardPixmap.SP_DirIcon))
+        outputDirChoseButton.resize(385,420)
+        self.GridBoxLayout_targetFiles.addWidget(outputDirChoseButton, 1 , 2)
+        # VBoxLayout_Transcribes.addLayout(hBoxLayout_output_File)
+
+        # ------------------------------------------------------------------------------------------
         self.page_process.setLayout(VBoxLayout)
 
         self.processResultText = QTextBrowser()
@@ -197,21 +256,21 @@ class mainWin(FramelessMainWindow):
         VBoxLayout.addWidget(self.processResultText)
 
         HBoxLayout = QHBoxLayout()
-
         self.button_process = PushButton()
         self.button_process.setObjectName("processButton")
-        self.button_process.setText("Transcribes")
+        self.button_process.setText(self.__tr("转写或采集"))
         self.button_process.setIcon(QIcon(self.processPageSVG))
         HBoxLayout.addWidget(self.button_process)
 
         VBoxLayout.addLayout(HBoxLayout)
-        VBoxLayout.setStretch(0,10)
-        VBoxLayout.setStretch(1,5)
+        # VBoxLayout.setStretch(0,10)
+        # VBoxLayout.setStretch(1,5)
 
         self.page_process.setStyleSheet("#pageProcess{border: 1px solid cyan; padding: 5px;}")
+        self.button_process.setStyleSheet("#processButton{background:242 242 242}")
 
-        # self.button_process.setStyleSheet("#processButton{background:242 242 242}")
-
+        # 根据选择设置相关控件的状态
+        self.setTranscribeOrCapture()
         
     def setupTranscribesUI(self):
 
@@ -220,48 +279,48 @@ class mainWin(FramelessMainWindow):
 
         # ------------------------------------------------------------------------------------------
 
-        hBoxLayout_Audio_File = QHBoxLayout()
-        hBoxLayout_Audio_File.setSpacing(10)
-        hBoxLayout_Audio_File.setContentsMargins(10,10,10,10)
+        # hBoxLayout_Audio_File = QHBoxLayout()
+        # # hBoxLayout_Audio_File.setSpacing(10)
+        # # hBoxLayout_Audio_File.setContentsMargins(10,10,10,10)
 
-        label_1 = QLabel()
-        label_1.setText(self.__tr("目标音频文件"))
-        hBoxLayout_Audio_File.addWidget(label_1)
+        # label_1 = QLabel()
+        # label_1.setText(self.__tr("目标音频文件"))
+        # hBoxLayout_Audio_File.addWidget(label_1)
 
-        self.LineEdit_audio_fileName = LineEdit()
-        self.LineEdit_audio_fileName.setToolTip(self.__tr("要转写的音频文件路径"))
-        hBoxLayout_Audio_File.addWidget(self.LineEdit_audio_fileName)
+        # self.LineEdit_audio_fileName = LineEdit()
+        # self.LineEdit_audio_fileName.setToolTip(self.__tr("要转写的音频文件路径"))
+        # hBoxLayout_Audio_File.addWidget(self.LineEdit_audio_fileName)
 
-        fileChosePushButton = ToolButton()
-        self.fileOpenPushButton = fileChosePushButton
-        fileChosePushButton.setToolTip(self.__tr("选择要转写的音频文件"))
-        fileChosePushButton.setIcon(self.style().standardPixmap(QStyle.StandardPixmap.SP_FileIcon))
-        fileChosePushButton.resize(385,420)
-        hBoxLayout_Audio_File.addWidget(fileChosePushButton)
-        VBoxLayout_Transcribes.addLayout(hBoxLayout_Audio_File)
+        # fileChosePushButton = ToolButton()
+        # self.fileOpenPushButton = fileChosePushButton
+        # fileChosePushButton.setToolTip(self.__tr("选择要转写的音频文件"))
+        # fileChosePushButton.setIcon(self.style().standardPixmap(QStyle.StandardPixmap.SP_FileIcon))
+        # fileChosePushButton.resize(385,420)
+        # hBoxLayout_Audio_File.addWidget(fileChosePushButton)
+        # VBoxLayout_Transcribes.addLayout(hBoxLayout_Audio_File)
 
-        # -----------------------------------------------------------------------------------------
+        # # -----------------------------------------------------------------------------------------
         
-        hBoxLayout_output_File = QHBoxLayout()
-        hBoxLayout_output_File.setSpacing(10)
-        hBoxLayout_output_File.setContentsMargins(10,10,10,10)
+        # hBoxLayout_output_File = QHBoxLayout()
+        # # hBoxLayout_output_File.setSpacing(10)
+        # # hBoxLayout_output_File.setContentsMargins(10,10,10,10)
 
-        label_output_file = QLabel()
-        label_output_file.setText(self.__tr("输出文件目录"))
-        hBoxLayout_output_File.addWidget(label_output_file)
+        # label_output_file = QLabel()
+        # label_output_file.setText(self.__tr("输出文件目录"))
+        # hBoxLayout_output_File.addWidget(label_output_file)
 
-        self.LineEdit_output_dir = LineEdit()
-        self.LineEdit_output_dir.setToolTip(self.__tr("输出文件保存的目录"))
-        self.LineEdit_output_dir.setClearButtonEnabled(True)
-        hBoxLayout_output_File.addWidget(self.LineEdit_output_dir)
+        # self.LineEdit_output_dir = LineEdit()
+        # self.LineEdit_output_dir.setToolTip(self.__tr("输出文件保存的目录"))
+        # self.LineEdit_output_dir.setClearButtonEnabled(True)
+        # hBoxLayout_output_File.addWidget(self.LineEdit_output_dir)
 
-        outputDirChoseButton = ToolButton()
-        self.outputDirChoseButton = outputDirChoseButton
-        outputDirChoseButton.setToolTip(self.__tr("选择输出目录"))
-        outputDirChoseButton.setIcon(self.style().standardPixmap(QStyle.StandardPixmap.SP_DirIcon))
-        outputDirChoseButton.resize(385,420)
-        hBoxLayout_output_File.addWidget(outputDirChoseButton)
-        VBoxLayout_Transcribes.addLayout(hBoxLayout_output_File)
+        # outputDirChoseButton = ToolButton()
+        # self.outputDirChoseButton = outputDirChoseButton
+        # outputDirChoseButton.setToolTip(self.__tr("选择输出目录"))
+        # outputDirChoseButton.setIcon(self.style().standardPixmap(QStyle.StandardPixmap.SP_DirIcon))
+        # outputDirChoseButton.resize(385,420)
+        # hBoxLayout_output_File.addWidget(outputDirChoseButton)
+        # VBoxLayout_Transcribes.addLayout(hBoxLayout_output_File)
 
         # =========================================================================================
         
@@ -269,10 +328,11 @@ class mainWin(FramelessMainWindow):
         VBoxLayout_Transcribes.addLayout(GridBoxLayout_other_paramters)
 
         # -----------------------------------------------------------------------------------------
-
         label_format = QLabel()
         label_format.setText(self.__tr("输出文件格式"))
         GridBoxLayout_other_paramters.addWidget(label_format,0, 0)
+        label_format.setObjectName("outputFormatLabel")
+        label_format.setStyleSheet("#outputFormatLabel{background : rgba(0, 128, 0, 120);}")
 
         self.combox_output_format = ComboBox()
         self.combox_output_format.setToolTip(self.__tr("输出字幕文件的格式"))
@@ -282,9 +342,9 @@ class mainWin(FramelessMainWindow):
         self.combox_output_format.setCurrentIndex(0)
 
         # --------------------------------------------------------------------------------------------
-
-
         Label_language = QLabel(self.__tr("语言"))
+        Label_language.setObjectName("LabelLanguage")
+        Label_language.setStyleSheet("#LabelLanguage{background-color : rgba(0, 128, 0, 120)}")
         self.combox_language = EditableComboBox()
         self.combox_language.addItem("Auto")
         for key, value in self.LANGUAGES_DICT.items():
@@ -306,6 +366,8 @@ class mainWin(FramelessMainWindow):
         GridBoxLayout_other_paramters.addWidget(self.combox_language, 1, 1)
         
         label_Translate_to_English = QLabel(self.__tr("翻译为英语"))
+        label_Translate_to_English.setObjectName("labelTranslateToEnglish")
+        label_Translate_to_English.setStyleSheet("#labelTranslateToEnglish{background-color : rgba(240, 113, 0, 128)}")
         self.combox_Translate_to_English = ComboBox()
         self.combox_Translate_to_English.addItems(["False", "True"])
         self.combox_Translate_to_English.setCurrentIndex(0)
@@ -314,6 +376,8 @@ class mainWin(FramelessMainWindow):
         GridBoxLayout_other_paramters.addWidget(self.combox_Translate_to_English, 2, 1)
 
         label_beam_size = QLabel(self.__tr("分块大小"))
+        label_beam_size.setObjectName("labelBeamSize")
+        label_beam_size.setStyleSheet("#labelBeamSize{background-color : rgba(0, 255, 255, 60)}")
         self.LineEdit_beam_size = LineEdit()
         self.LineEdit_beam_size.setText("5")
         self.LineEdit_beam_size.setToolTip(self.__tr("用于解码的音频块的大小。"))
@@ -328,6 +392,8 @@ class mainWin(FramelessMainWindow):
         GridBoxLayout_other_paramters.addWidget(self.LineEdit_best_of, 4, 1)
 
         label_patience = QLabel(self.__tr("搜索耐心"))
+        label_patience.setObjectName("labelPatience")
+        label_patience.setStyleSheet("#labelPatience{background-color : rgba(0, 255, 255, 60)}")
         self.LineEdit_patience = LineEdit()
         self.LineEdit_patience.setToolTip(self.__tr("搜索音频块时的耐心因子"))
         self.LineEdit_patience.setText("1.0")
@@ -335,6 +401,8 @@ class mainWin(FramelessMainWindow):
         GridBoxLayout_other_paramters.addWidget(self.LineEdit_patience, 5, 1)
 
         label_length_penalty = QLabel(self.__tr("惩罚常数"))
+        label_length_penalty.setObjectName("labelLengthPenalty")
+        label_length_penalty.setStyleSheet("#labelLengthPenalty{background-color : rgba(0, 255, 255, 60)}")
         self.LineEdit_length_penalty = LineEdit()
         self.LineEdit_length_penalty.setText("1.0")
         self.LineEdit_length_penalty.setToolTip(self.__tr("指数形式的长度惩罚常数"))
@@ -348,8 +416,10 @@ class mainWin(FramelessMainWindow):
         GridBoxLayout_other_paramters.addWidget(label_temperature, 7, 0)
         GridBoxLayout_other_paramters.addWidget(self.LineEdit_temperature, 7, 1)
         
-
         label_compression_ratio_threshold = QLabel(self.__tr("gzip 压缩比阈值"))
+        label_compression_ratio_threshold.setObjectName("labelCompressionRatioThreshold")
+        label_compression_ratio_threshold.setStyleSheet("#labelCompressionRatioThreshold{background-color : rgba(0, 255, 255, 60)}")
+
         self.LineEdit_compression_ratio_threshold = LineEdit()
         self.LineEdit_compression_ratio_threshold.setText("2.4")
         self.LineEdit_compression_ratio_threshold.setToolTip(self.__tr("如果音频的gzip压缩比高于此值，则视为失败。"))
@@ -357,6 +427,8 @@ class mainWin(FramelessMainWindow):
         GridBoxLayout_other_paramters.addWidget(self.LineEdit_compression_ratio_threshold, 8, 1)
 
         label_log_prob_threshold = QLabel(self.__tr("采样概率阈值"))
+        label_log_prob_threshold.setObjectName("labelLogProbThreshold")
+        label_log_prob_threshold.setStyleSheet("#labelLogProbThreshold{background-color : rgba(0, 255, 255, 60)}")
         self.LineEdit_log_prob_threshold = LineEdit()
         self.LineEdit_log_prob_threshold.setText("-1.0")
         self.LineEdit_log_prob_threshold.setToolTip(self.__tr("如果采样标记的平均对数概率阈值低于此值，则视为失败"))
@@ -364,6 +436,9 @@ class mainWin(FramelessMainWindow):
         GridBoxLayout_other_paramters.addWidget(self.LineEdit_log_prob_threshold, 9 ,1)
 
         label_no_speech_threshold  = QLabel(self.__tr("静音阈值"))
+        label_no_speech_threshold.setObjectName("labelNoSpeechThreshold")
+        label_no_speech_threshold.setStyleSheet("#labelNoSpeechThreshold{background-color : rgba(0, 255, 255, 60)}")
+
         self.LineEdit_no_speech_threshold = LineEdit()
         self.LineEdit_no_speech_threshold.setText("0.6")
         self.LineEdit_no_speech_threshold.setToolTip(self.__tr("音频段的如果非语音概率高于此值，\n并且对采样标记的平均对数概率低于阈值，\n则将该段视为静音。"))
@@ -371,6 +446,8 @@ class mainWin(FramelessMainWindow):
         GridBoxLayout_other_paramters.addWidget(self.LineEdit_no_speech_threshold, 10,1)
 
         label_condition_on_previous_text = QLabel(self.__tr("循环提示"))
+        label_condition_on_previous_text.setObjectName("labelConditionOnPreviousText")
+        label_condition_on_previous_text.setStyleSheet("#labelConditionOnPreviousText{background-color : rgba(0, 255, 255, 60)}")
         self.combox_condition_on_previous_text = ComboBox()
         self.combox_condition_on_previous_text.addItems(["True", "False"])
         self.combox_condition_on_previous_text.setCurrentIndex(0)
@@ -406,6 +483,8 @@ class mainWin(FramelessMainWindow):
         GridBoxLayout_other_paramters.addWidget(self.LineEdit_suppress_tokens, 15, 1)
 
         label_without_timestamps  = QLabel(self.__tr("关闭时间戳"))
+        label_without_timestamps.setObjectName("labelWithoutTimestamps")
+        label_without_timestamps.setStyleSheet("#labelWithoutTimestamps{background-color : rgba(240, 113, 0, 128)}")
         self.combox_without_timestamps = ComboBox()
         self.combox_without_timestamps.addItems(["False", "True"])
         self.combox_without_timestamps.setCurrentIndex(0)
@@ -420,16 +499,20 @@ class mainWin(FramelessMainWindow):
         GridBoxLayout_other_paramters.addWidget(label_max_initial_timestamp, 17, 0)
         GridBoxLayout_other_paramters.addWidget(self.LineEdit_max_initial_timestamp, 17, 1)
 
-
         label_word_timestamps = QLabel(self.__tr("单词级时间戳"))
+        label_word_timestamps.setObjectName("labelWordTimestamps")
+        # label_word_timestamps.setAlignment(Qt.AlignmentFlag.AlignVCenter|Qt.AlignmentFlag.AlignRight)
+        label_word_timestamps.setStyleSheet("#labelWordTimestamps{background-color : rgba(240, 113, 0, 128)}")
+
         self.combox_word_timestamps = ComboBox()
         self.combox_word_timestamps.addItems(["False", "True"])
         self.combox_word_timestamps.setCurrentIndex(0)
-        self.combox_word_timestamps.setToolTip(self.__tr("用交叉注意力模式和动态时间规整提取单词级时间戳，\n并在每个段的每个单词中包含时间戳。"))
+        self.combox_word_timestamps.setToolTip(self.__tr("输出卡拉OK式歌词，支持 SMI VTT LRC 格式"))
         GridBoxLayout_other_paramters.addWidget(label_word_timestamps, 18, 0)
         GridBoxLayout_other_paramters.addWidget(self.combox_word_timestamps, 18, 1)
         
         label_prepend_punctuations = QLabel(self.__tr("标点向后合并"))
+        
         self.LineEdit_prepend_punctuations = LineEdit()
         self.LineEdit_prepend_punctuations.setText("\"'“¿([{-")
         self.LineEdit_prepend_punctuations.setToolTip(self.__tr("如果开启单词级时间戳，\n则将这些标点符号与下一个单词合并。"))
@@ -515,7 +598,6 @@ class mainWin(FramelessMainWindow):
         GridLayout_model_param.addWidget(label_device,0,0)
         GridLayout_model_param.addWidget(device_combox,0,1)
 
-
         label_device_index = QLabel()
         label_device_index.setText(self.__tr("设备号："))
         LineEdit_device_index = LineEdit()
@@ -567,7 +649,6 @@ class mainWin(FramelessMainWindow):
         GridLayout_model_param.addWidget(button_download_root,5,0)
         GridLayout_model_param.addWidget(self.LineEdit_download_root,5,1)
 
-
         label_local_files_only =QLabel()
         label_local_files_only.setText(self.__tr("是否使用本地缓存"))
         combox_local_files_only = ComboBox()
@@ -593,7 +674,6 @@ class mainWin(FramelessMainWindow):
         self.button_convert_model.setText(self.__tr("转换模型"))
         self.button_convert_model.setToolTip(self.__tr("转换 OpenAi 模型到本地格式，\n必须选择在线模型"))
         hBoxLayout_model_convert.addWidget(self.button_convert_model)
-
 
         self.modelLoderBrower = QTextBrowser()
         self.vBoxLayout_model_param.addWidget(self.modelLoderBrower)
@@ -659,7 +739,6 @@ class mainWin(FramelessMainWindow):
         self.GridLayout_VAD_param.addWidget(LineEdit_VAD_patam_max_speech_duration_s, 2,1)
         self.LineEdit_VAD_patam_max_speech_duration_s = LineEdit_VAD_patam_max_speech_duration_s
         
-
         label_VAD_patam_min_silence_duration_ms = QLabel()
         label_VAD_patam_min_silence_duration_ms.setText(self.__tr("最小静息时长(ms)"))            
         LineEdit_VAD_patam_min_silence_duration_ms = LineEdit()
@@ -668,7 +747,6 @@ class mainWin(FramelessMainWindow):
         self.GridLayout_VAD_param.addWidget(label_VAD_patam_min_silence_duration_ms, 3,0)
         self.GridLayout_VAD_param.addWidget(LineEdit_VAD_patam_min_silence_duration_ms, 3,1)
         self.LineEdit_VAD_patam_min_silence_duration_ms = LineEdit_VAD_patam_min_silence_duration_ms
-
 
         label_VAD_patam_window_size_samples = QLabel()
         label_VAD_patam_window_size_samples.setText(self.__tr("采样窗口大小"))
@@ -695,7 +773,6 @@ class mainWin(FramelessMainWindow):
 
         self.page_VAD.setLayout(self.VLayout_VAD)
 
-        # self.page_VAD.setObjectName("pageVADParameter")
         self.page_VAD.setStyleSheet("#pageVADParameter{border:1px solid green; padding: 5px;}")
         
     
@@ -717,9 +794,6 @@ class mainWin(FramelessMainWindow):
         widget = self.stackedWidget.widget(index)
         self.pivot.setCurrentItem(widget.objectName())
         
-        # currentItem = self.pivot.items[widget.objectName()]
-        # print(currentItem)
-        # currentItem.setStyleSheet(f"#{widget.objectName()}{'{'}background-color: rgba(0,242,0,255){'}'}")
 
     def getLocalModelPath(self):
         """
@@ -740,16 +814,28 @@ class mainWin(FramelessMainWindow):
             self.lineEdit_model_path.setText(path)
             self.model_path = path
 
+    def setTranscribeOrCapture(self):
+        num_widgets_layout = self.GridBoxLayout_targetFiles.columnCount()
+        for i in range(num_widgets_layout):
+            widget = self.GridBoxLayout_targetFiles.itemAtPosition(0, i).widget() # itemAt(i).widget()
+            widget.setEnabled(self.transceibe_Files_RadioButton.isChecked())
+        
+        num_widgets_layout = self.hBoxLayout_Audio_capture_para.count()
+        for i in range(num_widgets_layout):
+            widget = self.hBoxLayout_Audio_capture_para.itemAt(i).widget() # itemAt(i).widget()
+            try:
+                widget.setEnabled(self.audio_capture_RadioButton.isChecked())
+            except:
+                pass
+
     def setModelLocationLayout(self):
         num_widgets_layout = self.hBoxLayout_local_model.count()
-            # print(num_widgets_layout)
             
         for i in range(num_widgets_layout):
             widget = self.hBoxLayout_local_model.itemAt(i).widget()
             widget.setEnabled(self.model_local_RadioButton.isChecked())
         
         num_widgets_layout = self.hBoxLayout_online_model.count()
-            # print(num_widgets_layout)
             
         for i in range(num_widgets_layout):
             widget = self.hBoxLayout_online_model.itemAt(i).widget()
@@ -757,7 +843,6 @@ class mainWin(FramelessMainWindow):
     
     def setVADUILayout(self):
         num_widgets_layout = self.GridLayout_VAD_param.count()
-            # print(num_widgets_layout)
             
         for i in range(num_widgets_layout):
             widget = self.GridLayout_VAD_param.itemAt(i).widget()
@@ -1107,7 +1192,9 @@ class mainWin(FramelessMainWindow):
 
         self.modelLoderBrower.textChanged.connect(lambda: self.modelLoderBrower.moveCursor(QTextCursor.MoveOperation.End, mode=QTextCursor.MoveMode.MoveAnchor))
         self.processResultText.textChanged.connect(lambda: self.processResultText.moveCursor(QTextCursor.MoveOperation.End, mode=QTextCursor.MoveMode.MoveAnchor))
-        
+        self.transceibe_Files_RadioButton.clicked.connect(self.setTranscribeOrCapture)
+        self.audio_capture_RadioButton.clicked.connect(self.setTranscribeOrCapture)
+
         set_output_file = lambda path: path if path != "" else self.LineEdit_output_dir.text()
         self.outputDirChoseButton.clicked.connect(lambda:self.LineEdit_output_dir.setText(set_output_file(QFileDialog.getExistingDirectory(self,"选择输出文件存放目录", self.LineEdit_output_dir.text()))) )
 
@@ -1118,7 +1205,7 @@ class mainWin(FramelessMainWindow):
                                     QMessageBox.Yes | QMessageBox.No,
                                     QMessageBox.No)
         if reply == QMessageBox.Yes:
-            del self.FasterWhisperModel
+            # del self.FasterWhisperModel
             event.accept()
         else:
             event.ignore()
