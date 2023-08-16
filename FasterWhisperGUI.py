@@ -4,7 +4,7 @@
 import sys
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import  QPixmap
+from PySide6.QtGui import QFont, QPixmap
 from PySide6.QtWidgets import QApplication, QSplashScreen
 
 class MySplashScreen(QSplashScreen):
@@ -24,7 +24,7 @@ splash.setPixmap(QPixmap(r":/resource/Image/FasterWhisper.png"))
 #初始文本
 splash.showMessage("加载...", Qt.AlignmentFlag.AlignRight | Qt.AlignBottom, Qt.black)
 # 设置字体
-# splash.setFont(QFont('MicrosoftYaHei', 10))
+splash.setFont(QFont('MicrosoftYaHei', 10))
 # 显示启动界面
 splash.show()
 app.processEvents()  # 处理主进程事件

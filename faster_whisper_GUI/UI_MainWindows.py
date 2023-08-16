@@ -6,6 +6,7 @@ import os
 from threading import Thread
 
 from pathlib import Path
+import time
 
 from PySide6.QtCore import  (QObject, Qt, Signal, QCoreApplication)
 from PySide6.QtWidgets import  (QFileDialog, QMessageBox, QSpacerItem, QWidget, QStackedWidget, QVBoxLayout, QStyle, QHBoxLayout, QGridLayout, QCompleter, QTextBrowser, QLabel)
@@ -16,7 +17,7 @@ from qframelesswindow import (FramelessMainWindow , StandardTitleBar)
 from .config import (Language_dict, Preciese_list, Model_names, Device_list, Task_list, STR_BOOL, SUbTITLE_FORMAT, CAPTURE_PARA)
 from .modelLoad import loadModel
 from .convertModel import ConvertModel
-from .transcribe import Transcribe
+from .transcribe_test import TranscribeWorker, AudioStreamTranscribeWorker, CaptureAudioWorker
 
 from resource import rc_Image
 
@@ -48,6 +49,10 @@ class mainWin(FramelessMainWindow):
         self.preciese_list = Preciese_list
         # 语言支持
         self.LANGUAGES_DICT = Language_dict
+
+        self.transcribe_thread = None
+        self.audio_capture_thread = None
+
 
         userDir = os.path.expanduser("~")
         cache_dir = os.path.join(userDir,".cache","huggingface","hub").replace("\\", "/")
@@ -192,7 +197,7 @@ class mainWin(FramelessMainWindow):
         self.combox_capture = ComboBox()
         self.combox_capture.addItems([f"{x['channel']} channel, {x['dType']} bit, {x['rate']} Hz ({x['quality']})" for x in CAPTURE_PARA])
         self.combox_capture.setCurrentIndex(1)
-        spacer = QSpacerItem(8, 0) #, QSizePolicy.Preferred)#, QSizePolicy.Expanding)
+        spacer = QSpacerItem(10, 0) #, QSizePolicy.Preferred)#, QSizePolicy.Expanding)
         
         self.hBoxLayout_Audio_capture_para.addWidget(self.label_capture)
         self.hBoxLayout_Audio_capture_para.addItem(spacer)
@@ -249,25 +254,25 @@ class mainWin(FramelessMainWindow):
         # VBoxLayout_Transcribes.addLayout(hBoxLayout_output_File)
 
         # ------------------------------------------------------------------------------------------
-        self.page_process.setLayout(VBoxLayout)
-
-        self.processResultText = QTextBrowser()
-        # self.processResultText.setText("Hello Whsiper")
-        VBoxLayout.addWidget(self.processResultText)
-
-        HBoxLayout = QHBoxLayout()
+        
         self.button_process = PushButton()
         self.button_process.setObjectName("processButton")
-        self.button_process.setText(self.__tr("转写或采集"))
+        self.button_process.setText(self.__tr("  开始  "))
         self.button_process.setIcon(QIcon(self.processPageSVG))
-        HBoxLayout.addWidget(self.button_process)
-
-        VBoxLayout.addLayout(HBoxLayout)
-        # VBoxLayout.setStretch(0,10)
-        # VBoxLayout.setStretch(1,5)
+        self.button_process.setStyleSheet("#processButton{background-color : rgba(0, 255, 0, 100);}")
+        self.button_process.setStyleSheet("#processButton{background:242 242 242}")
+        
+        # HBoxLayout = QHBoxLayout()
+        # HBoxLayout.addWidget(self.button_process)
+        # self.GridBoxLayout_targetFiles.addWidget(self.button_process, 2, 1)
+        VBoxLayout.addWidget(self.button_process)
+        
+        # ------------------------------------------------------------------------------------------
+        self.page_process.setLayout(VBoxLayout)
+        self.processResultText = QTextBrowser()
+        VBoxLayout.addWidget(self.processResultText)
 
         self.page_process.setStyleSheet("#pageProcess{border: 1px solid cyan; padding: 5px;}")
-        self.button_process.setStyleSheet("#processButton{background:242 242 242}")
 
         # 根据选择设置相关控件的状态
         self.setTranscribeOrCapture()
@@ -900,14 +905,16 @@ class mainWin(FramelessMainWindow):
             print(f"{key} : {value}")
 
         def go():
-            self.FasterWhisperModel = loadModel(model_size_or_path=model_param["model_size_or_path"],
-                        device=model_param["device"],
-                        device_index=model_param["device_index"],
-                        compute_type=model_param["compute_type"],
-                        cpu_threads=model_param["cpu_threads"],
-                        num_workers=model_param["num_workers"],
-                        download_root=model_param["download_root"],
-                        local_files_only=model_param["local_files_only"])
+            self.FasterWhisperModel = loadModel(
+                        model_size_or_path=model_param["model_size_or_path"]
+                        , device=model_param["device"]
+                        , device_index=model_param["device_index"]
+                        , compute_type=model_param["compute_type"]
+                        , cpu_threads=model_param["cpu_threads"]
+                        , num_workers=model_param["num_workers"]
+                        , download_root=model_param["download_root"]
+                        , local_files_only=model_param["local_files_only"]
+                    )
         
         thread_go = Thread(target= go, daemon=True)
         thread_go.start()
@@ -953,80 +960,203 @@ class mainWin(FramelessMainWindow):
         return model_dict
 
     def onButtonProcessClicked(self):
-
-        """
-        process button clicked
-        """
-
-        self.processResultText.setText("")
-
         # 重定向输出
         self.redirectOutput(self.setTextAndMoveCursorToProcessBrowser)
 
-        VAD_param :dict = self.getVADparam()
+        if self.transceibe_Files_RadioButton.isChecked():
+            self.transcribeProcess()
 
-        # vad 启用标识
-        vad_filter = VAD_param["vad_filter"]
-        print(f"vad_filter : {vad_filter}")
+        elif self.audio_capture_RadioButton.isChecked():
+            self.audioCaptureProcess()
+
+    def audioCaptureProcess(self):
         
-        if vad_filter:
-            # VAD 参数
-            VAD_param = VAD_param["param"]
-            for key, Value in VAD_param.items():
-                print(f"  {key:<24} : {Value}")
+        if self.transcribe_thread == None and self.audio_capture_thread == None:
+            self.processResultText.setText("")
+            print("AudioCapture")
+            VAD_param :dict = self.getVADparam()
+
+            # vad 启用标识
+            vad_filter = VAD_param["vad_filter"]
+            print(f"vad_filter : {vad_filter}")
+            
+            if vad_filter:
+                # VAD 参数
+                VAD_param = VAD_param["param"]
+                for key, Value in VAD_param.items():
+                    print(f"  {key:<24} : {Value}")
+            else:
+                VAD_param = {}
+
+            # 转写参数
+            Transcribe_params : dict = self.getParamTranscribe()
+            print("Transcribes options:")
+            for key, value in Transcribe_params.items():
+                print(f"  {key} : {value}")
+
+            if self.FasterWhisperModel == None:
+                print(self.__tr("模型未加载！进程退出"))
+                self.transcribeOver()
+                return
+            
+            rate_channel_dType = self.combox_capture.currentIndex()
+            rate_channel_dType : dict = CAPTURE_PARA[rate_channel_dType]
+            rate = rate_channel_dType["rate"]
+            channels = rate_channel_dType["channel"]
+            dType = rate_channel_dType["dType"]
+
+            # if dType == 16:
+            #     dType = "int16"
+            # elif dType == 24:
+            #     dType = "int24"
+
+            self.audio_capture_thread = CaptureAudioWorker(rate=rate
+                                                            , channels=channels
+                                                            , dType=dType
+                                                        )
+            self.audio_capture_thread.start()
+
+            self.button_process.setText(self.__tr("  取消  "))
+            self.button_process.setIcon(f":/resource/Image/Cancel_red.svg")
+
         else:
-            VAD_param = {}
+            self.audioCaptureOver()
+            self.resetButton_process()
+            
 
-        # 转写参数
-        Transcribe_params : dict = self.getParamTranscribe()
-        print("Transcribes options:")
-        for key, value in Transcribe_params.items():
-            print(f"  {key} : {value}")
 
-        if self.FasterWhisperModel == None:
-            print(self.__tr("模型未加载！进程退出"))
-            return
+
+
+
+
+
+
+
+    def transcribeProcess(self):
+        """
+        process button clicked
+        """
+        if self.transcribe_thread == None :
+            self.processResultText.setText("")
+            VAD_param :dict = self.getVADparam()
+
+            # vad 启用标识
+            vad_filter = VAD_param["vad_filter"]
+            print(f"vad_filter : {vad_filter}")
+            
+            if vad_filter:
+                # VAD 参数
+                VAD_param = VAD_param["param"]
+                for key, Value in VAD_param.items():
+                    print(f"  {key:<24} : {Value}")
+            else:
+                VAD_param = {}
+
+            # 转写参数
+            Transcribe_params : dict = self.getParamTranscribe()
+            print("Transcribes options:")
+            for key, value in Transcribe_params.items():
+                print(f"  {key} : {value}")
+
+            if self.FasterWhisperModel == None:
+                print(self.__tr("模型未加载！进程退出"))
+                self.transcribeOver()
+                return
+            
+            # print(Transcribe_params['audio'])
+            if len(Transcribe_params['audio']) == 0 and self.transceibe_Files_RadioButton.isChecked():
+                print("No input files!")
+                self.transcribeOver()
+                return
+            
+            files_exist = [os.path.exists(file) for file in Transcribe_params["audio"]]
+            if not all(files_exist):
+                ignore_file = [file for file in Transcribe_params['audio'] if not os.path.exists(file)]
+                print(self.__tr("存在无效文件："))
+                new_line = "\n                    "
+                print(f"  Error FilesName : {new_line.join(ignore_file)}")
+                new_line = "\n                "
+                print(f"  ignore files: {new_line.join(ignore_file)}")
+                Transcribe_params['audio'] = [file for file in Transcribe_params['audio'] if os.path.exists(file)]
+            
+            try:
+                num_worker = int(self.LineEdit_num_workers.text())
+            except:
+                num_worker = 1
+            
+            
+            self.transcribe_thread = TranscribeWorker(model = self.FasterWhisperModel
+                                                    , parameters = Transcribe_params
+                                                    , vad_filter = vad_filter
+                                                    , vad_parameters = VAD_param
+                                                    , num_workers = num_worker
+                                                    , output_format = self.combox_output_format.currentText()
+                                                    , output_dir = self.LineEdit_output_dir.text()
+                                                )
+            
+            self.transcribe_thread.signal_process_over.connect(self.transcribeOver)
+            self.button_process.setText(self.__tr("  取消  "))
+            self.button_process.setIcon(r":/resource/Image/Cancel_red.svg")
+            self.transcribe_thread.is_running == True
+            # self.button_process.clicked.disconnect(self.onButtonProcessClicked)
+            # self.button_process.clicked.connect(self.cancelTrancribe)
+            self.transcribe_thread.start()
         
-        files_exist = [os.path.exists(file) for file in Transcribe_params["audio"]]
-        if not all(files_exist):
-            ignore_file = [file for file in Transcribe_params['audio'] if not os.path.exists(file)]
-            print(self.__tr("存在无效文件："))
-            new_line = "\n                    "
-            print(f"  Error FilesName : {new_line.join(ignore_file)}")
-            new_line = "\n                "
-            print(f"  ignore files: {new_line.join(ignore_file)}")
-            Transcribe_params['audio'] = [file for file in Transcribe_params['audio'] if os.path.exists(file)]
+        elif self.transcribe_thread is not None and self.transcribe_thread.isRunning():
+            reply = QMessageBox.question(self
+                                        , self.__tr('取消')
+                                        , self.__tr("是否取消操作？")
+                                        , QMessageBox.Yes | QMessageBox.No
+                                        , QMessageBox.No
+                                    )
+            if reply == QMessageBox.Yes:
+                self.button_process.setEnabled(False)
+                self.cancelTrancribe()
+    
+    def resetButton_process(self):
+        self.button_process.setEnabled(True)
+        self.button_process.setText(self.__tr("  开始  "))
+        self.button_process.setIcon(r":/resource/Image/speak-16x24.svg")
         
-        # print(Transcribe_params['audio'])
-        if len(Transcribe_params['audio']) == 0:
-            return
+    def cancelTrancribe(self):
+        print("Canceling...")
+        self.transcribe_thread.stop()
+        # self.transcribeOver()
+        print("【Process Canceled By User!】")
+        self.resetButton_process()
         
+    def audioCaptureOver(self):
+        self.audio_capture_thread.stop()
+        while(self.audio_capture_thread.isRunning()):
+            time.sleep(0.1)
+        self.audio_capture_thread = None
+
+    def transcribeOver(self):
+        # self.button_process.clicked.disconnect(self.cancelTrancribe)
+        # self.button_process.clicked.connect(self.onButtonProcessClicked)
         try:
-            num_worker = int(self.LineEdit_num_workers.text())
+            if self.transcribe_thread and self.transcribe_thread.is_running:
+                self.transcribe_thread.stop()
         except:
-            num_worker = 1
+            pass
+        while(self.transcribe_thread and self.transcribe_thread.isRunning()):
+            time.sleep(0.1)
+        self.transcribe_thread = None
+        self.restButton_process()
 
-        # return
-        # segment_info = {}
-        def go():
-            Transcribe(model=self.FasterWhisperModel,
-                       parameters=Transcribe_params,
-                       vad_filter=vad_filter,
-                       vad_parameters=VAD_param,
-                       num_worker=num_worker,
-                       output_format=self.combox_output_format.currentText(),
-                       output_dir=self.LineEdit_output_dir.text())
-        
-        thread_go = Thread(target=go, daemon=True)
-        thread_go.start()
-
-        # print(segment_info["info"])
-                    
 
     def getParamTranscribe(self) -> dict:
         Transcribe_params = {}
 
-        audio = self.LineEdit_audio_fileName.text().strip().split(";;")
+        audio = self.LineEdit_audio_fileName.text().strip()
+        if audio != "":
+            audio = audio.split(";;")
+        else:
+            audio = []
+
+        if self.audio_capture_RadioButton.isChecked():
+            audio = "AudioStream"
+
         Transcribe_params["audio"] = audio
 
         language = self.combox_language.text().split(" ")[-1]
