@@ -4,10 +4,15 @@
 from concurrent import futures
 import os
 from typing import List
-import av
+import time
 
+import numpy as np
+import av
 from faster_whisper import WhisperModel, Segment
 import webvtt
+from PySide6.QtCore import QThread, Signal, QDateTime
+from pyaudio import PyAudio, paInt16, paInt24
+import wave
 
 from .config import Language_dict, SUbTITLE_FORMAT
 
@@ -27,141 +32,406 @@ class segment_Transcribe():
         except:
             self.words = None
 
+class AudioStreamTranscribeWorker(QThread):
+    Signal_process_over = Signal()
+    def __init__(self
+                , parent = None
+                , model : WhisperModel = None
+                , parameters : dict = None
+                , vad_filter : bool = False
+                , vad_parameters : dict = None
+                , num_workers : int = 1
+                , output_format : str = "srt"
+                , output_dir : str = ""
+            ) -> None:
+        super().__init__(parent)
 
-def Transcribe(model: WhisperModel, 
-               parameters: dict, 
-               vad_filter: bool, 
-               vad_parameters: dict, 
-               num_worker:int = 1, 
-               output_format: str = "srt", 
-               output_dir:dir = ""):
-    '''
-        parameters: dict, parameters of fasterWhisper 
-        vad_filter: bool, if true, use VAD model
-        vad_parameters: dict, parameters of VAD model
-        num_worker:int = 1, 
-        output_format: str = "srt", 
-        output_dir:dir = ""
-    '''
+class CaptureAudioWorker(QThread):
+    Signal_process_over = Signal(np.ndarray)
 
-    # 检查输出目录
-    if os.path.exists(output_dir):
-        pass
-    else:
-        os.mkdir(output_dir)
-        print(f"\nCreate output dir : {output_dir}")
-
-    files = parameters["audio"]
-    
-    # 忽略掉输入文件中可能存在的所有的字幕文件
-    files = [file for file in files if file.split(".")[-1].upper() not in SUbTITLE_FORMAT]
-    ingnore_files = [file for file in files if file.split(".")[-1].upper() in SUbTITLE_FORMAT]
-    
-    # print
-    if len(ingnore_files) != 0:
-        new_line = "\n              "
-        print(f"ignore files: {new_line.join(ingnore_files)}")
-    
-    
-    def transcribe_file(file):
-        print("\n\n")
-        print(f"current task: {file}")
-        print("  尝试解析文件")
-        try:
-                container = av.open(file) # 尝试打开文件      
-                print("  解析成功！")
-                container.close()
-        except av.AVError as e: # 捕获异常
-                print(f'    {file.split("/")[-1]} 不是一个有效的音视频文件\n    错误信息：{e}')
-                print(f"    ignore File : {file} \n")
-                return None
+    def __init__(self
+                , parent=None
+                , rate = 48000
+                , channels = 2
+                , dType = 16
+            ) -> None:
         
-        segments, info = model.transcribe(
-                                        audio=file,
-                                        language=parameters["language"],
-                                        task=parameters["task"],
-                                        beam_size=parameters["beam_size"],
-                                        best_of=parameters["best_of"],
-                                        patience=parameters["patience"],
-                                        length_penalty=parameters["length_penalty"],
-                                        temperature=parameters["temperature"],
-                                        compression_ratio_threshold=parameters["compression_ratio_threshold"],
-                                        log_prob_threshold=parameters["log_prob_threshold"],
-                                        no_speech_threshold=parameters["no_speech_threshold"],
-                                        condition_on_previous_text=parameters["condition_on_previous_text"],
-                                        initial_prompt=parameters["initial_prompt"],
-                                        prefix=parameters["prefix"],
-                                        suppress_blank=parameters["suppress_blank"],
-                                        suppress_tokens=parameters["suppress_tokens"],
-                                        without_timestamps=parameters["without_timestamps"],
-                                        max_initial_timestamp=parameters["max_initial_timestamp"],
-                                        word_timestamps=parameters["word_timestamps"],
-                                        prepend_punctuations=parameters["prepend_punctuations"],
-                                        append_punctuations=parameters["append_punctuations"],
-                                        vad_filter=vad_filter,
-                                        vad_parameters=vad_parameters
-                                    )
-        try:
-            print(f"Detected language {Language_dict[info.language]} with probability {info.language_probability*100:.2f}%")
+        super().__init__(parent)
+        self.rate = rate
+        self.channels = channels
+        self.dType = dType
+        self.pa = PyAudio()
+        self.is_running = False
+        # self.timer = QTimer()
+        self.format_capture = {16:paInt16, 24:paInt24}
+        self.buffer_size = 2048
+    
+    def run(self):
+        self.is_running = True
+        # print("打开输入流...")
+        # print(f"format_capture : {self.format_capture[self.dType]}")
+        #if self.dType == 16:
+        stream = self.pa.open(format=self.format_capture[self.dType]
+                            , channels=self.channels
+                            , rate=self.rate
+                            , input=True
+                            , frames_per_buffer=self.buffer_size
+                        )
+        stream.start_stream()
+
+        currentDateTime = QDateTime.currentDateTime().toString("yyyy-MM-dd-hh-mm-ss")
+        # print(currentDateTime)
+
+        temp_path = r"./temp"
+        if not os.path.exists(os.path.abspath(temp_path)):
+            os.mkdir(os.path.abspath(temp_path))
+        # print(f"temp path : {temp_path}")
+
+        wav_path = os.path.join(os.path.abspath(temp_path), currentDateTime+".wav").replace("\\", "/")
+        # print(f"file: {wav_path}")
+
+        wf = wave.open(wav_path, 'wb')  # 创建一个音频文件
+        # print(f"set channels : {2}")
+        wf.setnchannels(self.channels)  # 设置声道数为2
+        # print(f"set sampwidth : {self.dType / 8}")
+        wf.setsampwidth(int(self.dType / 8))  # 设置采样深度为
+        # print(f"set rate : {self.rate}")
+        wf.setframerate(self.rate)  # 设置采样率为16000
+        record_buf = []
+        while self.is_running:
+            ##发射信号
+            # self.sinOut.emit(str(a))
+            # print("===========================================================")
+            # print(datetime.datetime.now())
+            audio_data = stream.read(self.buffer_size)  # 读出声卡缓冲区的音频数据
+            a = np.ndarray(buffer=audio_data, dtype={16:np.int16, 24:np.int32}[self.dType], shape=(self.buffer_size,))
+            # print(a.shape)
+            # 将数据写入创建的音频文件
+            record_buf.append(audio_data)
+            time.sleep(5)
         
-        except:
-            print(f"{file} 处理失败!")
-            return
+        wf.writeframes("".encode().join(record_buf))
+        wf.close()
+
+        stream.stop_stream()
+        stream.close()
+
+
+
+    def stop(self):
+        self.is_running = False
+
+
+
+    
+class TranscribeWorker(QThread):
+    signal_process_over =  Signal()
+    def __init__(self
+                , parent=None
+                , model : WhisperModel = None
+                , parameters : dict = None
+                , vad_filter : bool = False
+                , vad_parameters : dict = None
+                , num_workers : int = 1
+                , output_format : str = "srt"
+                , output_dir : str = ""
+                ) -> None:
         
-        # segments = list(segments)
-        segmentsTranscribe : List[segment_Transcribe] = []
-        # 遍历生成器，并获取转写内容
-        print(f"Transcription for {file.split('/')[-1]}")
-        for segment in segments:
-            print('  [' + str(round(segment.start),5) + 's --> ' + str(round(segment.end, 5)) + 's] ' + segment.text.lstrip())
-            segmentsTranscribe.append(segment_Transcribe(segment))#.start, segment.end, segment.text))
+        super().__init__(parent)
+        self.is_running = False
+        self.model = model
+        self.parameters = parameters
+        self.vad_filter = vad_filter
+        self.vad_parameters = vad_parameters
+        self.num_workers = num_workers
+        self.output_format = output_format
+        self.output_dir = output_dir
+    
+    def transcribe_file(self, file):
+            print("\n\n")
+            print(f"current task: {file}")
+            print("  尝试解析文件")
+            try:
+                    container = av.open(file) # 尝试打开文件      
+                    print("  解析成功！")
+                    container.close()
 
-        return info, segmentsTranscribe
-
-    # 在线程池中并发执行相关任务，默认状况下使用单 GPU 该并发线程数为 1 ，
-    # 提高线程数并不能明显增大吞吐量， 且可能因为线程调度的原因反而造成转写时间变长
-    # 多 GPU 或多核心 CPU 可通过输入设备号列表并增大并发线程数的方式增加吞吐量，实现多任务并发处理
-    # 但会造成内存或显存占用增多
-    with futures.ThreadPoolExecutor(num_worker) as executor:
-        results = executor.map(transcribe_file, files)
-        new_line = "\n"
-        for path, results in zip(files, results):
-            (info, segments) = results
-            if segments == None:
-                continue
-
-            # print(
-            #         f"\nTranscription for {path.split('/')[-1]}:\n{new_line.join('[' + str(segment.start) + 's --> ' + str(segment.end) + 's] ' + segment.text for segment in segments)}"
-            #     )
+            except av.AVError as e: # 捕获异常
+                    print(f'    {file.split("/")[-1]} 不是一个有效的音视频文件\n    错误信息：{e}')
+                    print(f"    ignore File : {file} \n")
+                    return None
             
-            print("Output...")
+            segments, info = self.model.transcribe(
+                                            audio=file,
+                                            language=self.parameters["language"],
+                                            task=self.parameters["task"],
+                                            beam_size=self.parameters["beam_size"],
+                                            best_of=self.parameters["best_of"],
+                                            patience=self.parameters["patience"],
+                                            length_penalty=self.parameters["length_penalty"],
+                                            temperature=self.parameters["temperature"],
+                                            compression_ratio_threshold=self.parameters["compression_ratio_threshold"],
+                                            log_prob_threshold=self.parameters["log_prob_threshold"],
+                                            no_speech_threshold=self.parameters["no_speech_threshold"],
+                                            condition_on_previous_text=self.parameters["condition_on_previous_text"],
+                                            initial_prompt=self.parameters["initial_prompt"],
+                                            prefix=self.parameters["prefix"],
+                                            suppress_blank=self.parameters["suppress_blank"],
+                                            suppress_tokens=self.parameters["suppress_tokens"],
+                                            without_timestamps=self.parameters["without_timestamps"],
+                                            max_initial_timestamp=self.parameters["max_initial_timestamp"],
+                                            word_timestamps=self.parameters["word_timestamps"],
+                                            prepend_punctuations=self.parameters["prepend_punctuations"],
+                                            append_punctuations=self.parameters["append_punctuations"],
+                                            vad_filter=self.vad_filter,
+                                            vad_parameters=self.vad_parameters
+                                        )
+            try:
+                print(f"Detected language {Language_dict[info.language]} with probability {info.language_probability*100:.2f}%")
+            
+            except:
+                print(f"{file} 处理失败!")
+                return
+            
+            # segments = list(segments)
+            segmentsTranscribe : List[segment_Transcribe] = []
+            # 遍历生成器，并获取转写内容
+            print(f"Transcription for {file.split('/')[-1]}")
 
-            if output_format == "All" and not(parameters["without_timestamps"]):
-                for format in SUbTITLE_FORMAT:
+            for segment in segments:
+                # 退出进程标识
+                # print(self.is_running)
+                if self.is_running == False:
+                    return info, None
+                    break
+
+                print('  [' + str(round(segment.start, 5)) + 's --> ' + str(round(segment.end, 5)) + 's] ' + segment.text.lstrip())
+                segmentsTranscribe.append(segment_Transcribe(segment))#.start, segment.end, segment.text))
+
+            # if not self.is_running:
+            #     self.signal_process_over.emit()
+            return info, segmentsTranscribe
+    
+    def run(self):
+        self.is_running = True
+        # model = self.model 
+        parameters = self.parameters
+        # vad_filter = self.vad_filter 
+        # vad_parameters = self.vad_parameters 
+        num_workers = self.num_workers
+        output_format = self.output_format
+        output_dir = self.output_dir
+
+        # 检查输出目录
+        if os.path.exists(output_dir):
+            pass
+        else:
+            os.mkdir(output_dir)
+            print(f"\nCreate output dir : {output_dir}")
+
+        files = parameters["audio"]
+        
+        # 忽略掉输入文件中可能存在的所有的字幕文件
+        files = [file for file in files if file.split(".")[-1].upper() not in SUbTITLE_FORMAT]
+        ingnore_files = [file for file in files if file.split(".")[-1].upper() in SUbTITLE_FORMAT]
+        
+        # print
+        if len(ingnore_files) != 0:
+            new_line = "\n              "
+            print(f"ignore files: {new_line.join(ingnore_files)}")
+        
+
+        # 在线程池中并发执行相关任务，默认状况下使用单 GPU 该并发线程数为 1 ，
+        # 提高线程数并不能明显增大吞吐量， 且可能因为线程调度的原因反而造成转写时间变长
+        # 多 GPU 或多核心 CPU 可通过输入设备号列表并增大并发线程数的方式增加吞吐量，实现多任务并发处理
+        # 但会造成内存或显存占用增多
+        with futures.ThreadPoolExecutor(num_workers) as executor:
+            results = executor.map(self.transcribe_file, files)
+            new_line = "\n"
+
+            for path, results in zip(files, results):
+                # print(self.is_running)
+                if self.is_running == False:
+                    break
+                (info, segments) = results
+                if segments == None:
+                    continue
+
+                # print(
+                #         f"\nTranscription for {path.split('/')[-1]}:\n{new_line.join('[' + str(segment.start) + 's --> ' + str(segment.end) + 's] ' + segment.text for segment in segments)}"
+                #     )
+                
+                print("Output...")
+
+                if output_format == "All" and not(parameters["without_timestamps"]):
+                    for format in SUbTITLE_FORMAT:
+                        file_out = getSaveFileName( path
+                                                    , not(parameters["without_timestamps"])
+                                                    , format=format
+                                                    , rootDir=output_dir
+                                                )
+                        writeSubtitles(file_out
+                                        ,segments=segments
+                                        , format=format
+                                        , language=info.language
+                                    )
+                else:
                     file_out = getSaveFileName( path
                                                 , not(parameters["without_timestamps"])
-                                                , format=format
+                                                , format=output_format
                                                 , rootDir=output_dir
                                             )
                     writeSubtitles(file_out
-                                    ,segments=segments
-                                    , format=format
+                                    , segments=segments
+                                    , format=output_format
                                     , language=info.language
                                 )
-            else:
-                file_out = getSaveFileName( path
-                                            , not(parameters["without_timestamps"])
-                                            , format=output_format
-                                            , rootDir=output_dir
-                                        )
-                writeSubtitles(file_out
-                                , segments=segments
-                                , format=output_format
-                                , language=info.language
-                            )
-            segments = None
+                segments = None
+
+            executor.shutdown(wait=True)
+
+        print("\n【Over】")
+        self.signal_process_over.emit()
+    
+    def stop(self):
+        self.is_running = False
+        # self.signal_process_over.emit()
+
+    # def Transcribe(model: WhisperModel, 
+    #             parameters: dict, 
+    #             vad_filter: bool, 
+    #             vad_parameters: dict, 
+    #             num_worker:int = 1, 
+    #             output_format: str = "srt", 
+    #             output_dir:dir = ""):
+    #     '''
+    #         parameters: dict, parameters of fasterWhisper 
+    #         vad_filter: bool, if true, use VAD model
+    #         vad_parameters: dict, parameters of VAD model
+    #         num_worker:int = 1, 
+    #         output_format: str = "srt", 
+    #         output_dir:dir = ""
+    #     '''
+
+    #     # 检查输出目录
+    #     if os.path.exists(output_dir):
+    #         pass
+    #     else:
+    #         os.mkdir(output_dir)
+    #         print(f"\nCreate output dir : {output_dir}")
+
+    #     files = parameters["audio"]
+        
+    #     # 忽略掉输入文件中可能存在的所有的字幕文件
+    #     files = [file for file in files if file.split(".")[-1].upper() not in SUbTITLE_FORMAT]
+    #     ingnore_files = [file for file in files if file.split(".")[-1].upper() in SUbTITLE_FORMAT]
+        
+    #     # print
+    #     if len(ingnore_files) != 0:
+    #         new_line = "\n              "
+    #         print(f"ignore files: {new_line.join(ingnore_files)}")
+        
+        
+    #     def transcribe_file(file):
+    #         print("\n\n")
+    #         print(f"current task: {file}")
+    #         print("  尝试解析文件")
+    #         try:
+    #                 container = av.open(file) # 尝试打开文件      
+    #                 print("  解析成功！")
+    #                 container.close()
+
+    #         except av.AVError as e: # 捕获异常
+    #                 print(f'    {file.split("/")[-1]} 不是一个有效的音视频文件\n    错误信息：{e}')
+    #                 print(f"    ignore File : {file} \n")
+    #                 return None
             
-    print("\n【Over】")
+    #         segments, info = model.transcribe(
+    #                                         audio=file,
+    #                                         language=parameters["language"],
+    #                                         task=parameters["task"],
+    #                                         beam_size=parameters["beam_size"],
+    #                                         best_of=parameters["best_of"],
+    #                                         patience=parameters["patience"],
+    #                                         length_penalty=parameters["length_penalty"],
+    #                                         temperature=parameters["temperature"],
+    #                                         compression_ratio_threshold=parameters["compression_ratio_threshold"],
+    #                                         log_prob_threshold=parameters["log_prob_threshold"],
+    #                                         no_speech_threshold=parameters["no_speech_threshold"],
+    #                                         condition_on_previous_text=parameters["condition_on_previous_text"],
+    #                                         initial_prompt=parameters["initial_prompt"],
+    #                                         prefix=parameters["prefix"],
+    #                                         suppress_blank=parameters["suppress_blank"],
+    #                                         suppress_tokens=parameters["suppress_tokens"],
+    #                                         without_timestamps=parameters["without_timestamps"],
+    #                                         max_initial_timestamp=parameters["max_initial_timestamp"],
+    #                                         word_timestamps=parameters["word_timestamps"],
+    #                                         prepend_punctuations=parameters["prepend_punctuations"],
+    #                                         append_punctuations=parameters["append_punctuations"],
+    #                                         vad_filter=vad_filter,
+    #                                         vad_parameters=vad_parameters
+    #                                     )
+    #         try:
+    #             print(f"Detected language {Language_dict[info.language]} with probability {info.language_probability*100:.2f}%")
+            
+    #         except:
+    #             print(f"{file} 处理失败!")
+    #             return
+            
+    #         # segments = list(segments)
+    #         segmentsTranscribe : List[segment_Transcribe] = []
+    #         # 遍历生成器，并获取转写内容
+    #         print(f"Transcription for {file.split('/')[-1]}")
+    #         for segment in segments:
+    #             print('  [' + str(round(segment.start),5) + 's --> ' + str(round(segment.end, 5)) + 's] ' + segment.text.lstrip())
+    #             segmentsTranscribe.append(segment_Transcribe(segment))#.start, segment.end, segment.text))
+
+    #         return info, segmentsTranscribe
+
+    #     # 在线程池中并发执行相关任务，默认状况下使用单 GPU 该并发线程数为 1 ，
+    #     # 提高线程数并不能明显增大吞吐量， 且可能因为线程调度的原因反而造成转写时间变长
+    #     # 多 GPU 或多核心 CPU 可通过输入设备号列表并增大并发线程数的方式增加吞吐量，实现多任务并发处理
+    #     # 但会造成内存或显存占用增多
+    #     with futures.ThreadPoolExecutor(num_worker) as executor:
+    #         results = executor.map(transcribe_file, files)
+    #         new_line = "\n"
+    #         for path, results in zip(files, results):
+    #             (info, segments) = results
+    #             if segments == None:
+    #                 continue
+
+    #             # print(
+    #             #         f"\nTranscription for {path.split('/')[-1]}:\n{new_line.join('[' + str(segment.start) + 's --> ' + str(segment.end) + 's] ' + segment.text for segment in segments)}"
+    #             #     )
+                
+    #             print("Output...")
+
+    #             if output_format == "All" and not(parameters["without_timestamps"]):
+    #                 for format in SUbTITLE_FORMAT:
+    #                     file_out = getSaveFileName( path
+    #                                                 , not(parameters["without_timestamps"])
+    #                                                 , format=format
+    #                                                 , rootDir=output_dir
+    #                                             )
+    #                     writeSubtitles(file_out
+    #                                     ,segments=segments
+    #                                     , format=format
+    #                                     , language=info.language
+    #                                 )
+    #             else:
+    #                 file_out = getSaveFileName( path
+    #                                             , not(parameters["without_timestamps"])
+    #                                             , format=output_format
+    #                                             , rootDir=output_dir
+    #                                         )
+    #                 writeSubtitles(file_out
+    #                                 , segments=segments
+    #                                 , format=output_format
+    #                                 , language=info.language
+    #                             )
+    #             segments = None
+                
+    #     print("\n【Over】")
 
 def writeSubtitles(fileName:str, segments:List[segment_Transcribe], format:str, language:str=""):
     

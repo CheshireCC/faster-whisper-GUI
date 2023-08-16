@@ -17,7 +17,7 @@ from qframelesswindow import (FramelessMainWindow , StandardTitleBar)
 from .config import (Language_dict, Preciese_list, Model_names, Device_list, Task_list, STR_BOOL, SUbTITLE_FORMAT, CAPTURE_PARA)
 from .modelLoad import loadModel
 from .convertModel import ConvertModel
-from .transcribe_test import TranscribeWorker, AudioStreamTranscribeWorker, CaptureAudioWorker
+from .transcribe import TranscribeWorker, AudioStreamTranscribeWorker, CaptureAudioWorker
 
 from resource import rc_Image
 
@@ -189,7 +189,7 @@ class mainWin(FramelessMainWindow):
         self.audio_capture_RadioButton = RadioButton()
         self.audio_capture_RadioButton.setText(self.__tr("音频采集"))
         self.gridBoxLayout_transcribe_capture.addWidget(self.audio_capture_RadioButton, 0, 1)
-        
+        self.audio_capture_RadioButton.setEnabled(False)
         self.gridBoxLayout_transcribe_capture.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         self.hBoxLayout_Audio_capture_para = QHBoxLayout()
