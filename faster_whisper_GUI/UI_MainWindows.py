@@ -1142,7 +1142,7 @@ class mainWin(FramelessMainWindow):
         while(self.transcribe_thread and self.transcribe_thread.isRunning()):
             time.sleep(0.1)
         self.transcribe_thread = None
-        self.restButton_process()
+        self.resetButton_process()
 
 
     def getParamTranscribe(self) -> dict:

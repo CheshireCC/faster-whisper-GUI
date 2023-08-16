@@ -39,6 +39,7 @@ packaging==23.1
 Pillow==10.0.0
 pluggy==0.13.1
 protobuf==4.23.4
+PyAudio==0.2.13
 pycodestyle==2.6.0
 pydocstyle==5.1.1
 pyflakes==2.2.0
