@@ -869,7 +869,9 @@ class mainWin(FramelessMainWindow):
         fileNames, _ = QFileDialog.getOpenFileNames(self, self.__tr("选择音频文件"), r"./", "All file type(*.*);;Wave file(*.wav);;MPEG 4(*.mp4)")
         if fileNames:
             self.LineEdit_audio_fileName.setText(";;".join(fileNames))
-        
+        else:
+            return
+
         rootDir = Path(fileNames[0]).absolute().resolve().parent.as_posix()
         self.LineEdit_output_dir.setText(rootDir)
     
