@@ -153,14 +153,15 @@ class TranscribeWorker(QThread):
             print("  尝试解析文件")
             try:
                     container = av.open(file) # 尝试打开文件      
-                    print("  解析成功！")
                     container.close()
-
+                    print("  解析成功！")
+                    
             except av.AVError as e: # 捕获异常
                     print(f'    {file.split("/")[-1]} 不是一个有效的音视频文件\n    错误信息：{e}')
                     print(f"    ignore File : {file} \n")
                     return None
             
+            print("开始处理音频...")
             segments, info = self.model.transcribe(
                                             audio=file,
                                             language=self.parameters["language"],
@@ -176,6 +177,9 @@ class TranscribeWorker(QThread):
                                             condition_on_previous_text=self.parameters["condition_on_previous_text"],
                                             initial_prompt=self.parameters["initial_prompt"],
                                             prefix=self.parameters["prefix"],
+                                            repetition_penalty=self.parameters["repetition_penalty"],
+                                            no_repeat_ngram_size=self.parameters["no_repeat_ngram_size"],
+                                            prompt_reset_on_temperature = self.parameters["prompt_reset_on_temperature"],
                                             suppress_blank=self.parameters["suppress_blank"],
                                             suppress_tokens=self.parameters["suppress_tokens"],
                                             without_timestamps=self.parameters["without_timestamps"],
@@ -187,7 +191,15 @@ class TranscribeWorker(QThread):
                                             vad_parameters=self.vad_parameters
                                         )
             try:
-                print(f"Detected language {Language_dict[info.language]} with probability {info.language_probability*100:.2f}%")
+                language = Language_dict[info.language]
+                language_probability = info.language_probability
+                duration = info.duration
+                duration = secondsToHMS(duration).replace(",", ".")
+                duration_after_vad = info.duration_after_vad
+                duration_after_vad = secondsToHMS(duration_after_vad).replace(",", ".")
+                print(f"  Detected language [{language}] with probability [{language_probability*100:.2f}%]")
+                print(f"  Audio duration     —— [{duration}] ")
+                print(f"  after VAD duration —— [{duration_after_vad}]")
             
             except:
                 print(f"{file} 处理失败!")
@@ -203,7 +215,6 @@ class TranscribeWorker(QThread):
                 # print(self.is_running)
                 if self.is_running == False:
                     return info, None
-                    break
 
                 print('  [' + str(round(segment.start, 5)) + 's --> ' + str(round(segment.end, 5)) + 's] ' + segment.text.lstrip())
                 segmentsTranscribe.append(segment_Transcribe(segment))#.start, segment.end, segment.text))
