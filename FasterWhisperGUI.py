@@ -2,6 +2,7 @@
 
 
 import sys
+sys.setrecursionlimit(3000)  # 将默认的递归深度修改为3000
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QPixmap
@@ -51,6 +52,10 @@ if __name__ == "__main__":
     # 修复环境变量 - cuBLAS
     cuBLAS_dir = ";" + os.path.join(BASE_DIR, 'cuBLAS')
     os.environ["path"] += cuBLAS_dir
+
+    # 修复环境变量 - ffmpeg
+    ffmpeg_dir = ";" + os.path.join(BASE_DIR, 'ffmpeg')
+    os.environ["path"] += ffmpeg_dir
 
     # 获取当前计算机语言
     language_localtion, _ = locale.getdefaultlocale()

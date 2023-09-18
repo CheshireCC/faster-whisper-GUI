@@ -11,15 +11,16 @@ import time
 from PySide6.QtCore import  (QObject, Qt, Signal, QCoreApplication)
 from PySide6.QtWidgets import  (QFileDialog, QMessageBox, QSpacerItem, QWidget, QStackedWidget, QVBoxLayout, QStyle, QHBoxLayout, QGridLayout, QCompleter, QTextBrowser, QLabel)
 from PySide6.QtGui import (QIcon, QTextCursor)
-from qfluentwidgets import (Pivot, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton)
+from qfluentwidgets import (Pivot, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton, SpinBox)
 from qframelesswindow import (FramelessMainWindow , StandardTitleBar)
 
-from .config import (Language_dict, Preciese_list, Model_names, Device_list, Task_list, STR_BOOL, SUbTITLE_FORMAT, CAPTURE_PARA)
+from .config import (Language_dict, Preciese_list, Model_names, Device_list, Task_list, STR_BOOL, SUBTITLE_FORMAT, CAPTURE_PARA)
 from .modelLoad import loadModel
 from .convertModel import ConvertModel
 from .transcribe import TranscribeWorker, AudioStreamTranscribeWorker, CaptureAudioWorker
 
 from resource import rc_Image
+import json
 
 
 # Signal
@@ -53,6 +54,10 @@ class mainWin(FramelessMainWindow):
         self.transcribe_thread = None
         self.audio_capture_thread = None
 
+        self.use_auth_token_speaker_diarition= ""
+        with open(r"./fasterWhisperGUIConfig.json","r") as fp:
+            json_data = json.load(fp)
+            self.use_auth_token_speaker_diarition = json_data["use_auth_token"]
 
         userDir = os.path.expanduser("~")
         cache_dir = os.path.join(userDir,".cache","huggingface","hub").replace("\\", "/")
@@ -110,7 +115,7 @@ class mainWin(FramelessMainWindow):
         self.page_model = QWidget()
         self.addSubInterface(self.page_model, "pageModelParameter", self.__tr("模型参数"), icon=QIcon(self.modelPageSVG))
         self.page_VAD = QWidget()
-        self.addSubInterface(self.page_VAD, "pageVADParameter", self.__tr("VAD 参数"), icon=QIcon(self.VADPageSVG))
+        self.addSubInterface(self.page_VAD, "pageVADParameter", self.__tr("VAD及WhisperX"), icon=QIcon(self.VADPageSVG))
         self.page_transcribes = QWidget()
         self.addSubInterface(self.page_transcribes, "pageTranscribesParameter", self.__tr("转写参数"), icon=QIcon(self.transcribePageSVG))
         self.page_process = QWidget()
@@ -143,20 +148,20 @@ class mainWin(FramelessMainWindow):
         self.setStyleSheet(
                             """
                             #FramlessMainWin{
-                                background: rgb(255,255,255);
-                                }
+                                                background: rgb(255,255,255);
+                                            }
                             QLabel{
-                                font : 15px 'Segoe UI';
-                                background-color : rgb(242,242,242);
-                                border-radius : 8px;
-                                qproperty-alignment: AlignCenter;
-                                    }
+                                    font : 15px 'Segoe UI';
+                                    background-color : rgb(242,242,242);
+                                    border-radius : 8px;
+                                    qproperty-alignment: AlignCenter;
+                                }
                             QTextBrowser{
-                                font: 15px 'TimesNewRoman';
+                                            font: 15px 'TimesNewRoman';
                                         }
                             PushButton{
-                                background-color : rgb(242,242,242);
-                            }
+                                        background-color : rgb(242,242,242);
+                                    }
                             """
                         )
         
@@ -166,7 +171,7 @@ class mainWin(FramelessMainWindow):
         # 添加标题栏 
         self.setTitleBar(StandardTitleBar(self))
 
-        self.setWindowTitle("FasterWhisperGUI 0.2.3 -- faster-whisper 0.8.0")
+        self.setWindowTitle("FasterWhisperGUI 0.2.4 -- fw-0.8.0 -- whisperX-3.1.1")
         
         self.setWindowIcon(QIcon(":/resource/Image/microphone.png"))
         self.titleBar.setAttribute(Qt.WA_StyledBackground)
@@ -294,7 +299,7 @@ class mainWin(FramelessMainWindow):
         label_format.setStyleSheet("#outputFormatLabel{background : rgba(0, 128, 0, 120);}")
         self.combox_output_format = ComboBox()
         self.combox_output_format.setToolTip(self.__tr("输出字幕文件的格式"))
-        self.combox_output_format.addItems(["All"] + SUbTITLE_FORMAT)
+        self.combox_output_format.addItems(["All"] + SUBTITLE_FORMAT)
         self.combox_output_format.setCurrentIndex(0)
         widget_list.append((label_format, self.combox_output_format))
         
@@ -305,7 +310,7 @@ class mainWin(FramelessMainWindow):
         self.combox_language = EditableComboBox()
         self.combox_language.addItem("Auto")
         for key, value in self.LANGUAGES_DICT.items():
-            self.combox_language.addItem(value + "    " + key)
+            self.combox_language.addItem(key + "-" + value.capitalize())
         
         self.combox_language.setCurrentIndex(0)
         completer_language = QCompleter([item.text for item in self.combox_language.items])
@@ -419,7 +424,7 @@ class mainWin(FramelessMainWindow):
         label_no_repeat_ngram_size.setStyleSheet("#labelNoRepeatNgramSize{background-color : rgba(0, 255, 255, 60)}")
         self.LineEdit_no_repeat_ngram_size = LineEdit()
         self.LineEdit_no_repeat_ngram_size.setText("0")
-        self.LineEdit_no_repeat_ngram_size.setToolTip(self.__tr("防止程序重复使用此大小的 ngram"))
+        self.LineEdit_no_repeat_ngram_size.setToolTip(self.__tr("如果重复惩罚配置生效，该参数防止程序重复使用此大小进行 n-gram 匹配"))
         widget_list.append((label_no_repeat_ngram_size, self.LineEdit_no_repeat_ngram_size))
 
 
@@ -431,7 +436,7 @@ class mainWin(FramelessMainWindow):
 
         label_prefix = QLabel(self.__tr("初始文本前缀"))
         self.LineEdit_prefix = LineEdit()
-        self.LineEdit_prefix.setToolTip(self.__tr("为第初始音频段提供的可选文本前缀。"))
+        self.LineEdit_prefix.setToolTip(self.__tr("为初始音频段提供的可选文本前缀。"))
         widget_list.append((label_prefix, self.LineEdit_prefix))
 
 
@@ -450,13 +455,13 @@ class mainWin(FramelessMainWindow):
         widget_list.append((label_suppress_tokens, self.LineEdit_suppress_tokens))
 
 
-        label_without_timestamps  = QLabel(self.__tr("关闭时间戳"))
+        label_without_timestamps  = QLabel(self.__tr("关闭时间戳细分"))
         label_without_timestamps.setObjectName("labelWithoutTimestamps")
         label_without_timestamps.setStyleSheet("#labelWithoutTimestamps{background-color : rgba(240, 113, 0, 128)}")
         self.combox_without_timestamps = ComboBox()
         self.combox_without_timestamps.addItems(["False", "True"])
         self.combox_without_timestamps.setCurrentIndex(0)
-        self.combox_without_timestamps.setToolTip(self.__tr("开启时将会仅输出文本不输出时间戳"))
+        self.combox_without_timestamps.setToolTip(self.__tr("开启时将会输出长文本段落并对应长段落时间戳，不再进行段落细分以及相应的时间戳输出"))
         widget_list.append((label_without_timestamps, self.combox_without_timestamps))
 
 
@@ -647,12 +652,12 @@ class mainWin(FramelessMainWindow):
         self.button_convert_model.setToolTip(self.__tr("转换 OpenAi 模型到本地格式，\n必须选择在线模型"))
         hBoxLayout_model_convert.addWidget(self.button_convert_model)
 
-        self.modelLoderBrower = QTextBrowser()
-        self.vBoxLayout_model_param.addWidget(self.modelLoderBrower)
-
         self.button_model_lodar = PushButton()
         self.button_model_lodar.setText(self.__tr("加载模型"))
         self.vBoxLayout_model_param.addWidget(self.button_model_lodar)
+
+        self.modelLoderBrower = QTextBrowser()
+        self.vBoxLayout_model_param.addWidget(self.modelLoderBrower)
 
         self.vBoxLayout_model_param.setStretchFactor(self.modelLoderBrower,4)
 
@@ -677,7 +682,7 @@ class mainWin(FramelessMainWindow):
         self.VAD_check = VAD_check
         self.VAD_check.setChecked(True)
 
-        self.HLayout_VAD_check.setContentsMargins(10,10,10,10)
+        self.HLayout_VAD_check.setContentsMargins(10,10,10,0)
         self.HLayout_VAD_check.addWidget(VAD_check)
 
         GridLayout_VAD_param = QGridLayout()
@@ -741,8 +746,52 @@ class mainWin(FramelessMainWindow):
 
         self.VLayout_VAD.addLayout(self.HLayout_VAD_check)
         self.VLayout_VAD.addLayout(GridLayout_VAD_param)
-        self.VLayout_VAD.setAlignment(Qt.AlignmentFlag.AlignTop)
+        
+        # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        self.HLayout_timeStampleAlignment_check = QVBoxLayout()
+        self.HLayout_timeStampleAlignment_check.setContentsMargins(10,10,10,10)
+        self.VLayout_VAD.addLayout(self.HLayout_timeStampleAlignment_check)
+        self.timeStampleAlignment_check = CheckBox()
+        self.timeStampleAlignment_check.setText(self.__tr("WhisperX 时间戳对齐"))
+        self.timeStampleAlignment_check.setToolTip(self.__tr("启用 whisperX 引擎进行字幕时间戳对齐，该功能将会自动生成单词级时间戳\n根据您选择的输出语言，启用该功能意味着首次运行该功能可能需要联网下载相应模型"))
+        self.HLayout_timeStampleAlignment_check.addWidget(self.timeStampleAlignment_check)
 
+        # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        self.HLayout_speakerDiarize_check = QVBoxLayout()
+        self.HLayout_speakerDiarize_check.setContentsMargins(10,10,10,0)
+        self.VLayout_VAD.addLayout(self.HLayout_speakerDiarize_check)
+        self.speakerDiarize_check = CheckBox()
+        self.speakerDiarize_check.setText(self.__tr("WhisperX 说话人分离"))
+        self.speakerDiarize_check.setToolTip(self.__tr("启用 whisperX 引擎进行声源分离标注\n该功能需要提供HuggingFace令牌"))
+        self.HLayout_speakerDiarize_check.addWidget(self.speakerDiarize_check)
+
+        # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        GridLayout_speakerDiarize_param = QGridLayout()
+        self.GridLayout_speakerDiarize_param = GridLayout_speakerDiarize_param
+        GridLayout_speakerDiarize_param.setContentsMargins(10,10,10,10)
+
+        Label_use_auth_token = QLabel(self.__tr("用户令牌"))
+        self.LineEdit_use_auth_token = LineEdit()
+        self.LineEdit_use_auth_token.setText(self.use_auth_token_speaker_diarition)
+        self.LineEdit_use_auth_token.setToolTip(self.__tr("访问声源分析、分离模型需要提供经过许可的 HuggingFace 用户令牌\n如果默认令牌失效可以尝试自行注册账号并生成、刷新令牌"))
+        self.GridLayout_speakerDiarize_param.addWidget(Label_use_auth_token, 0, 0 )
+        self.GridLayout_speakerDiarize_param.addWidget(self.LineEdit_use_auth_token, 0, 1)
+        Label_min_speaker = QLabel(self.__tr("最少声源数"))
+        self.SpinBox_min_speaker = SpinBox()
+        self.SpinBox_min_speaker.setToolTip(self.__tr("音频中需分出来的最少的说话人的人数"))
+        self.GridLayout_speakerDiarize_param.addWidget(Label_min_speaker, 1, 0 )
+        self.GridLayout_speakerDiarize_param.addWidget(self.SpinBox_min_speaker, 1, 1)
+        Label_max_speaker = QLabel(self.__tr("最大声源数"))
+        self.SpinBox_max_speaker = SpinBox()
+        self.SpinBox_max_speaker.setToolTip(self.__tr("音频中需分出来的最多的说话人的人数"))
+        self.GridLayout_speakerDiarize_param.addWidget(Label_max_speaker, 2, 0 )
+        self.GridLayout_speakerDiarize_param.addWidget(self.SpinBox_max_speaker, 2, 1)
+
+        self.setWhisperUILayout()
+
+        self.VLayout_VAD.addLayout(self.GridLayout_speakerDiarize_param)
+
+        self.VLayout_VAD.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.page_VAD.setLayout(self.VLayout_VAD)
 
         self.page_VAD.setStyleSheet("#pageVADParameter{border:1px solid green; padding: 5px;}")
@@ -812,7 +861,14 @@ class mainWin(FramelessMainWindow):
         for i in range(num_widgets_layout):
             widget = self.hBoxLayout_online_model.itemAt(i).widget()
             widget.setEnabled(self.model_online_RadioButton.isChecked())
-    
+
+    def setWhisperUILayout(self):
+        num_widgets_layout = self.GridLayout_speakerDiarize_param.count()
+            
+        for i in range(num_widgets_layout):
+            widget = self.GridLayout_speakerDiarize_param.itemAt(i).widget()
+            widget.setEnabled(not (widget.isEnabled()))
+
     def setVADUILayout(self):
         num_widgets_layout = self.GridLayout_VAD_param.count()
             
@@ -995,10 +1051,38 @@ class mainWin(FramelessMainWindow):
 
 
 
+    def getParamWhisperX(self) -> dict:
+        dict_WhisperXParams = {}
+        is_WhisxperX_TimeStampel_alignment_avilible = False
+        if self.timeStampleAlignment_check.isChecked():
+            is_WhisxperX_TimeStampel_alignment_avilible = True
+        
+        dict_WhisperXParams["alignment"] = is_WhisxperX_TimeStampel_alignment_avilible
 
+        is_WhisxperX_Speaker_Diarize_avilible = False
+        if self.speakerDiarize_check.isChecked():
+            is_WhisxperX_Speaker_Diarize_avilible = True
+        
+        dict_WhisperXParams["speakerDiarize"] = is_WhisxperX_Speaker_Diarize_avilible
 
+        if is_WhisxperX_Speaker_Diarize_avilible:
+            dict_WhisperXParams["use_auth_token"] = self.LineEdit_use_auth_token.text()
 
+            dict_WhisperXParams["min_speaker"] = int(self.SpinBox_min_speaker.text())
+            dict_WhisperXParams["max_speaker"] = int(self.SpinBox_max_speaker.text())
 
+            if dict_WhisperXParams["min_speaker"] > dict_WhisperXParams["max_speaker"]:
+                dict_WhisperXParams["max_speaker"] = dict_WhisperXParams["min_speaker"]
+            
+            if dict_WhisperXParams["min_speaker"] == 0 and dict_WhisperXParams["max_speaker"] == 0:
+                dict_WhisperXParams["min_speaker"] = None
+                dict_WhisperXParams["max_speaker"] = None
+        else:
+            dict_WhisperXParams["use_auth_token"] = None
+            dict_WhisperXParams["min_speaker"] = None
+            dict_WhisperXParams["max_speaker"] = None
+
+        return dict_WhisperXParams
 
 
     def transcribeProcess(self):
@@ -1053,7 +1137,16 @@ class mainWin(FramelessMainWindow):
             except:
                 num_worker = 1
             
-            
+            whisperXParams = self.getParamWhisperX()
+
+            print(f"WhisperX Alignment: {whisperXParams['alignment']}")
+            print(f"WhisperX Speaker Diarize: {whisperXParams['speakerDiarize']}")
+
+            if whisperXParams["speakerDiarize"]:
+                print(f"  User Token: {whisperXParams['use_auth_token']}")
+                print(f"  min speakers: {whisperXParams['min_speaker']}")
+                print(f"  max speakers: {whisperXParams['max_speaker']}")
+
             self.transcribe_thread = TranscribeWorker(model = self.FasterWhisperModel
                                                     , parameters = Transcribe_params
                                                     , vad_filter = vad_filter
@@ -1061,6 +1154,11 @@ class mainWin(FramelessMainWindow):
                                                     , num_workers = num_worker
                                                     , output_format = self.combox_output_format.currentText()
                                                     , output_dir = self.LineEdit_output_dir.text()
+                                                    , alignment=whisperXParams["alignment"]
+                                                    , speaker_diarize=whisperXParams["speakerDiarize"]
+                                                    , use_auth_token=whisperXParams["use_auth_token"]
+                                                    , min_speaker=whisperXParams["min_speaker"]
+                                                    , max_speaker=whisperXParams["max_speaker"]
                                                 )
             
             self.transcribe_thread.signal_process_over.connect(self.transcribeOver)
@@ -1090,7 +1188,7 @@ class mainWin(FramelessMainWindow):
     def cancelTrancribe(self):
         print("Canceling...")
         self.transcribe_thread.stop()
-        # self.transcribeOver()
+        self.transcribeOver()
         print("【Process Canceled By User!】")
         self.resetButton_process()
         
@@ -1128,7 +1226,7 @@ class mainWin(FramelessMainWindow):
 
         Transcribe_params["audio"] = audio
 
-        language = self.combox_language.text().split(" ")[-1]
+        language = self.combox_language.text().split("-")[0]
         if language == "Auto":
             language = None
         Transcribe_params["language"] = language
@@ -1298,6 +1396,7 @@ class mainWin(FramelessMainWindow):
         self.model_local_RadioButton.clicked.connect(self.setModelLocationLayout)
         self.model_online_RadioButton.clicked.connect(self.setModelLocationLayout)
         self.VAD_check.clicked.connect(self.setVADUILayout)
+        self.speakerDiarize_check.clicked.connect(self.setWhisperUILayout)
 
         self.button_model_lodar.clicked.connect(self.onModelLoadClicked)
         self.button_process.clicked.connect(self.onButtonProcessClicked)
@@ -1310,6 +1409,7 @@ class mainWin(FramelessMainWindow):
         set_output_file = lambda path: path if path != "" else self.LineEdit_output_dir.text()
         self.outputDirChoseButton.clicked.connect(lambda:self.LineEdit_output_dir.setText(set_output_file(QFileDialog.getExistingDirectory(self,"选择输出文件存放目录", self.LineEdit_output_dir.text()))) )
 
+
     def closeEvent(self, event) -> None:
         reply = QMessageBox.question(self,
                                     self.__tr('退出'),
@@ -1317,6 +1417,9 @@ class mainWin(FramelessMainWindow):
                                     QMessageBox.Yes | QMessageBox.No,
                                     QMessageBox.No)
         if reply == QMessageBox.Yes:
+            with open(r'./fasterWhisperGUIConfig.json','w',encoding='utf8')as fp:
+                json.dump({"use_auth_token":self.LineEdit_use_auth_token.text()},fp,ensure_ascii=False)
+            
             del self.FasterWhisperModel
             event.accept()
         else:

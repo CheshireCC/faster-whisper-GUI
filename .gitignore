@@ -18,8 +18,14 @@ test_cpu/
 models/
 dist/
 python39/
+python310/
+
+requirements.txt
+requirements_310.txt
 
 .vscode/
+cache/
+ffmpeg/
 
 develop-eggs/
 *report*.xml
