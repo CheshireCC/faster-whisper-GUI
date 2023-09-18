@@ -12,7 +12,7 @@
     - Transcrib audio or video files to srt/txt/smi/vtt/lrc file
     - convert online OpenAI-whisper-models to ct2 format
     - provide all paraments of VAD-model and whisper-model
-    - now, it support whisperX 
+    - now, it support whisperX
 
 ---
 
@@ -44,4 +44,3 @@
   [whisperX](https://github.com/m-bain/whisperX)
 
   [HuggingFace model download](https://huggingface.co/models)
-
