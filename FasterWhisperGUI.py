@@ -29,9 +29,11 @@ app.setObjectName("FasterWhisperGUIAPP")
 #设置启动界面
 splash = MySplashScreen()
 #初始图片
-splash.setPixmap(QPixmap(r":/resource/Image/FasterWhisper.png")) 
+# splash.setPixmap(QPixmap(r":/resource/Image/FasterWhisper.png")) 
+splash.setPixmap(QPixmap(r":/resource/Image/SplashScreen_0.25.jpg")) 
 #初始文本
-splash.showMessage("加载...", Qt.AlignmentFlag.AlignRight | Qt.AlignBottom, Qt.black)
+splash.showMessage("Lodding...", Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom, Qt.white)
+# splash.showMessage("Lodding...", Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop, Qt.white)
 # 设置字体
 splash.setFont(QFont('MicrosoftYaHei', 10))
 # 显示启动界面

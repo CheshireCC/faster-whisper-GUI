@@ -10,7 +10,7 @@ import time
 
 from PySide6.QtCore import  (QObject, Qt, Signal, QCoreApplication)
 from PySide6.QtWidgets import  (QFileDialog, QMessageBox, QSpacerItem, QWidget, QStackedWidget, QVBoxLayout, QStyle, QHBoxLayout, QGridLayout, QCompleter, QTextBrowser, QLabel)
-from PySide6.QtGui import (QIcon, QTextCursor)
+from PySide6.QtGui import (QIcon, QPixmap, QTextCursor)
 from qfluentwidgets import (Pivot, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton, SpinBox)
 from qframelesswindow import (FramelessMainWindow , StandardTitleBar)
 
@@ -771,6 +771,7 @@ class mainWin(FramelessMainWindow):
         GridLayout_speakerDiarize_param.setContentsMargins(10,10,10,10)
 
         Label_use_auth_token = QLabel(self.__tr("用户令牌"))
+        # Label_use_auth_token.setPixmap(QPixmap(":/resource/Image/huggingface_logo-noborder.svg"))
         self.LineEdit_use_auth_token = LineEdit()
         self.LineEdit_use_auth_token.setText(self.use_auth_token_speaker_diarition)
         self.LineEdit_use_auth_token.setToolTip(self.__tr("访问声源分析、分离模型需要提供经过许可的 HuggingFace 用户令牌\n如果默认令牌失效可以尝试自行注册账号并生成、刷新令牌"))
@@ -1048,9 +1049,6 @@ class mainWin(FramelessMainWindow):
             self.audioCaptureOver()
             self.resetButton_process()
             
-
-
-
     def getParamWhisperX(self) -> dict:
         dict_WhisperXParams = {}
         is_WhisxperX_TimeStampel_alignment_avilible = False

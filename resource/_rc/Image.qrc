@@ -12,5 +12,7 @@
     <file>Image/speak-16x24.svg</file>
     <file>Image/FasterWhisper.png</file>
     <file>Image/Cancel_red.svg</file>
+    <file>Image/huggingface_logo-noborder.svg</file>
+    <file>Image/SplashScreen_0.25.jpg</file>
   </qresource>
 </RCC>
