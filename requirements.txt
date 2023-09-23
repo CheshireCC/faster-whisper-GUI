@@ -1,8 +1,10 @@
 pyside6-fluent-widgets[full]
-faster-whisper==0.8.0
-torch
+faster-whisper>=0.8.0
+torch==1.13.1+cu117
 torchvision
-torchaudio
+torchaudio==0.13.1+cu117
 pyAV
 ffmpeg-python
 pyAudio
+nltk
+joblib==1.12.0

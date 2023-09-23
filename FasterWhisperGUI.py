@@ -1,8 +1,16 @@
 # coding:utf-8
 
-
+import datetime
 import sys
-sys.setrecursionlimit(3000)  # 将默认的递归深度修改为3000
+# 将默认的递归深度修改为3000
+sys.setrecursionlimit(7000)  
+# print输出重定向到文件
+log_f = open('fasterwhispergui.log', 'w')
+sys.stdout = log_f
+sys.stderr = log_f
+
+RunDateTime = datetime.datetime.now().strftime('%Y-%m-%d_%H.%M.$S')
+print(f"=========={RunDateTime}==========")
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QPixmap

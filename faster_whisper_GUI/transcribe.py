@@ -16,9 +16,11 @@ from PySide6.QtCore import QThread, Signal, QDateTime
 from pyaudio import PyAudio, paInt16, paInt24
 import wave
 
-from . import whisperx
+import whisperx
 
 from .config import Language_dict, SUBTITLE_FORMAT, Language_without_space
+
+
 
 class segment_Transcribe():
 
@@ -290,9 +292,8 @@ class TranscribeWorker(QThread):
                 #         f"\nTranscription for {path.split('/')[-1]}:\n{new_line.join('[' + str(segment.start) + 's --> ' + str(segment.end) + 's] ' + segment.text for segment in segments)}"
                 #     )
 
-            executor.shutdown(wait=True)
-
         # del self.model
+        
         torch.cuda.empty_cache()
 
         # 后续处理
@@ -484,7 +485,7 @@ def writeSMI(fileName:str, segments:List[segment_Transcribe], language:str, avFi
     for segment in segments:
         try:
             speaker = segment.speaker
-            if speaker is not None:
+            if not(speaker is None):
                 speaker = segment.speaker
             else:
                 speaker = "SUB"
@@ -496,7 +497,7 @@ def writeSMI(fileName:str, segments:List[segment_Transcribe], language:str, avFi
         # 添加字幕段的文本内容标签，格式为 <P Class=样式类名>文本内容
         # 如果有单词级时间戳，则在每个单词后面添加 <SPAN Class=样式类名>标签和时间戳
         if segment.words:
-            if speaker != "SUB" and speaker is not None:
+            if speaker != "SUB" and not(speaker is None):
                 smi += f"  <P Class={language_type_CC}>{speaker}: "
             else:
                 smi += f"  <P Class={language_type_CC}>"
@@ -516,7 +517,11 @@ def writeSMI(fileName:str, segments:List[segment_Transcribe], language:str, avFi
                     smi += f"<SPAN Class={language_type_CC}>{word_text}</SPAN>"
             smi += "</P>\n"
         else:
-            smi += f"<P Class={language_type_CC}>{segment.text}</P>\n"
+            if speaker != "SUB" and not(speaker is None):
+                smi += f"<P Class={language_type_CC}>{speaker}: {segment.text}</P>\n"
+            else:
+                smi += f"<P Class={language_type_CC}>{segment.text}</P>\n"
+
         # 添加字幕段的结束时间标签，格式为 <SYNC Start=毫秒数>
         smi += f"</SYNC>\n"
     # 添加 smi 字幕的尾部标签
@@ -542,13 +547,14 @@ def wirteLRC(fileName:str, segments:List[segment_Transcribe],language:str):
         for segment in segments:
             
             start:str = secondsToMS(segment.start)
-            
+            try:
+                speaker = segment.speaker + ": "
+            except:
+                speaker = ""
+
             if segment.words:
-                try:
-                    speaker = segment.speaker + ": "
-                except:
-                    speaker = ""
-                text = speaker + f"[{start[:8]}]"
+                
+                text = f"[{start[:8]}]" + speaker
                 length = len(segment.words)
                 for i in range(0, length):
                     word = segment.words[i]
@@ -565,7 +571,7 @@ def wirteLRC(fileName:str, segments:List[segment_Transcribe],language:str):
                         text += f"{word_text}"
                 text += f"<{secondsToMS(segment.end)[:8]}>"
             else:
-                text:str = f"[{start[:8]}]{segment.text}"
+                text:str = f"[{start[:8]}]{speaker}{segment.text}"
 
             # 重编码为 utf-8 
             text:str = text.encode("utf8").decode("utf8")
@@ -611,7 +617,7 @@ def writeVTT(fileName:str, segments:List[segment_Transcribe],language:str):
                     except:
                         text += f"{word_text}"
         else:
-            text = segment.text
+            text = speaker + segment.text
         text:str = text.encode("utf8").decode("utf8")
         cue.text = text
         # 将字幕段添加到 VTT 字幕对象中
