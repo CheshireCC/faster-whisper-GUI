@@ -10,8 +10,8 @@ import time
 
 from PySide6.QtCore import  (QObject, Qt, Signal, QCoreApplication)
 from PySide6.QtWidgets import  (QFileDialog, QMessageBox, QSpacerItem, QWidget, QStackedWidget, QVBoxLayout, QStyle, QHBoxLayout, QGridLayout, QCompleter, QTextBrowser, QLabel)
-from PySide6.QtGui import (QIcon, QPixmap, QTextCursor)
-from qfluentwidgets import (Pivot, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton, SpinBox)
+from PySide6.QtGui import (QIcon, QTextCursor)
+from qfluentwidgets import (Pivot, LineEdit, CheckBox, ComboBox, RadioButton, ToolButton, EditableComboBox, PushButton, SpinBox, DisplayLabel)
 from qframelesswindow import (FramelessMainWindow , StandardTitleBar)
 
 from .config import (Language_dict, Preciese_list, Model_names, Device_list, Task_list, STR_BOOL, SUBTITLE_FORMAT, CAPTURE_PARA)

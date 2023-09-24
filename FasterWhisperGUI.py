@@ -9,7 +9,7 @@ log_f = open('fasterwhispergui.log', 'w')
 sys.stdout = log_f
 sys.stderr = log_f
 
-RunDateTime = datetime.datetime.now().strftime('%Y-%m-%d_%H.%M.$S')
+RunDateTime = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 print(f"=========={RunDateTime}==========")
 
 from PySide6.QtCore import Qt

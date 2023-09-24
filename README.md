@@ -22,11 +22,12 @@
 
 ![软件使用-模型参数](./README.assets/软件使用-模型参数.png)
 
-- ### VAD And WhisperX
+-   ### VAD And WhisperX
 
-    ![WhisperX Support](./README.assets/WhisperX Support.png)
 
-- ### paraments of faster-whisper model
+![WhisperX Support](./README.assets/WhisperX-Support.png)
+
+-   ### paraments of faster-whisper model
 
 ![image-20230806072114168](./README.assets/image-20230806072114168.png)
 
