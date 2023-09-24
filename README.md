@@ -1,6 +1,6 @@
 # fatser-whisper-GUI
 
-    faster-whisper, GUI with PySide6
+    faster-whisper、whisperX，GUI with PySide6
 
 - ## model download
 
@@ -23,7 +23,6 @@
 ![软件使用-模型参数](./README.assets/软件使用-模型参数.png)
 
 -   ### VAD And WhisperX
-
 
 ![WhisperX Support](./README.assets/WhisperX-Support.png)
 
