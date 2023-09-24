@@ -24,7 +24,7 @@
 
 - ### VAD And WhisperX
 
-    ![WhisperX Support](./README.assets/WhisperX Support.png)
+![WhisperX Support](./README.assets/WhisperX Support.png)
 
 - ### paraments of faster-whisper model
 
