@@ -234,6 +234,8 @@ class TranscribeWorker(QThread):
     # TODO Rename this here and in `transcribe_file`
     def detect_Audio_info(self, info):
         language = Language_dict[info.language]
+        if language:
+            language = language.capitalize()
         language_probability = info.language_probability
         duration = info.duration
         duration = secondsToHMS(duration).replace(",", ".")
@@ -307,11 +309,11 @@ class TranscribeWorker(QThread):
 
         # 后续处理
         for (segments, path, info) in segments_path_info:
-            audio = whisperx.load_audio(path)
-
+            audio = None
             # wav2vec2 对齐
             if self.alignment:
                 try:
+                    audio = whisperx.load_audio(path)
                     # 重新获取当前系统支持的设备
                     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
                     print("\nTimeStample alignment")
@@ -346,13 +348,13 @@ class TranscribeWorker(QThread):
                 result_a_c = segments
 
             if self.speaker_diarize:
+                audio = whisperx.load_audio(path)
                 try:
                     print("\nSpeaker diarize and alignment")
                     # 重新获取当前系统支持的设备
                     device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-                    audio = whisperx.load_audio(path)
 
-                    if self.diarize_model == None:
+                    if self.diarize_model is None:
                         print("load speaker brain model...")
                         self.diarize_model = whisperx.DiarizationPipeline(use_auth_token=self.use_auth_token
                                                                         , device=device
@@ -382,8 +384,9 @@ class TranscribeWorker(QThread):
                     self.speaker_diarize = False
             else:
                 result_s = result_a_c
-
-            del audio
+            if audio:
+                del audio
+            
             try:
                 if self.alignment or self.speaker_diarize:
                     # 字典列表转换回对象列表
@@ -396,10 +399,10 @@ class TranscribeWorker(QThread):
             print("Output...")
             # 输出到字幕文件
             if output_format.lower() == "all":
-                output_format = SUBTITLE_FORMAT
+                output_format_ = SUBTITLE_FORMAT
             else:
-                output_format = [output_format]
-            for format in output_format:
+                output_format_ = [output_format]
+            for format in output_format_:
                 file_out = getSaveFileName( path
                                             , format=format
                                             , rootDir=output_dir
