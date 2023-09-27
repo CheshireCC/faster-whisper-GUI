@@ -76,6 +76,9 @@ if __name__ == "__main__":
         translator = QTranslator(app)
         if translator.load(":/resource/Translater/en.qm"):
             app.installTranslator(translator)
+            
+    sys.stderr = sys.__stderr__
+    log_f.close()
 
     # 实例化窗体
     mainWindows = mainWin()

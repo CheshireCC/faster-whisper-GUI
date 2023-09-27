@@ -35,12 +35,20 @@ class RedirectOutputSignalStore(QObject):
             self.outputSignal.emit(str(text))
 
 class mainWin(FramelessMainWindow):
+    # def printErr(self, text):
+    #     self.log.write(text)
 
     def __tr(self, text):
         return QCoreApplication.translate(self.__class__.__name__, text)
 
     def __init__(self):
         super().__init__()
+        
+        # 重定向错误输出
+        self.log = open(r"./fasterwhispergui.log" ,"a" ,encoding="utf8")
+        redirectErrOutpur = RedirectOutputSignalStore()
+        redirectErrOutpur.outputSignal.connect(lambda text: self.log.write(text))
+        sys.stderr = redirectErrOutpur
 
         self.model_path = ""
         self.model_names = Model_names
@@ -62,8 +70,6 @@ class mainWin(FramelessMainWindow):
         userDir = os.path.expanduser("~")
         cache_dir = os.path.join(userDir,".cache","huggingface","hub").replace("\\", "/")
         self.download_cache_path = cache_dir
-        self.oubak = sys.stdout
-        self.errbak = sys.stderr
 
         self.FasterWhisperModel = None
 
@@ -110,7 +116,6 @@ class mainWin(FramelessMainWindow):
         self.mainWindowsWidget.lower()
         self.lower()
         
-
         # 添加子界面
         self.page_model = QWidget()
         self.addSubInterface(self.page_model, "pageModelParameter", self.__tr("模型参数"), icon=QIcon(self.modelPageSVG))
@@ -171,7 +176,7 @@ class mainWin(FramelessMainWindow):
         # 添加标题栏 
         self.setTitleBar(StandardTitleBar(self))
 
-        self.setWindowTitle("FasterWhisperGUI 0.2.4 -- fw-0.8.0 -- whisperX-3.1.1")
+        self.setWindowTitle("FasterWhisperGUI 0.2.5--fw-0.9.0--WhisperX-3.1.1")
         
         self.setWindowIcon(QIcon(":/resource/Image/microphone.png"))
         self.titleBar.setAttribute(Qt.WA_StyledBackground)
@@ -802,13 +807,19 @@ class mainWin(FramelessMainWindow):
         layout.setObjectName(objectName)
 #         layout.setAlignment(Qt.AlignCenter)
         self.stackedWidget.addWidget(layout)
-        self.pivot.addItem(
+        item = self.pivot.addItem(
             routeKey=objectName
             ,text=text
+            # 由于修复下面的 bug ，此处需要手动重新设置 setCurrentWidget 来保证换页功能正常
             ,onClick=lambda: self.stackedWidget.setCurrentWidget(layout)
             ,icon=icon
         )
-        
+
+        # TODO: 临时修复 Sender() 方法编译后失效带来的 返回 NoneType 的 bug，
+        # 该 bug 由于 Nuitka 与 Pyside6<6.5.0 的兼容性造成
+        # Nuitka 警告过 Pyside6<6.5.0 时部分情况下 Slot 可能不生效
+        # 后续处理需要 pyside6-fluent-widgets 及 freamelessWindow 支持 Pyside6>6.5 才能彻底解决
+        # item.itemClicked.disconnect(self.pivot._onItemClicked)
 
     def onCurrentIndexChanged(self, index):
         if not index :
@@ -911,8 +922,8 @@ class mainWin(FramelessMainWindow):
         # 重定向输出
         sys.stdout = RedirectOutputSignalStore()
         sys.stdout.outputSignal.connect(target)
-        sys.stderr = RedirectOutputSignalStore()
-        sys.stderr.outputSignal.connect(target)
+        # sys.stderr = RedirectOutputSignalStore()
+        # sys.stderr.outputSignal.connect(target)
 
     def onModelLoadClicked(self):
         del self.FasterWhisperModel
@@ -1271,9 +1282,7 @@ class mainWin(FramelessMainWindow):
             initial_prompt = [lambda_initial_prompt(w) for w in initial_prompt.split(",")]
         Transcribe_params["initial_prompt"] = initial_prompt
 
-        prefix = self.LineEdit_prefix.text().replace(" ", "")
-        if not prefix:
-            prefix = None
+        prefix = self.LineEdit_prefix.text().replace(" ", "") or None
         Transcribe_params["prefix"] = prefix
 
         suppress_blank = self.combox_suppress_blank.currentText()
@@ -1417,8 +1426,9 @@ class mainWin(FramelessMainWindow):
         if reply == QMessageBox.Yes:
             with open(r'./fasterWhisperGUIConfig.json','w',encoding='utf8')as fp:
                 json.dump({"use_auth_token":self.LineEdit_use_auth_token.text()},fp,ensure_ascii=False)
-            
-            del self.FasterWhisperModel
+            sys.stderr = sys.__stderr__
+            self.log.close()
+            # del self.FasterWhisperModel
             event.accept()
         else:
             event.ignore()
