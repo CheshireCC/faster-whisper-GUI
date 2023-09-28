@@ -176,7 +176,7 @@ class mainWin(FramelessMainWindow):
         # 添加标题栏 
         self.setTitleBar(StandardTitleBar(self))
 
-        self.setWindowTitle("FasterWhisperGUI 0.2.5--fw-0.9.0--WhisperX-3.1.1")
+        self.setWindowTitle("FasterWhisperGUI 0.2.6--fw-0.9.0--WhisperX-3.1.1")
         
         self.setWindowIcon(QIcon(":/resource/Image/microphone.png"))
         self.titleBar.setAttribute(Qt.WA_StyledBackground)

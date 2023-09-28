@@ -384,7 +384,7 @@ class TranscribeWorker(QThread):
                     self.speaker_diarize = False
             else:
                 result_s = result_a_c
-            if audio:
+            if audio is not None:
                 del audio
             
             try:
