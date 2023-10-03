@@ -1,0 +1,20 @@
+#FramlessMainWin{
+    background: rgb(60, 60, 60);
+}
+
+QLabel{
+    color: white;
+    font : 15px 'Segoe UI';
+    background-color : rgb(90,90,90);
+    border-radius : 8px;
+    qproperty-alignment: AlignCenter;
+}
+
+QTextBrowser{
+    font: 15px 'TimesNewRoman';
+}
+
+PushButton{
+    background-color : rgb(90,90,90);
+}
+

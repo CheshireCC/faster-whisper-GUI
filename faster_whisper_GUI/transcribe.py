@@ -10,7 +10,12 @@ import torch
 
 import numpy as np 
 import av
-from faster_whisper import (WhisperModel, Segment, Word, TranscriptionInfo)
+from faster_whisper import (
+                            WhisperModel
+                            , Segment
+                            , Word
+                            , TranscriptionInfo
+                        )
 import webvtt
 from PySide6.QtCore import (QThread, Signal, QDateTime)
 from pyaudio import (PyAudio, paInt16, paInt24)
@@ -18,7 +23,11 @@ import wave
 
 import whisperx
 
-from .config import Language_dict, SUBTITLE_FORMAT, Language_without_space
+from .config import (
+                    Language_dict
+                    , SUBTITLE_FORMAT
+                    , Language_without_space
+                )
 
 
 
@@ -231,7 +240,6 @@ class TranscribeWorker(QThread):
         #     self.signal_process_over.emit()
         return info, segmentsTranscribe
 
-    # TODO Rename this here and in `transcribe_file`
     def detect_Audio_info(self, info):
         language = Language_dict[info.language]
         if language:
@@ -245,7 +253,7 @@ class TranscribeWorker(QThread):
         print(f"  Audio duration     —— [{duration}] ")
         print(f"  after VAD duration —— [{duration_after_vad}]")
 
-    # TODO Rename this here and in `transcribe_file`
+
     def try_decode_avFile(self, file):
         print("\n")
         print(f"current task: {file}")
@@ -391,8 +399,9 @@ class TranscribeWorker(QThread):
                 if self.alignment or self.speaker_diarize:
                     # 字典列表转换回对象列表
                     segments = dictionaryListToSegmentList(result_s['segments'])
-            except:
+            except Exception as e:
                 print("failed to transform alignment result!")
+                print(str(e))
                 self.signal_process_over.emit()
                 return
 
@@ -796,6 +805,7 @@ def dictionaryListToSegmentList(dict_result:List[dict]) -> List[segment_Transcri
                     word_ = Word(start=start, end=end, word=word, probability=probability)
                 except KeyError:
                     # 无时间戳的情况下只添加字幕数据 不修改其他数据
+                    probability=['score']
                     word=word['word']
                     word_ = Word(start, end, word=word, probability=probability)
                 words_.append(word_)
