@@ -18,7 +18,9 @@
 
 - ### Load Model / Download Model / Convert Model
 
-![image-20230806072050188](./README.assets/image-20230806072050188.png)
+![0.2.7-2](./README.assets/0.2.7-2.png)
+
+![0.2.7 ](./README.assets/0.2.7.png)
 
 ![软件使用-模型参数](./README.assets/软件使用-模型参数.png)
 
