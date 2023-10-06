@@ -1,9 +1,10 @@
 #FramlessMainWin{
-                    background: rgb(255,255,255);
+                    background-color: rgb(239, 241, 245);
                 }
-QLabel{
+
+.QLabel{
         font : 15px 'Segoe UI';
-        background-color : rgb(242,242,242);
+        background-color : rgb(230,233,239);
         border-radius : 8px;
         qproperty-alignment: AlignCenter;
     }
@@ -11,8 +12,4 @@ QLabel{
 QTextBrowser{
                 font: 15px 'TimesNewRoman';
             }
-            
-PushButton{
-            background-color : rgb(242,242,242);
-        }
 

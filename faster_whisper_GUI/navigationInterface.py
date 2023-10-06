@@ -6,8 +6,8 @@ from PySide6.QtCore import (
                             # , QEvent
                         )
 from PySide6.QtGui import (
-                            QDesktopServices,
-                            QPainter
+                            QDesktopServices
+                            , QPainter
                             , QPen
                             , QColor
                         )
@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
                             )
 
 from qfluentwidgets import (ScrollArea
-                            # , PushButton
+                            , PushButton
                             , ToolButton
                             , FluentIcon
                             , isDarkTheme
@@ -35,7 +35,6 @@ from qfluentwidgets import (ScrollArea
                             # , toggleTheme
                             , MessageBox
                         )
-from qfluentwidgets.components.widgets.button import PushButton
 
 from .style_sheet import StyleSheet
 from .version import __version__, __FasterWhisper_version__, __WhisperX_version__
@@ -52,7 +51,7 @@ class SeparatorWidget(QWidget):
         painter = QPainter(self)
         pen = QPen(1)
         pen.setCosmetic(True)
-        c = QColor(255, 255, 255, 21) if isDarkTheme() else QColor(0, 0, 0, 15)
+        c = QColor(255, 255, 255, 21) if isDarkTheme() else QColor(0, 0, 0, 50)
         pen.setColor(c)
         painter.setPen(pen)
 
@@ -129,6 +128,7 @@ class ToolBar(QWidget):
         self.sourceButton.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/CheshireCC/fatser-whisper-GUI/releases")))
         self.questionButton.clicked.connect(lambda: MessageBox(self.tr("关于"),self.tr(f"version: {__version__}" + "\n" + f"faster-whisper: {__FasterWhisper_version__}" + "\n" + f"whisperX: {__WhisperX_version__}"),parent=self.parent()).show())
 
+        self.vBoxLayout.addSpacing(4)
 
 class NavigationBaseInterface(ScrollArea):
     """ Gallery interface """
@@ -159,8 +159,8 @@ class NavigationBaseInterface(ScrollArea):
         self.setWidgetResizable(True)
 
         self.vBoxLayout.setSpacing(10)
-        self.vBoxLayout.setContentsMargins(36, 0, 36, 10)
-        self.vBoxLayout.setAlignment(Qt.AlignTop)
+        self.vBoxLayout.setContentsMargins(36, 10, 36, 10)
+        # self.vBoxLayout.setAlignment(Qt.AlignTop)
 
         self.view.setObjectName('view')
         StyleSheet.NAVIGATION_INTERFACE.apply(self)

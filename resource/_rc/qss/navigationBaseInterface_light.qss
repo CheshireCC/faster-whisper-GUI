@@ -1,4 +1,12 @@
-NavigationBaseInterface, ToolBar, #view {
+NavigationBaseInterface{
+    background-color: transparent;
+}
+
+#view {
+    background-color: rgb(249, 249, 249);
+}
+
+ToolBar{
     background-color: transparent;
 }
 
@@ -6,24 +14,17 @@ QScrollArea {
     border: none;
 }
 
-ToolBar > StrongBodyLabel {
-    color: black;
-}
-
 ToolBar > CaptionLabel {
-    color: rgb(95, 95, 95);
     background-color: transparent;
+    color: rgb(95, 95, 95);
     qproperty-alignment: AlignLeft;
 }
 
 ToolBar > TitleLabel {
     background-color: transparent;
+    color: black;
     font : 30px 'Segoe UI';
     font-weight: bold;
     qproperty-alignment: AlignLeft;
 }
 
-TitleLabel,
-StrongBodyLabel {
-    color: black;
-}

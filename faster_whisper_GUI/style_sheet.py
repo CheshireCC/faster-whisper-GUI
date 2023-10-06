@@ -15,6 +15,8 @@ class StyleSheet(StyleSheetBase, Enum):
 
     MAIN_WINDOWS = "mainWindows"
     NAVIGATION_INTERFACE = "navigationBaseInterface"
+    TAB_INTERFSCE = "tabInterface"
+    FILE_LIST = "fileListWidget"
 
 
     def path(self, theme=Theme.AUTO):

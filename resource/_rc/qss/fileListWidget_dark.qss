@@ -1,0 +1,12 @@
+#widgetTable {
+    background-color: rgb(43, 43, 43);
+    border-radius: 10px;
+}
+
+#fileNameListContain{
+    border: 1px solid rgb(203, 166, 247);
+    border-radius: 5px;
+    background-color: rgba(125, 125, 125, 85);
+}
+
+

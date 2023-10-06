@@ -17,7 +17,6 @@ from qfluentwidgets import (
 from faster_whisper_GUI.config import SUBTITLE_FORMAT, Language_dict
 from .navigationInterface import NavigationBaseInterface
 
-
 class TranscribeNavigationInterface(NavigationBaseInterface):
     def __tr(self, text):
         return QCoreApplication.translate(self.__class__.__name__, text)
@@ -54,7 +53,7 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         label_format.setStyleSheet("#outputFormatLabel{background : rgba(0, 128, 0, 120);}")
         self.combox_output_format = ComboBox()
         self.combox_output_format.setToolTip(self.__tr("输出字幕文件的格式"))
-        self.combox_output_format.addItems(["All"] + SUBTITLE_FORMAT)
+        self.combox_output_format.addItems(["ALL"] + SUBTITLE_FORMAT)
         self.combox_output_format.setCurrentIndex(0)
         widget_list.append((label_format, self.combox_output_format))
         

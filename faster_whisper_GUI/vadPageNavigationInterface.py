@@ -112,29 +112,29 @@ class VADNavigationInterface(NavigationBaseInterface):
         self.addLayout(GridLayout_VAD_param)
 
         # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        self.HLayout_timeStampleAlignment_check = QVBoxLayout()
-        self.HLayout_timeStampleAlignment_check.setContentsMargins(10,10,10,10)
-        self.addLayout(self.HLayout_timeStampleAlignment_check)
-        self.timeStampleAlignment_check = CheckBox()
-        self.timeStampleAlignment_check.setText(self.__tr("WhisperX 时间戳对齐"))
-        self.timeStampleAlignment_check.setToolTip(self.__tr("启用 whisperX 引擎进行字幕时间戳对齐，该功能将会自动生成单词级时间戳\n根据您选择的输出语言，启用该功能意味着首次运行该功能可能需要联网下载相应模型"))
-        self.HLayout_timeStampleAlignment_check.addWidget(self.timeStampleAlignment_check)
+        # self.HLayout_timeStampleAlignment_check = QVBoxLayout()
+        # self.HLayout_timeStampleAlignment_check.setContentsMargins(10,10,10,10)
+        # self.addLayout(self.HLayout_timeStampleAlignment_check)
+        # self.timeStampleAlignment_check = CheckBox()
+        # self.timeStampleAlignment_check.setText(self.__tr("WhisperX 时间戳对齐"))
+        # self.timeStampleAlignment_check.setToolTip(self.__tr("启用 whisperX 引擎进行字幕时间戳对齐，该功能将会自动生成单词级时间戳\n根据您选择的输出语言，启用该功能意味着首次运行该功能可能需要联网下载相应模型"))
+        # self.HLayout_timeStampleAlignment_check.addWidget(self.timeStampleAlignment_check)
 
         # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        self.HLayout_speakerDiarize_check = QVBoxLayout()
-        self.HLayout_speakerDiarize_check.setContentsMargins(10,10,10,0)
-        self.addLayout(self.HLayout_speakerDiarize_check)
-        self.speakerDiarize_check = CheckBox()
-        self.speakerDiarize_check.setText(self.__tr("WhisperX 说话人分离"))
-        self.speakerDiarize_check.setToolTip(self.__tr("启用 whisperX 引擎进行声源分离标注\n该功能需要提供HuggingFace令牌"))
-        self.HLayout_speakerDiarize_check.addWidget(self.speakerDiarize_check)
+        # self.HLayout_speakerDiarize_check = QVBoxLayout()
+        # self.HLayout_speakerDiarize_check.setContentsMargins(10,10,10,0)
+        # self.addLayout(self.HLayout_speakerDiarize_check)
+        # self.speakerDiarize_check = CheckBox()
+        # self.speakerDiarize_check.setText(self.__tr("WhisperX 说话人分离"))
+        # self.speakerDiarize_check.setToolTip(self.__tr("启用 whisperX 引擎进行声源分离标注\n该功能需要提供HuggingFace令牌"))
+        # self.HLayout_speakerDiarize_check.addWidget(self.speakerDiarize_check)
 
         # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         GridLayout_speakerDiarize_param = QGridLayout()
         self.GridLayout_speakerDiarize_param = GridLayout_speakerDiarize_param
         GridLayout_speakerDiarize_param.setContentsMargins(10,10,10,10)
 
-        Label_use_auth_token = QLabel(self.__tr("用户令牌"))
+        Label_use_auth_token = QLabel(self.__tr("HuggingFace用户令牌"))
         self.GridLayout_speakerDiarize_param.addWidget(Label_use_auth_token, 0, 0 )
 
         # Label_use_auth_token.setPixmap(QPixmap(":/resource/Image/huggingface_logo-noborder.svg"))
@@ -144,19 +144,8 @@ class VADNavigationInterface(NavigationBaseInterface):
                                                                     , "访问声源分析、分离模型需要提供经过许可的 HuggingFace 用户令牌\n如果默认令牌失效可以尝试自行注册账号并生成、刷新令牌"
                                                                     )
         self.GridLayout_speakerDiarize_param.addWidget(self.LineEdit_use_auth_token, 0, 1)
-        
-        Label_min_speaker = QLabel(self.__tr("最少声源数"))
-        self.SpinBox_min_speaker = SpinBox()
-        self.SpinBox_min_speaker.setToolTip(self.__tr("音频中需分出来的最少的说话人的人数"))
-        self.GridLayout_speakerDiarize_param.addWidget(Label_min_speaker, 1, 0 )
-        self.GridLayout_speakerDiarize_param.addWidget(self.SpinBox_min_speaker, 1, 1)
-        Label_max_speaker = QLabel(self.__tr("最大声源数"))
-        self.SpinBox_max_speaker = SpinBox()
-        self.SpinBox_max_speaker.setToolTip(self.__tr("音频中需分出来的最多的说话人的人数"))
-        self.GridLayout_speakerDiarize_param.addWidget(Label_max_speaker, 2, 0 )
-        self.GridLayout_speakerDiarize_param.addWidget(self.SpinBox_max_speaker, 2, 1)
 
-        self.setWhisperXUILayout()
+        # self.setWhisperXUILayout()
         self.addLayout(self.GridLayout_speakerDiarize_param)
 
         # self.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -177,7 +166,7 @@ class VADNavigationInterface(NavigationBaseInterface):
 
     def SignalAndSlotConnect(self):
         self.VAD_check.clicked.connect(self.setVADUILayout)
-        self.speakerDiarize_check.clicked.connect(self.setWhisperXUILayout)
+        # self.speakerDiarize_check.clicked.connect(self.setWhisperXUILayout)
 
     def setVADUILayout(self):
         num_widgets_layout = self.GridLayout_VAD_param.count()
@@ -186,9 +175,11 @@ class VADNavigationInterface(NavigationBaseInterface):
             widget = self.GridLayout_VAD_param.itemAt(i).widget()
             widget.setEnabled(not (widget.isEnabled()))
         
-    def setWhisperXUILayout(self):
-        num_widgets_layout = self.GridLayout_speakerDiarize_param.count()
+    # def setWhisperXUILayout(self):
+    #     num_widgets_layout = self.GridLayout_speakerDiarize_param.count()
             
-        for i in range(num_widgets_layout):
-            widget = self.GridLayout_speakerDiarize_param.itemAt(i).widget()
-            widget.setEnabled(not (widget.isEnabled()))
+    #     for i in range(num_widgets_layout):
+    #         widget = self.GridLayout_speakerDiarize_param.itemAt(i).widget()
+    #         widget.setEnabled(not (widget.isEnabled()))
+
+

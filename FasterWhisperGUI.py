@@ -74,8 +74,9 @@ if __name__ == "__main__":
     # 获取当前计算机语言
     language_localtion, _ = locale.getdefaultlocale()
     language = language_localtion.split("_")[0]
-    # print(language_localtion)
-    # 非中文时加载语言翻译文件，进行国际化
+    print(f"language: {language_localtion}")
+
+    # 非中文时加载语言翻译文件, 设置英文界面
     if language != "zh" :
         translator = QTranslator(app)
         if translator.load(":/resource/Translater/en.qm"):

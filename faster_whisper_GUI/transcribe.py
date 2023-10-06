@@ -3,25 +3,23 @@
 # from threading import Thread
 from concurrent import futures
 import os
-from typing import List
+from typing import List, Optional
 import time
 
 import torch
 
 import numpy as np 
 import av
+
 from faster_whisper import (
                             WhisperModel
-                            , Segment
-                            , Word
                             , TranscriptionInfo
                         )
+
 import webvtt
 from PySide6.QtCore import (QThread, Signal, QDateTime)
 from pyaudio import (PyAudio, paInt16, paInt24)
 import wave
-
-import whisperx
 
 from .config import (
                     Language_dict
@@ -29,26 +27,12 @@ from .config import (
                     , Language_without_space
                 )
 
-
-
-class segment_Transcribe():
-
-    def __init__(self, segment: Segment=None, start:float = 0, end: float = 0, text:str = "", words : list = None, speaker:str=None):
-        if segment:
-            self.start = segment.start
-            self.end = segment.end
-            self.text = segment.text
-            try:
-                self.words = segment.words
-            except Exception:
-                self.words = None
-
-        else:
-            self.start = start
-            self.end = end
-            self.text = text
-            self.words = words
-            self.speaker = speaker
+from .seg_ment import (
+                        segment_Transcribe
+                        # , Removerepetition
+                        # , dictionaryListToSegmentList
+                        # , segmentListToDictionaryList
+                    )
 
 
 class AudioStreamTranscribeWorker(QThread):
@@ -139,8 +123,60 @@ class CaptureAudioWorker(QThread):
     def stop(self):
         self.is_running = False
 
+class OutputWorker(QThread):
+    signal_write_over = Signal()
+
+    def __init__(self, segments_path_info:list, output_dir:str, format:str, parent=None) -> None:
+        super().__init__(parent)
+        self.is_running = False
+        self.segments_path_info = segments_path_info
+        self.format = format
+        self.output_dir = output_dir
+
+    def stop(self):
+        self.is_running = False
+        # self.signal_process_over.emit()
+
+    def run(self):
+        self.is_running = True
+        output_format = self.format
+        output_dir = self.output_dir
+        # 检查输出目录
+        if output_dir != "" and not os.path.exists(output_dir):
+            os.mkdir(output_dir)
+            print(f"\nCreate output dir : {output_dir}")
+        # 后续处理
+
+        for segments, path, info in self.segments_path_info:
+
+            if self.output_dir == "":
+                output_dir,_ = os.path.split(path)
+
+            print("Output...")
+            # 输出到字幕文件
+            if output_format.lower() == "all":
+                output_format_ = SUBTITLE_FORMAT
+            else:
+                output_format_ = [output_format]
+            for format in output_format_:
+                file_out = getSaveFileName( path
+                                            , format=format
+                                            , rootDir=output_dir
+                                        )
+                writeSubtitles(outputFileName=file_out
+                            , segments=segments
+                            , format=format
+                            , language=info.language
+                            , fileName=path
+                        )
+
+        print("\n【Over】")
+        self.signal_write_over.emit()
+        self.stop()
+
 class TranscribeWorker(QThread):
-    signal_process_over =  Signal()
+    signal_process_over = Signal(list)
+
     def __init__(self
                 ,parent=None
                 ,model : WhisperModel = None
@@ -148,13 +184,6 @@ class TranscribeWorker(QThread):
                 ,vad_filter : bool = False
                 ,vad_parameters : dict = None
                 ,num_workers : int = 1
-                ,output_format : str = "srt"
-                ,output_dir : str = ""
-                ,alignment=False
-                ,speaker_diarize=False
-                ,use_auth_token=None
-                ,min_speaker=None
-                ,max_speaker=None
             ) -> None:
         
         super().__init__(parent)
@@ -164,18 +193,7 @@ class TranscribeWorker(QThread):
         self.vad_filter = vad_filter
         self.vad_parameters = vad_parameters
         self.num_workers = num_workers
-        self.output_format = output_format
-        self.output_dir = output_dir
-        self.alignment = alignment
-        self.speaker_diarize = speaker_diarize
-
-        self.use_auth_token = use_auth_token
-        self.min_speaker = min_speaker
-        self.max_speaker = max_speaker
-
-        self.model_alignment = None
-        self.metadata_alignment = None
-        self.diarize_model = None
+        
         
     def transcribe_file(self, file) -> (TranscriptionInfo, List):
         try:
@@ -269,13 +287,6 @@ class TranscribeWorker(QThread):
         # vad_filter = self.vad_filter 
         # vad_parameters = self.vad_parameters 
         num_workers = self.num_workers
-        output_format = self.output_format
-        output_dir = self.output_dir
-
-        # 检查输出目录
-        if not os.path.exists(output_dir):
-            os.mkdir(output_dir)
-            print(f"\nCreate output dir : {output_dir}")
 
         files = parameters["audio"]
 
@@ -314,120 +325,10 @@ class TranscribeWorker(QThread):
         # del self.model
 
         torch.cuda.empty_cache()
-
-        # 后续处理
-        for (segments, path, info) in segments_path_info:
-            audio = None
-            # wav2vec2 对齐
-            if self.alignment:
-                try:
-                    audio = whisperx.load_audio(path)
-                    # 重新获取当前系统支持的设备
-                    device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-                    print("\nTimeStample alignment")
-
-                    # 获取字典格式的转写结果
-                    print("transform transcript result...")
-                    segment_dict_list = segmentListToDictionaryList(segments)
-
-                    print("process audio...")
-
-                    if self.model_alignment is None :
-                        print("load wav2vec2 model...")
-                        self.model_alignment, self.metadata_alignment = whisperx.load_align_model(language_code=info.language
-                                                                                                ,device=device
-                                                                                                ,model_dir=r"./cache"
-                                                                                                ,cache_dir=r"./cache"
-                                                                                            )
-                    print("start alignment...")
-                    result_a = whisperx.align(segment_dict_list, self.model_alignment, self.metadata_alignment, audio, device, return_char_alignments=False)
-
-                    # 清理结果
-                    print("after alignment: ")
-                    # 清理可能存在的重复内容 时间戳完全一致的将会被合并 开启 faster-whisper 时间戳细分模式的情况下可能会出现此类结果
-                    result_a_c = Removerepetition(result_a=result_a)
-
-                except Exception as e:
-                    print("alignment Error")
-                    print(f"Error: {e}")
-                    self.alignment = False
-                    result_a_c = segments
-            else:
-                result_a_c = segments
-
-            if self.speaker_diarize:
-                audio = whisperx.load_audio(path)
-                try:
-                    print("\nSpeaker diarize and alignment")
-                    # 重新获取当前系统支持的设备
-                    device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-
-                    if self.diarize_model is None:
-                        print("load speaker brain model...")
-                        self.diarize_model = whisperx.DiarizationPipeline(use_auth_token=self.use_auth_token
-                                                                        , device=device
-                                                                        , cache_dir=r"./cache"
-                                                                    )
-                    print("speaker diarize...")
-                    diarize_segments = self.diarize_model(audio
-                                                            , min_speakers=self.min_speaker
-                                                            , max_speakers=self.max_speaker
-                                                        )
-                    if not self.alignment:
-                        print("process transcription result...")
-                        result_a_c = {"segments":segmentListToDictionaryList(result_a_c)}
-
-                    print("speaker alignment...")
-                    result_s = whisperx.assign_word_speakers(diarize_segments, result_a_c)
-                    print("alignment result: ")
-                    for segment in result_s['segments']:
-                        try:
-                            print(f"  [{segment['start']:.2f}s -> {segment['end']:.2f}s] | {segment['speaker']}: {segment['text']}")
-                        except Exception:
-                            print(f"  [{segment['start']:.2f}s -> {segment['end']:.2f}s] | {segment['text']}")
-                except Exception as e:
-                    print("failed to diarize speaker!")
-                    print(f"Error: {e}")
-                    result_s = result_a_c
-                    self.speaker_diarize = False
-            else:
-                result_s = result_a_c
-            if audio is not None:
-                del audio
-            
-            try:
-                if self.alignment or self.speaker_diarize:
-                    # 字典列表转换回对象列表
-                    segments = dictionaryListToSegmentList(result_s['segments'])
-            except Exception as e:
-                print("failed to transform alignment result!")
-                print(str(e))
-                self.signal_process_over.emit()
-                return
-
-            print("Output...")
-            # 输出到字幕文件
-            if output_format.lower() == "all":
-                output_format_ = SUBTITLE_FORMAT
-            else:
-                output_format_ = [output_format]
-            for format in output_format_:
-                file_out = getSaveFileName( path
-                                            , format=format
-                                            , rootDir=output_dir
-                                        )
-                writeSubtitles(outputFileName=file_out
-                            , segments=segments
-                            , format=format
-                            , language=info.language
-                            , fileName=path
-                        )
-
         print("\n【Over】")
-        del self.model_alignment
-        del self.diarize_model
-        self.signal_process_over.emit()
-    
+        self.signal_process_over.emit(segments_path_info)
+        return
+        
     def stop(self):
         self.is_running = False
         # self.signal_process_over.emit()
@@ -558,7 +459,6 @@ def writeSMI(fileName:str, segments:List[segment_Transcribe], language:str, avFi
         f.write(smi)
     # return smi
 
-
 def wirteLRC(fileName:str, segments:List[segment_Transcribe],language:str):
     _, baseName = os.path.split(fileName)
     baseName = baseName.split(".")[0]
@@ -648,7 +548,6 @@ def writeVTT(fileName:str, segments:List[segment_Transcribe],language:str):
     
     vtt.save(fileName)
 
-
 def writeTXT(fileName:str, segments):
     with open(fileName, "w", encoding="utf8") as f:
         for segment in segments:
@@ -664,7 +563,6 @@ def writeTXT(fileName:str, segments):
             text:str = text.encode("utf8").decode("utf8")
 
             f.write(f"{text} \n\n")
-
 
 def writeSRT(fileName:str, segments):
     index = 1
@@ -771,86 +669,6 @@ def secondsToMS(t) -> str:
     S:str = ".".join(S)
 
     return M + ":" + S
-
-
-# ---------------------------------------------------------------------------------------------------------------------------
-def segmentListToDictionaryList(segment_result:List[Segment]) -> List[dict]:
-    dict_result = []
-    for segment in segment_result:
-        words = segment.words
-        words_ = []
-        if words and len(words) > 0 :
-            for word in words:
-                words_.append({"word":word.word, "start":word.start, "end":word.end, "score":word.probability})
-
-        dict_result.append({"start":segment.start, "end":segment.end, "text":segment.text, "words":words_})
-
-    return dict_result
-
-def dictionaryListToSegmentList(dict_result:List[dict]) -> List[segment_Transcribe]:
-    segment_result = []
-    for item in dict_result:
-        words = item['words']
-        words_ = []
-        if len(words)>0:
-            start = 0
-            end = 0
-            for word in words:
-                # print(word)
-                try:
-                    start=word['start']
-                    end=word['end']
-                    word=word['word']
-                    probability=['score']
-                    word_ = Word(start=start, end=end, word=word, probability=probability)
-                except KeyError:
-                    # 无时间戳的情况下只添加字幕数据 不修改其他数据
-                    probability=['score']
-                    word=word['word']
-                    word_ = Word(start, end, word=word, probability=probability)
-                words_.append(word_)
-        
-        # 合并掉无时间戳的单词数据
-        words_c = []
-        start = -1
-        end = -1
-        for word_ in words_:
-            if start == word_.start and end == word_.end:
-                words_c[-1] = Word(start,end,words_c[-1].word+word_.word, words_c[-1].probability)
-            else:
-                start = word_.start
-                end = word_.end
-                words_c.append(word_)
-        try:
-            segment_result.append(segment_Transcribe(start=item['start'], end=item['end'], text=item['text'], words=words_c, speaker=item["speaker"]))
-        except KeyError:
-            segment_result.append(segment_Transcribe(start=item['start'], end=item['end'], text=item['text'], words=words_c))
-
-    return segment_result
-
-def Removerepetition(result_a):
-    # 清理输出结果 
-    start = -1
-    end = -1
-    try:
-        result_a_c = {"segments":[],"word_segments":result_a['word_segments']}
-    except KeyError:
-        result_a_c = {"segments":[]}
-
-    for segment in result_a["segments"]:
-        
-        start_, end_ = segment['start'], segment['end']
-        if start == start_ and end == end_:
-            # result_a['segments'].remove(segment)
-            pass
-        else:
-            # print(start, end)
-            start, end = segment['start'], segment['end']
-            result_a_c['segments'].append(segment)
-            print(f"  [{start:.2f}s --> {end:.2f}s] {segment['text']}")
-    
-    return result_a_c
-# ---------------------------------------------------------------------------------------------------------------------------
 
 
 

@@ -6,8 +6,11 @@ import time
 from threading import Thread
 
 from PySide6.QtWidgets import (
-                                QFileDialog
-                                , QMessageBox
+                                QFileDialog,
+                                # QLabel,
+                                QListWidgetItem
+                                # , QMessageBox
+                                , QTableView
                             )
 
 from PySide6.QtGui import QTextCursor
@@ -24,9 +27,11 @@ from qfluentwidgets import (
                             , InfoBarPosition
                             , InfoBarIcon
                             , MessageBox
+                            , TableView
                         )
 
 from .config import (
+                    # SUBTITLE_FORMAT,
                     Language_dict
                     # , Preciese_list
                     # , Model_names
@@ -43,8 +48,13 @@ from .transcribe import (
                         TranscribeWorker
                         , AudioStreamTranscribeWorker
                         , CaptureAudioWorker
+                        , OutputWorker
                     )
+
+from .fasterWhisperGuiIcon import FasterWhisperGUIIcon
 from .UI_MainWindows import UIMainWin
+from .tableModel_segments_path_info import TableModel
+from .whisper_x import WhisperXWorker
 
 # =======================================================================================
 # SignalStore
@@ -92,14 +102,23 @@ class MainWindows(UIMainWin):
 
         super().__init__()
 
+        self.statusToolSignalStore = statusToolsSignalStore()
+
         self.transcribe_thread = None
         self.audio_capture_thread = None
+        self.whisperXWorker = None
         self.stateTool = None
+        self.tableModel_list = {}
 
-        self.statusToolSignalStore = statusToolsSignalStore()
+        self.result_whisperx_aligment = None
+        self.result_faster_whisper = None
+        self.result_whisperx_speaker_diarize = None
+
+        self.modelRootDir = r"./"
 
         self.singleAndSlotProcess()
     
+
     def getDownloadCacheDir(self):
         """
         get path of local model dir
@@ -112,19 +131,51 @@ class MainWindows(UIMainWin):
             self.page_model.LineEdit_download_root.setText(path)
             self.download_cache_path = path
     
+    # ==============================================================================================================
+    # 废弃 将在下一个版本删除
+    # ==============================================================================================================
     def getFileName(self):
         """
         get a file name from a dialog
         """
+        self.log.write("\n==========AddFiles==========\n")
         fileNames, _ = QFileDialog.getOpenFileNames(self, self.__tr("选择音频文件"), r"./", "All file type(*.*);;Wave file(*.wav);;MPEG 4(*.mp4)")
-        if fileNames:
+        if fileNames is not None and len(fileNames) > 0:
             self.page_process.LineEdit_audio_fileName.setText(";;".join(fileNames))
         else:
             return
-
+        
         rootDir = Path(fileNames[0]).absolute().resolve().parent.as_posix()
         self.page_process.LineEdit_output_dir.setText(rootDir)
-    
+
+        file_ignored = []
+
+        for file in fileNames:
+
+            # 获取已存在于列表中的全部文件名
+            items_exit = self.page_process.fileNameList.items()
+            print(items_exit)
+            items_text = [item_e.text() for item_e in items_exit]
+            print(items_text)
+            
+            if file in items_text:
+                file_ignored.add(file)
+                print(f"Exited File: {file}")
+                continue
+            
+            item = QListWidgetItem(file)
+            item.setCheckState(Qt.CheckState.Checked)
+            self.page_process.fileNameList.addItem(item)        
+
+        if len(file_ignored) > 0:
+            InfoBar.info(
+                    title=self.__tr("忽略已存在的文件")
+                    , content=self.__tr("重复添加的文件将被忽略：\n") + "\n".join(file_ignored)
+                    , isClosable=False
+                    , duration=2000
+                    , parent=self
+                )
+            
     # ==============================================================================================================
     # 废弃 将在下一个版本删除
     # ==============================================================================================================
@@ -169,14 +220,9 @@ class MainWindows(UIMainWin):
         model_size_or_path = model_param["model_size_or_path"]
 
         if model_size_or_path == "":
-            InfoBar.warning(
-                            title='',
+            self.raiseErrorInfoBar(
+                            title=self.__tr('模型名称错误'),
                             content=self.__tr("需要模型所在目录或者有效的模型名称。"),
-                            orient=Qt.Horizontal,
-                            isClosable=True, 
-                            position=InfoBarPosition.TOP_RIGHT,
-                            duration=-1,
-                            parent=self
                         )
             return
 
@@ -189,12 +235,13 @@ class MainWindows(UIMainWin):
                     icon=InfoBarIcon.INFORMATION,
                     title='',
                     content=content,
-                    orient=Qt.Vertical,    # vertical layout
-                    isClosable=True,
-                    position=InfoBarPosition.BOTTOM_RIGHT,
+                    isClosable=False,
+                    orient=Qt.Orientation.Vertical,    # vertical layout
+                    position=InfoBarPosition.TOP,
                     duration=2000,
                     parent=self
                 )
+        
         infoBar.show()
 
         def go():
@@ -212,7 +259,7 @@ class MainWindows(UIMainWin):
         
         thread_go = Thread(target= go, daemon=True)
         thread_go.start()
-        self.setStateTool("加载模型", "模型加载中，请稍候", False)
+        self.setStateTool(self.__tr("加载模型"), self.__tr("模型加载中，请稍候"), False)
 
         # sys.stdout = self.oubak
         # sys.stderr = self.errbak
@@ -252,6 +299,9 @@ class MainWindows(UIMainWin):
 
     def onButtonProcessClicked(self):
         self.log.write("\n==========Process==========\n")
+        self.result_whisperx_aligment = None
+        self.result_faster_whisper = None
+        self.result_whisperx_speaker_diarize = None
 
         # 重定向输出
         self.redirectOutput(self.setTextAndMoveCursorToProcessBrowser)
@@ -289,7 +339,7 @@ class MainWindows(UIMainWin):
 
             if self.FasterWhisperModel is None:
                 print(self.__tr("模型未加载！进程退出"))
-                self.transcribeOver()
+                self.transcribeOver(None)
                 return
             
             rate_channel_dType = self.combox_capture.currentIndex()
@@ -297,11 +347,6 @@ class MainWindows(UIMainWin):
             rate = rate_channel_dType["rate"]
             channels = rate_channel_dType["channel"]
             dType = rate_channel_dType["dType"]
-
-            # if dType == 16:
-            #     dType = "int16"
-            # elif dType == 24:
-            #     dType = "int24"
 
             self.audio_capture_thread = CaptureAudioWorker(rate=rate
                                                             , channels=channels
@@ -318,37 +363,24 @@ class MainWindows(UIMainWin):
             
     def getParamWhisperX(self) -> dict:
         dict_WhisperXParams = {}
-        is_WhisxperX_TimeStampel_alignment_avilible = False
-        if self.page_VAD.timeStampleAlignment_check.isChecked():
-            is_WhisxperX_TimeStampel_alignment_avilible = True
-        
-        dict_WhisperXParams["alignment"] = is_WhisxperX_TimeStampel_alignment_avilible
 
-        is_WhisxperX_Speaker_Diarize_avilible = False
-        if self.page_VAD.speakerDiarize_check.isChecked():
-            is_WhisxperX_Speaker_Diarize_avilible = True
-        
-        dict_WhisperXParams["speakerDiarize"] = is_WhisxperX_Speaker_Diarize_avilible
+        dict_WhisperXParams["use_auth_token"] = self.page_VAD.LineEdit_use_auth_token.text()
 
-        if is_WhisxperX_Speaker_Diarize_avilible:
-            dict_WhisperXParams["use_auth_token"] = self.page_VAD.LineEdit_use_auth_token.text()
+        dict_WhisperXParams["min_speaker"] = int(self.page_output.tableTab.SpinBox_min_speaker.text())
+        dict_WhisperXParams["max_speaker"] = int(self.page_output.tableTab.SpinBox_max_speaker.text())
 
-            dict_WhisperXParams["min_speaker"] = int(self.page_VAD.SpinBox_min_speaker.text())
-            dict_WhisperXParams["max_speaker"] = int(self.page_VAD.SpinBox_max_speaker.text())
-
-            if dict_WhisperXParams["min_speaker"] > dict_WhisperXParams["max_speaker"]:
-                dict_WhisperXParams["max_speaker"] = dict_WhisperXParams["min_speaker"]
+        if dict_WhisperXParams["min_speaker"] > dict_WhisperXParams["max_speaker"]:
+            dict_WhisperXParams["max_speaker"] = dict_WhisperXParams["min_speaker"]
             
-            if dict_WhisperXParams["min_speaker"] == 0 and dict_WhisperXParams["max_speaker"] == 0:
-                dict_WhisperXParams["min_speaker"] = None
-                dict_WhisperXParams["max_speaker"] = None
+        if dict_WhisperXParams["min_speaker"] == 0 and dict_WhisperXParams["max_speaker"] == 0:
+            dict_WhisperXParams["min_speaker"] = None
+            dict_WhisperXParams["max_speaker"] = None
         else:
             dict_WhisperXParams["use_auth_token"] = None
             dict_WhisperXParams["min_speaker"] = None
             dict_WhisperXParams["max_speaker"] = None
 
         return dict_WhisperXParams
-
 
     def transcribeProcess(self):
         """
@@ -362,7 +394,6 @@ class MainWindows(UIMainWin):
             vad_filter = VAD_param["vad_filter"]
 
             output_str = f"vad_filter : {vad_filter}" + "\n"
-            
             
             if vad_filter:
                 # VAD 参数
@@ -382,79 +413,41 @@ class MainWindows(UIMainWin):
 
             if self.FasterWhisperModel is None:
                 print(self.__tr("模型未加载！进程退出"))
-                InfoBar.error(
-                    title=self.__tr("错误")
-                    , content=self.__tr("模型未加载！")
-                    , orient=Qt.Orientation.Horizontal
-                    , isClosable=True
-                    , duration=-1
-                    , position=InfoBarPosition.TOP
-                    , parent=self
-                )
-                self.transcribeOver()
+                self.raiseErrorInfoBar(title=self.__tr("错误") , content=self.__tr("模型未加载！"))
+                self.transcribeOver(None)
                 return
             
             # print(Transcribe_params['audio'])
             if len(Transcribe_params['audio']) == 0 and self.page_process.transceibe_Files_RadioButton.isChecked():
                 print("No input files!")
-                self.transcribeOver()
+                self.raiseErrorInfoBar(
+                                        title=self.__tr("错误")
+                                        , content=self.__tr("没有选择有效的音视频文件作为转写对象") 
+                                    )
+                
+                self.transcribeOver(None)
                 return
-            
-            files_exist = [os.path.exists(file) for file in Transcribe_params["audio"]]
-            if not all(files_exist):
-                ignore_file = [file for file in Transcribe_params['audio'] if not os.path.exists(file)]
-                print(self.__tr("存在无效文件："))
-                new_line = "\n                    "
-                print(f"  Error FilesName : {new_line.join(ignore_file)}")
-                new_line = "\n                "
-                print(f"  ignore files: {new_line.join(ignore_file)}")
-                Transcribe_params['audio'] = [file for file in Transcribe_params['audio'] if os.path.exists(file)]
             
             try:
                 num_worker = int(self.page_model.LineEdit_num_workers.text())
             except Exception as e:
                 num_worker = 1
-            
-            whisperXParams = self.getParamWhisperX()
-
-            print(f"WhisperX Alignment: {whisperXParams['alignment']}")
-            print(f"WhisperX Speaker Diarize: {whisperXParams['speakerDiarize']}")
-
-            if whisperXParams["speakerDiarize"]:
-                print(f"  User Token: {whisperXParams['use_auth_token']}")
-                print(f"  min speakers: {whisperXParams['min_speaker']}")
-                print(f"  max speakers: {whisperXParams['max_speaker']}")
 
             self.transcribe_thread = TranscribeWorker(model = self.FasterWhisperModel
                                                     , parameters = Transcribe_params
                                                     , vad_filter = vad_filter
                                                     , vad_parameters = VAD_param
                                                     , num_workers = num_worker
-                                                    , output_format = self.page_transcribes.combox_output_format.currentText()
-                                                    , output_dir = self.page_process.LineEdit_output_dir.text()
-                                                    , alignment=whisperXParams["alignment"]
-                                                    , speaker_diarize=whisperXParams["speakerDiarize"]
-                                                    , use_auth_token=whisperXParams["use_auth_token"]
-                                                    , min_speaker=whisperXParams["min_speaker"]
-                                                    , max_speaker=whisperXParams["max_speaker"]
                                                 )
             
             self.transcribe_thread.signal_process_over.connect(self.transcribeOver)
-            self.page_process.button_process.setText(self.__tr("    取消"))
+            self.page_process.button_process.setText(self.__tr("取消"))
             self.page_process.button_process.setIcon(r":/resource/Image/Cancel_red.svg")
-            self.transcribe_thread.is_running == True
-            # self.button_process.clicked.disconnect(self.onButtonProcessClicked)
-            # self.button_process.clicked.connect(self.cancelTrancribe)
+            # self.transcribe_thread.is_running == True
             self.transcribe_thread.start()
             self.setStateTool(self.__tr("音频处理"), self.__tr("正在处理中"), False)
         
         elif self.transcribe_thread is not None and self.transcribe_thread.isRunning():
-            # reply = QMessageBox.question(self
-            #                             , self.__tr('取消')
-            #                             , self.__tr("是否取消操作？")
-            #                             , QMessageBox.Yes | QMessageBox.No
-            #                             , QMessageBox.No
-            #                         )
 
             messageBoxW = MessageBox(self.__tr("取消")
                                     , self.__tr("是否取消操作？")
@@ -468,13 +461,13 @@ class MainWindows(UIMainWin):
     
     def resetButton_process(self):
         self.page_process.button_process.setEnabled(True)
-        self.page_process.button_process.setText(self.__tr("    开始"))
-        self.page_process.button_process.setIcon(r":/resource/Image/speak-16x24.svg")
+        self.page_process.button_process.setText(self.__tr("开始"))
+        self.page_process.button_process.setIcon(FasterWhisperGUIIcon.PROCESS)
         
     def cancelTrancribe(self):
         print("Canceling...")
         self.transcribe_thread.stop()
-        self.transcribeOver()
+        self.transcribeOver(None)
         print("【Process Canceled By User!】")
         self.resetButton_process()
         
@@ -483,8 +476,70 @@ class MainWindows(UIMainWin):
         while(self.audio_capture_thread.isRunning()):
             time.sleep(0.1)
         self.audio_capture_thread = None
+    
+    def changeTableData(self, results) -> None:
+        # 当转写结果列表 与表格数据模型列表长度不一致的时候 直接重新绘制所有表格
+        # if len(results) != len(self.tableModel_list):
+        #     self.tableModel_list = []
+        #     self.showResultInTable(results=results)
+        #     return
 
-    def transcribeOver(self):
+        # 获取文件名列表
+        text_list = [os.path.split(result[1])[1] for result in results]
+        # 获取文件目录列表
+        file_list = [result[1] for result in results]
+        # 获取表格标签列表
+        tabBarItems = self.page_output.tableTab.tabBar.items
+
+        # 遍历表格标签 删除已经不存在的转写结果 并改写存在的转写结果
+        for tabBarItem in tabBarItems:
+            if not(tabBarItem.text() in text_list):
+                index = tabBarItems.index(tabBarItem)
+                self.page_output.tableTab.tabBar.removeTab(index)
+            else:
+                for file in file_list:
+                    if tabBarItem.text() == os.path.split(file)[1]:
+                        self.tableModel_list[file]._data = results[file_list.index(file)][0]
+
+        # 遍历转写结果列表，查找当前不存在的表格
+        tabBarItems_text = [tabBarItem.text() for tabBarItem in self.page_output.tableTab.tabBar.items]
+        for text in text_list:
+            if not (text in tabBarItems_text):
+                self.createResultInTable([results[text_list.index(text)]])
+
+    def showResultInTable(self, results):
+        if len(self.tableModel_list) == 0:
+            print("Create Tables")
+            self.createResultInTable(results=results)
+        else:
+            print("UPdata DataModel")
+            self.changeTableData(results)
+
+    def createResultInTable(self, results):
+        i = len(self.page_output.tableTab.tabBar.items)
+        for result in results:
+            segments, file, _ = result
+            table_view_widget = TableView()
+            table_model = TableModel(segments)
+
+            self.tableModel_list[file] = table_model
+
+            _,text = os.path.split(file)
+            table_view_widget.setObjectName(f"tab_{file}")
+            table_view_widget.setModel(self.tableModel_list[file])
+
+            self.page_output.tableTab.addSubInterface(
+                                                    table_view_widget
+                                                    , f"tab_{i}" 
+                                                    , text
+                                                    , None
+                                                )
+            
+            i += 1
+        
+        print(f"len_model: {len(self.tableModel_list)}")
+
+    def transcribeOver(self, segments_path_info:list):
         # self.button_process.clicked.disconnect(self.cancelTrancribe)
         # self.button_process.clicked.connect(self.onButtonProcessClicked)
         try:
@@ -499,15 +554,38 @@ class MainWindows(UIMainWin):
         self.transcribe_thread = None
         self.resetButton_process()
         sys.stdout = self.redirectErrOutpur
+
+        if segments_path_info is not None:
+            self.raiseSuccessInfoBar(
+                                title=self.__tr("成功")
+                                , content=self.__tr("转写完成")
+                            )
+            
+            self.result_faster_whisper = segments_path_info
+            for segments in self.result_faster_whisper:
+                segment_, path, info = segments
+                print(path, info.language)
+                print(f"len:{len(segment_)}")
+                for segment in segment_:
+                    print(f"[{segment.start}s --> {segment.end}] | {segment.text}")
+                    print(f"len_words: {len(segment.words)}")
+
+            print(f"len_segments_path_info_result: {len(segments_path_info)}")
+            self.showResultInTable(self.result_faster_whisper)
+            self.stackedWidget.setCurrentWidget(self.page_output)
         
     def getParamTranscribe(self) -> dict:
         Transcribe_params = {}
 
-        audio = self.page_process.LineEdit_audio_fileName.text().strip()
-        audio = audio.split(";;") if audio != "" else []
+        # audio = self.page_process.LineEdit_audio_fileName.text().strip()
+        # audio = audio.split(";;") if audio != "" else []
+
+        # 从数据模型获取文件列表
+        audio = self.page_process.fileNameListView.FileNameModle.stringList()
+
         if self.page_process.audio_capture_RadioButton.isChecked():
             audio = "AudioStream"
-
+        
         Transcribe_params["audio"] = audio
 
         language = self.page_transcribes.combox_language.text().split("-")[0]
@@ -639,14 +717,10 @@ class MainWindows(UIMainWin):
         if not self.page_model.model_online_RadioButton.isChecked():
             # QMessageBox.warning(self, "错误", "必须选择在线模型时才能使用本功能", QMessageBox.Yes, QMessageBox.Yes)
             print(self.__tr("Model Convert only Work In Onlie-Mode"))
-            InfoBar.error(self.__tr("错误")
-                        , self.__tr("转换功能仅在在线模式下工作")
-                        , orient=Qt.Orientation.Horizontal
-                        , isClosable=True
-                        , duration=-1
-                        , position=InfoBarPosition.TOP_RIGHT
-                        , parent = self
-                    )
+            self.raiseErrorInfoBar(
+                                    self.__tr("错误")
+                                    , self.__tr("转换功能仅在在线模式下工作")
+                                )
             return
 
         model_name_or_path = self.page_model.combox_online_model.currentText()
@@ -684,29 +758,17 @@ class MainWindows(UIMainWin):
     def loadModelResult(self, state:bool):
         if state and self.stateTool:
             self.setStateTool(text=self.__tr("加载完成"),status=state)
-            InfoBar.success(
-                            title=self.__tr('加载结束'),
-                            content=self.__tr("模型加载成功"),
-                            orient=Qt.Horizontal,
-                            isClosable=True,
-                            position=InfoBarPosition.TOP,
-                            # position='Custom',   # NOTE: use custom info bar manager
-                            duration=-1,
-                            parent=self
-                        )
+            self.raiseSuccessInfoBar(
+                                        title=self.__tr('加载结束'),
+                                        content=self.__tr("模型加载成功")
+                                    )
             
         elif not state:
             self.setStateTool(text=self.__tr("结束"), status=True)
-            InfoBar.error(
-                title=self.__tr("错误")
-                , content=self.__tr("加载失败，退出并检查 fasterWhispergui.log 文件可能会获取错误信息。")
-                , orient=Qt.Horizontal
-                , isClosable=True
-                , position=InfoBarPosition.TOP
-                # , position='Custom',   # NOTE: use custom info bar manager
-                , duration=-1
-                , parent=self
-            )
+            self.raiseErrorInfoBar(
+                                    title=self.__tr("错误")
+                                    , content=self.__tr("加载失败，退出并检查 fasterWhispergui.log 文件可能会获取错误信息。")
+                                )
 
     def setModelStatusLabelTextForAll(self, status:bool):
         
@@ -715,6 +777,174 @@ class MainWindows(UIMainWin):
                 page.setModelStatusLabelText(status)
             except Exception as e:
                 self.log.write(str(e))
+    
+    def getLocalModelPath(self):
+        """
+        get path of local model dir
+        """
+
+        path = QFileDialog.getExistingDirectory(self, self.__tr("选择模型文件所在的文件夹"), self.modelRootDir)
+
+        if path:
+            self.page_model.lineEdit_model_path.setText(path)
+            self.model_path = path
+            self.modelRootDir = os.path.abspath(os.path.join(path, os.pardir))
+
+    
+    def outputOver(self):
+        self.setStateTool(self.__tr("保存文件"), self.__tr("结束"), True)
+        self.raiseSuccessInfoBar(
+                                title=self.__tr("保存完成")
+                                , content=self.__tr("字幕文件已保存")
+                            )
+
+    def outputSubtitleFile(self):
+
+        self.log.write("\n==========OutputSubtitleFiles==========\n")
+
+        format = self.page_transcribes.combox_output_format.currentText()
+        output_dir = self.page_output.LineEdit_output_dir.text()
+
+        result_to_write = self.result_faster_whisper if self.result_whisperx_aligment is None else (self.result_whisperx_aligment if self.result_whisperx_speaker_diarize is None else self.result_whisperx_speaker_diarize)
+
+        self.outputWorker = OutputWorker(result_to_write, output_dir, format,self)
+        self.outputWorker.signal_write_over.connect(self.outputOver)    
+        self.outputWorker.start()
+        self.setStateTool(self.__tr("保存文件"), self.__tr("输出字幕文件"), False)
+
+    def raiseErrorInfoBar(self, title:str, content:str):
+        InfoBar.error(
+                        title=title
+                        , content=title
+                        , isClosable=True
+                        , duration=-1
+                        , orient=Qt.Orientation.Horizontal
+                        , position=InfoBarPosition.TOP
+                        # , position='Custom',   # NOTE: use custom info bar manager
+                        , parent=self
+                    ) 
+        
+    def aligmentOver(self, segments_path_info:list):
+
+        self.setPageOutButtonStatus()
+        
+        self.setStateTool(title=self.__tr("WhisperX"), text=self.__tr("结束"), status=True)
+        if segments_path_info is None:
+            self.raiseErrorInfoBar(self.__tr("错误"),content=self.__tr("对齐失败，退出软件后检查 fasterwhispergui.log 文件可能会获取错误信息"))
+            return
+    
+        self.result_whisperx_aligment = segments_path_info
+        self.showResultInTable(results=self.result_whisperx_aligment)
+        self.raiseSuccessInfoBar(
+                                title=self.__tr("WhisperX")
+                                , content=self.__tr("时间戳对齐结束")
+                            )
+        
+        self.whisperXWorker = None
+
+    def whisperXAligmentTimeStample(self):
+        if self.result_faster_whisper is None:
+            self.raiseErrorInfoBar(
+                                    self.__tr("错误"),
+                                    self.__tr("没有有效的 音频-字幕 转写结果，无法进行对齐")
+            )
+            return
+        
+        self.setPageOutButtonStatus()
+
+        self.log.write("\n==========TimeStample_Alignment==========\n")
+        self.setStateTool(title=self.__tr("WhisperX"), text=self.__tr("时间戳对齐"), status=False)
+
+        self.whisperXWorker = WhisperXWorker(self.result_faster_whisper, alignment=True,speaker_diarize=False, parent=self)
+        self.whisperXWorker.signal_process_over.connect(self.aligmentOver)
+        self.whisperXWorker.start()
+
+
+    def whisperXDiarizeSpeakers(self):
+        
+        self.log.write("\n==========Speaker_Diarize==========\n")
+        whisperParams = self.getParamWhisperX()
+
+        result_needed = self.result_whisperx_aligment if self.result_whisperx_aligment is not None else self.result_faster_whisper
+        if result_needed is None:
+            self.raiseErrorInfoBar(
+                                    self.__tr("错误"),
+                                    self.__tr("没有有效的 音频-字幕 转写结果，无法输出人声分离结果")
+            )
+            return
+
+        self.setPageOutButtonStatus()
+
+        if self.whisperXWorker is None:
+
+            self.whisperXWorker = WhisperXWorker(result_needed
+                                                , alignment=False
+                                                , speaker_diarize=True
+                                                , use_auth_token=whisperParams["use_auth_token"]
+                                                , min_speaker=whisperParams["min_speaker"]
+                                                , max_speaker=whisperParams["max_speaker"]
+                                                , parent=self
+                                            )
+
+        else:
+            self.whisperXWorker.segments_path_info = result_needed
+            self.whisperXWorker.alignment = False
+            self.whisperXWorker.speaker_diarize = True
+            self.whisperXWorker.use_auth_token = whisperParams['use_auth_token']
+            self.whisperXWorker.min_speaker = whisperParams['min_speaker']
+            self.whisperXWorker.max_speaker = whisperParams['max_speaker']
+            try:
+                self.whisperXWorker.signal_process_over.disconnect(self.aligmentOver)
+            except Exception as e:
+                pass
+
+        self.whisperXWorker.signal_process_over.connect(self.speakerDiarizeOver)
+        self.setStateTool(title=self.__tr("WhisperX"), text=self.__tr("声源分离"), status=False)
+        self.whisperXWorker.start()
+    
+    def setPageOutButtonStatus(self):
+        self.page_output.WhisperXAligmentTimeStampleButton.setEnabled(not self.page_output.WhisperXAligmentTimeStampleButton.isEnabled())
+        self.page_output.outputSubtitleFileButton.setEnabled(not self.page_output.outputSubtitleFileButton.isEnabled())
+        self.page_output.WhisperXSpeakerDiarizeButton.setEnabled(not self.page_output.WhisperXSpeakerDiarizeButton.isEnabled())
+
+    def speakerDiarizeOver(self, segments_path_info:list):
+        self.setPageOutButtonStatus()
+
+        self.setStateTool(title=self.__tr("WhisperX"), text=self.__tr("结束"), status=True)
+        if segments_path_info is None:
+            self.raiseErrorInfoBar(self.__tr("错误"),content=self.__tr("声源分离失败，退出软件后检查 fasterwhispergui.log 文件可能会获取错误信息"))
+            return
+        
+        self.result_whisperx_speaker_diarize = segments_path_info
+        self.showResultInTable(results=self.result_whisperx_speaker_diarize)
+        self.raiseSuccessInfoBar(
+                                title=self.__tr("WhisperX")
+                                , content=self.__tr("声源分离结束")
+                            )
+        
+        # for segments in self.result_whisperx_speaker_diarize:
+        #         segment_, path, info = segments
+        #         print(path, info.language)
+        #         print(f"len:{len(segment_)}")
+        #         for segment in segment_:
+        #             try:
+        #                 print(f"[{segment.start}s --> {segment.end}] | {segment['speaker']}:{segment.text}")
+        #             except:
+        #                 print(f"[{segment.start}s --> {segment.end}] | {segment.text}")
+
+        #             print(f"len_words: {len(segment.words)}")
+
+        self.whisperXWorker = None
+
+    def raiseSuccessInfoBar(self, title:str, content:str):
+        InfoBar.success(
+                        title=title
+                        , content=content
+                        , isClosable=True
+                        , duration=-1
+                        , position=InfoBarPosition.TOP
+                        , parent=self
+                    )
         
     def singleAndSlotProcess(self):
         """
@@ -730,7 +960,7 @@ class MainWindows(UIMainWin):
         self.page_model.button_set_model_out_dir.clicked.connect(lambda:self.page_model.LineEdit_model_out_dir.setText(set_model_output_dir(QFileDialog.getExistingDirectory(self,"选择转换模型输出目录", self.page_model.LineEdit_model_out_dir.text()))) )
         self.page_model.button_download_root.clicked.connect(self.getDownloadCacheDir)
 
-        self.page_process.fileOpenPushButton.clicked.connect(self.getFileName)
+        # self.page_process.fileOpenPushButton.clicked.connect(self.getFileName)
 
         self.page_model.button_model_lodar.clicked.connect(self.onModelLoadClicked)
         self.page_process.button_process.clicked.connect(self.onButtonProcessClicked)
@@ -738,24 +968,23 @@ class MainWindows(UIMainWin):
         # self.modelLoderBrower.textChanged.connect(lambda: self.modelLoderBrower.moveCursor(QTextCursor.MoveOperation.End, mode=QTextCursor.MoveMode.MoveAnchor))
         self.page_process.processResultText.textChanged.connect(lambda: self.page_process.processResultText.moveCursor(QTextCursor.MoveOperation.End, mode=QTextCursor.MoveMode.MoveAnchor))
         
-        set_output_file = lambda path: path if path != "" else self.LineEdit_output_dir.text()
-        self.page_process.outputDirChoseButton.clicked.connect(lambda:self.page_process.LineEdit_output_dir.setText(set_output_file(QFileDialog.getExistingDirectory(self,"选择输出文件存放目录", self.page_process.LineEdit_output_dir.text()))) )
+        set_output_file = lambda path: path if path != "" else self.page_output.LineEdit_output_dir.text()
+        self.page_output.outputDirChoseButton.clicked.connect(lambda:self.page_output.LineEdit_output_dir.setText(set_output_file(QFileDialog.getExistingDirectory(self,"选择输出文件存放目录", self.page_output.LineEdit_output_dir.text()))))
 
+        # self.page_process.addFileButton.clicked.connect(self.addFileNamesToListWidget)
+        # self.page_process.removeFileButton.clicked.connect(self.removeFileNameFromListWidget)
+
+        self.page_output.outputSubtitleFileButton.clicked.connect(self.outputSubtitleFile)
+
+        self.page_output.WhisperXAligmentTimeStampleButton.clicked.connect(self.whisperXAligmentTimeStample)
+        self.page_output.WhisperXSpeakerDiarizeButton.clicked.connect(self.whisperXDiarizeSpeakers)
 
     def closeEvent(self, event) -> None:
-        # reply = QMessageBox.question(self
-                                #     , self.__tr('退出')
-                                #     , self.__tr("是否要退出程序？")
-                                #     , QMessageBox.Yes | QMessageBox.No
-                                #     , QMessageBox.No
-                                # )
         
         messageBoxW = MessageBox(self.__tr('退出'), self.__tr("是否要退出程序？"), self)
         if messageBoxW.exec():
             self.use_auth_token_speaker_diarition = self.page_VAD.LineEdit_use_auth_token.text() if (self.use_auth_token_speaker_diarition != self.page_VAD.LineEdit_use_auth_token.text() and self.page_VAD.LineEdit_use_auth_token.text() != "") else self.use_auth_token_speaker_diarition
-            # if self.use_auth_token_speaker_diarition != self.page_VAD.LineEdit_use_auth_token.text() and self.page_VAD.LineEdit_use_auth_token.text() != "":
-            #     self.use_auth_token_speaker_diarition = self.page_VAD.LineEdit_use_auth_token.text()
-
+            
             with open(r'./fasterWhisperGUIConfig.json','w',encoding='utf8')as fp:
                 json.dump({"use_auth_token":self.use_auth_token_speaker_diarition},fp,ensure_ascii=False)
             sys.stderr = sys.__stderr__
