@@ -1,0 +1,15 @@
+#FramlessMainWin{
+                background-color: rgb(48, 48, 48);
+}
+
+QLabel{
+        font : 15px 'Segoe UI';
+        color: white;
+        border-radius : 8px;
+        background-color : rgb(125,125,125);
+    }
+
+QTextBrowser{
+            font: 15px 'TimesNewRoman';
+}
+

@@ -2,10 +2,11 @@
 
 import datetime
 import sys
-# 将默认的递归深度修改为3000
-sys.setrecursionlimit(7000)  
+# # 将默认的递归深度修改为3000
+# sys.setrecursionlimit(7000)  
+
 # print输出重定向到文件
-log_f = open('fasterwhispergui.log', 'w')
+log_f = open('fasterwhispergui.log', 'w', buffering=1)
 sys.stdout = log_f
 sys.stderr = log_f
 
@@ -30,8 +31,9 @@ app.setObjectName("FasterWhisperGUIAPP")
 splash = MySplashScreen()
 #初始图片
 # splash.setPixmap(QPixmap(r":/resource/Image/FasterWhisper.png")) 
-splash.setPixmap(QPixmap(r":/resource/Image/SplashScreen_0.25.jpg")) 
+splash.setPixmap(QPixmap(r":/resource/Image/SplashScreen_0.27.jpg")) 
 #初始文本
+# splash.setWindowTitle("fasterWhisper")
 splash.showMessage("Lodding...", Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom, Qt.white)
 # splash.showMessage("Lodding...", Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop, Qt.white)
 # 设置字体
@@ -43,7 +45,9 @@ app.processEvents()  # 处理主进程事件
 import os
 from PySide6.QtCore import QTranslator
 import locale
-from faster_whisper_GUI.UI_MainWindows import mainWin
+
+from faster_whisper_GUI.mainWindows import MainWindows
+
 from resource import rc_Translater
 
 
@@ -70,8 +74,9 @@ if __name__ == "__main__":
     # 获取当前计算机语言
     language_localtion, _ = locale.getdefaultlocale()
     language = language_localtion.split("_")[0]
-    # print(language_localtion)
-    # 非中文时加载语言翻译文件，进行国际化
+    print(f"language: {language_localtion}")
+
+    # 非中文时加载语言翻译文件, 设置英文界面
     if language != "zh" :
         translator = QTranslator(app)
         if translator.load(":/resource/Translater/en.qm"):
@@ -81,7 +86,7 @@ if __name__ == "__main__":
     log_f.close()
 
     # 实例化窗体
-    mainWindows = mainWin()
+    mainWindows = MainWindows()
     # 显示窗体
     mainWindows.show()
 

@@ -18,13 +18,19 @@
 
 - ### Load Model / Download Model / Convert Model
 
-![image-20230806072050188](./README.assets/image-20230806072050188.png)
+![0.2.7-2](./README.assets/0.2.7-2.png)
+
+![0.2.7 ](./README.assets/0.2.7.png)
 
 ![软件使用-模型参数](./README.assets/软件使用-模型参数.png)
 
--   ### VAD And WhisperX
+-   ### File List
 
-![WhisperX Support](./README.assets/WhisperX-Support.png)
+    ![0.3.0_newFIleSystem](./README.assets/0.3.0_newFIleSystem.png)
+
+-   ###  WhisperX function
+
+![0.3.0_whisperx](./README.assets/0.3.0_whisperx.png)
 
 -   ### paraments of faster-whisper model
 
@@ -36,7 +42,15 @@
 
 ![转写执行效果](./README.assets/转写执行效果.png)
 
-- ### words-level timestamps —— karaoka lyrics (work in `VTT`/`LRC`/`SMI` format)
+-   ### Show result and edit timestample
+
+    ![0.3.0_result](./README.assets/0.3.0_result.png)![image-20231007191942864](./README.assets/image-20231007191942864.png)
+
+    
+
+- ### words-level timestamps —— karaoka lyric (work in `VTT`/`LRC`/`SMI` format)
+
+  - play with foobar2000 , ESLyric plugin, `lrc` format lyric
 
   ![image-20230811130449688](./README.assets/image-20230811130449688.png)
 - ### Links

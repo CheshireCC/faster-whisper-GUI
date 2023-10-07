@@ -17,6 +17,12 @@ class DiarizationPipeline:
         if isinstance(device, str):
             device = torch.device(device)
         self.model = Pipeline.from_pretrained(model_name, use_auth_token=use_auth_token, cache_dir=cache_dir)# .to(device)
+        if self.model:
+            try:
+                self.model = self.model.to(device)
+            except Exception as e:
+                print("Move Model To Device Error: \n",str(e))
+                pass
 
     def __call__(self, audio: Union[str, np.ndarray], min_speakers=None, max_speakers=None):
         if isinstance(audio, str):

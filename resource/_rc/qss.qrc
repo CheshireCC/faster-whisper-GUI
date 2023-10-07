@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/resource">
+        <file>qss/mainWindows_light.qss</file>
+        <file>qss/mainWindows_dark.qss</file>
+        <file>qss/navigationBaseInterface_dark.qss</file>
+        <file>qss/navigationBaseInterface_light.qss</file>
+        <file>qss/tabInterface_dark.qss</file>
+        <file>qss/tabInterface_light.qss</file>
+        <file>qss/fileListWidget_light.qss</file>
+        <file>qss/fileListWidget_dark.qss</file>
+    </qresource>
+</RCC>
