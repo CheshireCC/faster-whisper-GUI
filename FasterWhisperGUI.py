@@ -6,7 +6,7 @@ import sys
 # sys.setrecursionlimit(7000)  
 
 # print输出重定向到文件
-log_f = open('fasterwhispergui.log', 'w')
+log_f = open('fasterwhispergui.log', 'w', buffering=1)
 sys.stdout = log_f
 sys.stderr = log_f
 
@@ -47,7 +47,7 @@ from PySide6.QtCore import QTranslator
 import locale
 
 from faster_whisper_GUI.mainWindows import MainWindows
-# from faster_whisper_GUI.UI_MainWindows import mainWin
+
 from resource import rc_Translater
 
 

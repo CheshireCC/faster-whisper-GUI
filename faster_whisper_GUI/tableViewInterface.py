@@ -1,6 +1,7 @@
 from PySide6.QtCore import QModelIndex, Qt
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import (
+                                # QApplication,
                                 QFrame,
                                 QHBoxLayout,
                                 # QHeaderView
@@ -55,17 +56,20 @@ class CustomTableItemDelegate(TableItemDelegate):
                 option.palette.setColor(QPalette.Text, Qt.magenta)
                 option.palette.setColor(QPalette.HighlightedText, Qt.magenta)
 
-    
+    # 设置编辑框的提示内容为原本的内容
     def createEditor(self, parent, option, index):
         value = index.model().data(index, Qt.DisplayRole)
-        # print(f"current_calue:{value}")
         option.text = str(value)
         editor:LineEdit = super().createEditor(parent, option, index)
-        # print(f"instance：{type(editor)}")
-        # if isinstance(editor, LineEdit):
         editor.setPlaceholderText(str(value))
-        # editor.setText(str(value))
         return editor
+
+    
+    # 使编辑框保留编辑之前的值
+    def setEditorData(self, editor, index):
+        text = index.model().data(index, Qt.DisplayRole) or ""
+        editor.setText(str(text))
+        
     
 
 class TabInterface(QWidget):

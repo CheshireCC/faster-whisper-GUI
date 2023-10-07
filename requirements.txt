@@ -1,7 +1,6 @@
-pyside6-fluent-widgets[full]
+pyside6-fluent-widgets
 faster-whisper>=0.8.0
 torch==1.13.1+cu117
-torchvision
 torchaudio==0.13.1+cu117
 pyAV
 ffmpeg-python

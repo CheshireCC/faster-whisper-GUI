@@ -57,13 +57,16 @@ class FileNameListView(QWidget):
             new_line = "\n                "
             print(f"  ignore files: {new_line.join(ignore_file)}")
             fileNameList = [file for file in fileNameList if os.path.exists(file)]
+
+            # TODO: self.parent().parent().parent().parent().parent() is monkey code , 
+            # it should be replaced by a signal-slot system
             InfoBar.info(
                 title=self.__tr("剔除文件")
                 , content=self.__tr("存在无效文件，已剔除\n") + "\n".join(ignore_file)
                 , isClosable=False
                 , duration=2000
                 , position=InfoBarPosition.TOP_RIGHT
-                , parent=self.parent().parent()
+                , parent=self.parent().parent().parent().parent().parent() # TODO: monkey code 
             )
         
         # 忽略掉输入文件中可能存在的所有的字幕文件
@@ -71,14 +74,19 @@ class FileNameListView(QWidget):
         if ingnore_files := [file for file in fileNameList if file.split(".")[-1].upper() in SUBTITLE_FORMAT]:
             new_line = "\n              "
             print(f"ignore files: {new_line.join(ingnore_files)}")
+
+            # TODO: self.parent().parent().parent().parent().parent() is monkey code , 
+            # it should be replaced by a signal-slot system
             InfoBar.info(
                 title=self.__tr("剔除文件")
                 , content=self.__tr("已知的字幕格式文件已忽略\n") + "\n".join(ingnore_files)
                 , isClosable=False
                 , duration=2000
                 , position=InfoBarPosition.TOP_RIGHT
-                , parent=self.parent().parent()
+                , parent=self.parent().parent().parent().parent().parent() # TODO: monkey code 
             )
+            # print(self.parent().parent().parent().parent().parent())
+
         return files
 
     def addFileNamesToListWidget(self):

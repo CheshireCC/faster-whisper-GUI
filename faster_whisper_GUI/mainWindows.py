@@ -8,9 +8,9 @@ from threading import Thread
 from PySide6.QtWidgets import (
                                 QFileDialog,
                                 # QLabel,
-                                QListWidgetItem
+                                # QListWidgetItem
                                 # , QMessageBox
-                                , QTableView
+                                # , QTableView
                             )
 
 from PySide6.QtGui import QTextCursor
@@ -28,6 +28,7 @@ from qfluentwidgets import (
                             , InfoBarIcon
                             , MessageBox
                             , TableView
+                            , Dialog
                         )
 
 from .config import (
@@ -88,7 +89,7 @@ class MainWindows(UIMainWin):
     def __tr(self, text):
         return QCoreApplication.translate(self.__class__.__name__, text)
     
-    log = open(r"./fasterwhispergui.log" ,"a" ,encoding="utf8")
+    log = open(r"./fasterwhispergui.log" ,"a" ,encoding="utf8", buffering=1)
 
     def __init__(self):
         
@@ -130,58 +131,6 @@ class MainWindows(UIMainWin):
                                                 ):
             self.page_model.LineEdit_download_root.setText(path)
             self.download_cache_path = path
-    
-    # ==============================================================================================================
-    # 废弃 将在下一个版本删除
-    # ==============================================================================================================
-    def getFileName(self):
-        """
-        get a file name from a dialog
-        """
-        self.log.write("\n==========AddFiles==========\n")
-        fileNames, _ = QFileDialog.getOpenFileNames(self, self.__tr("选择音频文件"), r"./", "All file type(*.*);;Wave file(*.wav);;MPEG 4(*.mp4)")
-        if fileNames is not None and len(fileNames) > 0:
-            self.page_process.LineEdit_audio_fileName.setText(";;".join(fileNames))
-        else:
-            return
-        
-        rootDir = Path(fileNames[0]).absolute().resolve().parent.as_posix()
-        self.page_process.LineEdit_output_dir.setText(rootDir)
-
-        file_ignored = []
-
-        for file in fileNames:
-
-            # 获取已存在于列表中的全部文件名
-            items_exit = self.page_process.fileNameList.items()
-            print(items_exit)
-            items_text = [item_e.text() for item_e in items_exit]
-            print(items_text)
-            
-            if file in items_text:
-                file_ignored.add(file)
-                print(f"Exited File: {file}")
-                continue
-            
-            item = QListWidgetItem(file)
-            item.setCheckState(Qt.CheckState.Checked)
-            self.page_process.fileNameList.addItem(item)        
-
-        if len(file_ignored) > 0:
-            InfoBar.info(
-                    title=self.__tr("忽略已存在的文件")
-                    , content=self.__tr("重复添加的文件将被忽略：\n") + "\n".join(file_ignored)
-                    , isClosable=False
-                    , duration=2000
-                    , parent=self
-                )
-            
-    # ==============================================================================================================
-    # 废弃 将在下一个版本删除
-    # ==============================================================================================================
-    def setTextAndMoveCursorToModelBrowser(self, text:str):
-        self.modelLoderBrower.moveCursor(QTextCursor.MoveOperation.End, QTextCursor.MoveMode.MoveAnchor)
-        self.modelLoderBrower.insertPlainText(text)
 
     # ==============================================================================================================
     # 将于下一版本废弃
@@ -205,12 +154,10 @@ class MainWindows(UIMainWin):
     # ==============================================================================================================
 
     def onModelLoadClicked(self):
+
         del self.FasterWhisperModel
         self.FasterWhisperModel = None
-        # self.modelLoderBrower.setText("")
 
-        # 重定向输出
-        # self.redirectOutput(self.setTextAndMoveCursorToModelBrowser)
         self.log.write("\n==========LoadModel==========\n")
         
         model_param = self.getParam_model()
@@ -709,10 +656,6 @@ class MainWindows(UIMainWin):
         return VAD_param
 
     def onButtonConvertModelClicked(self):
-        
-        # self.modelLoderBrower.setText("")
-        # 重定向输出
-        # self.redirectOutput(self.setTextAndMoveCursorToModelBrowser)
 
         if not self.page_model.model_online_RadioButton.isChecked():
             # QMessageBox.warning(self, "错误", "必须选择在线模型时才能使用本功能", QMessageBox.Yes, QMessageBox.Yes)
@@ -745,14 +688,19 @@ class MainWindows(UIMainWin):
         thread_go.start()
 
     def setStateTool(self, title:str="", text:str="", status:bool=False):
-        if not status:
+
+        if self.stateTool is None:
             self.stateTool = StateToolTip(title, text , self)
-            width = self.width()
-            self.stateTool.move(width-290, 30)
             self.stateTool.show()
+
         else:
             self.stateTool.setContent(text)
-            self.stateTool.setState(True)
+
+        width = self.width()
+        self.stateTool.move(width-290, 45)
+        self.stateTool.setState(status)
+
+        if  status:    
             self.stateTool = None
 
     def loadModelResult(self, state:bool):
@@ -950,6 +898,9 @@ class MainWindows(UIMainWin):
         """
         process single connect and others
         """
+        # TODO: there is too much methed be writen in this file, 
+        # and they are not all must be here, 
+        # some of them could be in their own class-code file
         self.statusToolSignalStore.LoadModelSignal.connect(self.loadModelResult)
         self.statusToolSignalStore.LoadModelSignal.connect(self.setModelStatusLabelTextForAll)
 
@@ -960,19 +911,13 @@ class MainWindows(UIMainWin):
         self.page_model.button_set_model_out_dir.clicked.connect(lambda:self.page_model.LineEdit_model_out_dir.setText(set_model_output_dir(QFileDialog.getExistingDirectory(self,"选择转换模型输出目录", self.page_model.LineEdit_model_out_dir.text()))) )
         self.page_model.button_download_root.clicked.connect(self.getDownloadCacheDir)
 
-        # self.page_process.fileOpenPushButton.clicked.connect(self.getFileName)
-
         self.page_model.button_model_lodar.clicked.connect(self.onModelLoadClicked)
         self.page_process.button_process.clicked.connect(self.onButtonProcessClicked)
 
-        # self.modelLoderBrower.textChanged.connect(lambda: self.modelLoderBrower.moveCursor(QTextCursor.MoveOperation.End, mode=QTextCursor.MoveMode.MoveAnchor))
         self.page_process.processResultText.textChanged.connect(lambda: self.page_process.processResultText.moveCursor(QTextCursor.MoveOperation.End, mode=QTextCursor.MoveMode.MoveAnchor))
         
         set_output_file = lambda path: path if path != "" else self.page_output.LineEdit_output_dir.text()
         self.page_output.outputDirChoseButton.clicked.connect(lambda:self.page_output.LineEdit_output_dir.setText(set_output_file(QFileDialog.getExistingDirectory(self,"选择输出文件存放目录", self.page_output.LineEdit_output_dir.text()))))
-
-        # self.page_process.addFileButton.clicked.connect(self.addFileNamesToListWidget)
-        # self.page_process.removeFileButton.clicked.connect(self.removeFileNameFromListWidget)
 
         self.page_output.outputSubtitleFileButton.clicked.connect(self.outputSubtitleFile)
 
@@ -993,4 +938,11 @@ class MainWindows(UIMainWin):
             event.accept()
         else:
             event.ignore()
-        
+    
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        if self.stateTool is not None:
+            width = self.width()
+            self.stateTool.move(width-290, 45)
+        return 
+    

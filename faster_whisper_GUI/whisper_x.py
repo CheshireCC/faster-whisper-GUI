@@ -4,8 +4,8 @@ import torch
 
 import whisperx
 from .seg_ment import (
-                        segment_Transcribe
-                        , Removerepetition
+                        # segment_Transcribe
+                        Removerepetition
                         , dictionaryListToSegmentList
                         , segmentListToDictionaryList
                     )
@@ -66,16 +66,21 @@ class WhisperXWorker(QThread):
 
                     if self.model_alignment is None :
                         print("load wav2vec2 model...")
+                        
+                        self.setStateTool(text="load wav2vec2 model...",status=False)
                         self.model_alignment, self.metadata_alignment = whisperx.load_align_model(language_code=info.language
                                                                                                 ,device=device
                                                                                                 ,model_dir=r"./cache"
                                                                                                 ,cache_dir=r"./cache"
                                                                                             )
                     print("start alignment...")
+                    self.setStateTool(text="start alignment...",status=False)
+    
                     result_a = whisperx.align(segment_dict_list, self.model_alignment, self.metadata_alignment, audio, device, return_char_alignments=False)
 
                     # 清理结果
                     print("after alignment: ")
+
                     # 清理可能存在的重复内容 时间戳完全一致的将会被合并 开启 faster-whisper 时间戳细分模式的情况下可能会出现此类结果
                     result_a_c = Removerepetition(result_a=result_a)
 
@@ -99,11 +104,13 @@ class WhisperXWorker(QThread):
 
                     if self.diarize_model is None:
                         print("load speaker brain model...")
+                        self.setStateTool("load models...", False)
                         self.diarize_model = whisperx.DiarizationPipeline(use_auth_token=self.use_auth_token
                                                                         , device=device
                                                                         , cache_dir=r"./cache"
                                                                     )
                     print("speaker diarize...")
+                    self.setStateTool("start diarize...", False)
                     diarize_segments = self.diarize_model(audio
                                                             , min_speakers=self.min_speaker
                                                             , max_speakers=self.max_speaker
@@ -113,6 +120,7 @@ class WhisperXWorker(QThread):
                         result_a_c = {"segments":segmentListToDictionaryList(result_a_c)}
 
                     print("speaker alignment...")
+                    self.setStateTool("assign speakers to words...")
                     result_s = whisperx.assign_word_speakers(diarize_segments, result_a_c)
                     print("alignment result: ")
                     for segment in result_s['segments']:
@@ -149,7 +157,12 @@ class WhisperXWorker(QThread):
         self.signal_process_over.emit(self.result_segments_path_info)
 
 
-    
+    def setStateTool(self, text:str , status:bool=False):
+        try:
+            self.parent().setStateTool(text=text,status=False)
+        except Exception as e:
+            print(f"To set StateTool Error: {e}")
+
 
 
 

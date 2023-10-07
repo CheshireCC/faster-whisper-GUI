@@ -25,7 +25,6 @@ from PySide6.QtWidgets import  (
 
 from PySide6.QtGui import QIcon
 
-
 from qfluentwidgets import (
                             NavigationInterface
                             # , Pivot

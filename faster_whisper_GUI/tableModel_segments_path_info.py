@@ -1,6 +1,6 @@
 
 from PySide6.QtCore import QAbstractTableModel, Qt
-from PySide6.QtWidgets import QStyledItemDelegate, QLineEdit
+# from PySide6.QtWidgets import QStyledItemDelegate, QLineEdit
 from typing import List
 
 from .seg_ment import segment_Transcribe
@@ -26,7 +26,10 @@ class TableModel(QAbstractTableModel):
             elif column == 1:
                 value = data.end
             elif column == 2:
-                value = f"{data.speaker}:{data.text}" if data.speaker is not None else data.text
+                try:
+                    value = f"{data.speaker}:{data.text}" if data.speaker is not None else data.text
+                except AttributeError:
+                    value = data.text
 
             elif column == 3:    
                 value = ";".join([f"<{word.start}>{word.word}<{word.end}>" for word in data.words]) if len(data.words) > 0 else ""
