@@ -20,9 +20,11 @@
 
 ![0.2.7-2](./README.assets/0.2.7-2.png)
 
-![0.2.7 ](./README.assets/0.2.7.png)
-
 ![软件使用-模型参数](./README.assets/软件使用-模型参数.png)
+
+-   ### batch process
+
+![image-20231008150849827](./README.assets/image-20231008150849827.png)
 
 -   ### File List
 
