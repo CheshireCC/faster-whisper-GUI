@@ -146,9 +146,11 @@ class UIMainWin(FramelessMainWindow):
 
         # 创建窗体主布局
         self.mainLayout = QGridLayout()
+
         # 将主布局添加到窗体中心控件
         self.mainWindowsWidget.setLayout(self.mainLayout)
 
+        # 导航布局
         self.vBoxLayout = QVBoxLayout()
 
         # 将导航布局添加到主布局
@@ -161,7 +163,7 @@ class UIMainWin(FramelessMainWindow):
         self.spacer_main = QSpacerItem(0,25)
         self.vBoxLayout.addItem(self.spacer_main)
 
-        # 设置层到最后避免遮挡窗体按钮
+        # 设置显示图层到最后避免遮挡窗体按钮
         self.mainWindowsWidget.lower()
         self.lower()
 
@@ -169,7 +171,7 @@ class UIMainWin(FramelessMainWindow):
         self.mainHBoxLayout = QHBoxLayout()
         self.vBoxLayout.addLayout(self.mainHBoxLayout)
 
-        # 创建窗体导航枢 和 stacke 控件 以及放置控件的垂直布局
+        # 创建窗体导航枢 和 stacke 控件
         self.pivot = NavigationInterface(self, showMenuButton=True, showReturnButton=False)
         self.pivot.setObjectName("pivot")
         self.pivot.setExpandWidth(300)
@@ -180,6 +182,7 @@ class UIMainWin(FramelessMainWindow):
         self.mainHBoxLayout.addWidget(self.stackedWidget)
         
         self.pages = []
+        
         # 添加子界面
         self.page_model = ModelNavigationInterface(self)
         self.addSubInterface(self.page_model, "pageModelParameter", self.__tr("模型参数"), icon=FluentIcon.BOOK_SHELF)

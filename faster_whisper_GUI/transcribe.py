@@ -141,12 +141,14 @@ class OutputWorker(QThread):
         self.is_running = True
         output_format = self.format
         output_dir = self.output_dir
+
         # 检查输出目录
         if output_dir != "" and not os.path.exists(output_dir):
-            os.mkdir(output_dir)
             print(f"\nCreate output dir : {output_dir}")
+            # 给定的输出目录不存在时 创建输出目录
+            os.mkdir(output_dir)
+            
         # 后续处理
-
         for segments, path, info in self.segments_path_info:
 
             if self.output_dir == "":
@@ -197,11 +199,14 @@ class TranscribeWorker(QThread):
         
     def transcribe_file(self, file) -> (TranscriptionInfo, List):
         try:
-            self.try_decode_avFile(file)
-        except Exception: # 捕获异常
+            is_av_file = self.try_decode_avFile(file)
+            if not is_av_file:
+                return (None,None)
+        except Exception as e: # 捕获异常
             print(f'    {file.split("/")[-1]} 不是一个有效的音视频文件\n')
+            print(f"    error:{str(e)}")
             print(f"    ignore File : {file} \n")
-            return None
+            return (None, None)
 
         print("开始处理音频...")
         segments, info = self.model.transcribe(
@@ -234,9 +239,10 @@ class TranscribeWorker(QThread):
                                     )
         try:
             self.detect_Audio_info(info)
-        except Exception:
+        except Exception as e:
             print(f"{file} 处理失败!")
-            return None
+            print(str(e))
+            return (None, None)
 
         # segments = list(segments)
         segmentsTranscribe : List[segment_Transcribe] = []
@@ -272,16 +278,36 @@ class TranscribeWorker(QThread):
         print(f"  after VAD duration —— [{duration_after_vad}]")
 
 
-    def try_decode_avFile(self, file):
+    def try_decode_avFile(self, file) -> bool:
+        '''
+        尝试解析输入文件，并获取文件类型
+        '''
+
+        flag = False
+
         print("\n")
         print(f"current task: {file}")
         print("  尝试解析文件")
         container = av.open(file) # 尝试打开文件      
+        av_cont = container.streams
+        for stream in av_cont:
+            if stream.codec_context.type == "audio":
+                flag = True
+                break
+
+        if not flag:
+            print("  解析失败！目标文件不是有效的音视频文件")
+            
         container.close()
-        print("  解析成功！")
+        return flag
     
     def run(self) -> None:
         self.is_running = True
+
+        # 检查临时目录
+        if not(os.path.exists(r"./temp")):
+            os.mkdir(r"./temp")
+
         # model = self.model 
         parameters = self.parameters
         # vad_filter = self.vad_filter 
@@ -312,7 +338,7 @@ class TranscribeWorker(QThread):
             for path, results in zip(files, results):
                 # print(self.is_running)
                 if not self.is_running:
-                    break
+                    return
                 (info, segments) = results
                 if segments is None:
                     continue
@@ -321,12 +347,17 @@ class TranscribeWorker(QThread):
                         # print(
                         #         f"\nTranscription for {path.split('/')[-1]}:\n{new_line.join('[' + str(segment.start) + 's --> ' + str(segment.end) + 's] ' + segment.text for segment in segments)}"
                         #     )
-
-        # del self.model
+                
+                # 保存临时文件
+                temp_output_save_file = getSaveFileName(audioFile=path, format="SRT", rootDir=r"./temp")
+                writeSubtitles(temp_output_save_file, segments=segments, format="SRT",language=info.language, fileName=path)
+                print(f"save temp file: {temp_output_save_file}")
+                
 
         torch.cuda.empty_cache()
         print("\n【Over】")
         self.signal_process_over.emit(segments_path_info)
+
         return
         
     def stop(self):
@@ -432,7 +463,7 @@ def writeSMI(fileName:str, segments:List[segment_Transcribe], language:str, avFi
                     word_text = word.word
                 try:
                     if word.end >= segment.start and word.end <= segment.end:
-                        smi += f"<SPAN Class={language_type_CC}>{word_text}</SPAN><{secondsToHMS(word.end).replace(',','.')}>"    
+                        smi += f"{' '}<{secondsToHMS(word.start).replace(',','.')}><SPAN Class={language_type_CC}>{word_text}</SPAN><{secondsToHMS(word.end).replace(',','.')}>"    
                     else:
                         smi += f"<SPAN Class={language_type_CC}>{word_text}</SPAN>"    
                     # smi += f"<SPAN Class={language_type_CC}>{word.word}</SPAN><{secondsToHMS(word.start).replace(',','.')}>"
@@ -613,7 +644,6 @@ def secondsToHMS(t) -> str:
     H = int(t_f // 3600)
     M = int((t_f - H * 3600) // 60)
     S = (t_f - H *3600 - M *60)
-    
     
     H = str(H)
     M = str(M)

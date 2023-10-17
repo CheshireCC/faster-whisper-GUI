@@ -1,9 +1,12 @@
 import json
-from pathlib import Path
+# from pathlib import Path
 import sys
 import os
 import time
+import av
 from threading import Thread
+
+import datetime
 
 from PySide6.QtWidgets import (
                                 QFileDialog,
@@ -28,9 +31,9 @@ from qfluentwidgets import (
                             , InfoBarIcon
                             , MessageBox
                             , TableView
-                            , Dialog
+                            # , Dialog
                         )
-
+from faster_whisper import TranscriptionInfo
 from .config import (
                     # SUBTITLE_FORMAT,
                     Language_dict
@@ -56,6 +59,8 @@ from .fasterWhisperGuiIcon import FasterWhisperGUIIcon
 from .UI_MainWindows import UIMainWin
 from .tableModel_segments_path_info import TableModel
 from .whisper_x import WhisperXWorker
+
+from .subtitleFileRead import readSRTFileToSegments
 
 # =======================================================================================
 # SignalStore
@@ -108,6 +113,7 @@ class MainWindows(UIMainWin):
         self.transcribe_thread = None
         self.audio_capture_thread = None
         self.whisperXWorker = None
+        self.outputWorker = None
         self.stateTool = None
         self.tableModel_list = {}
 
@@ -157,8 +163,9 @@ class MainWindows(UIMainWin):
 
         del self.FasterWhisperModel
         self.FasterWhisperModel = None
-
-        self.log.write("\n==========LoadModel==========\n")
+        startTime = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        self.log.write(f"\n=========={startTime}==========")
+        self.log.write("==========LoadModel==========\n")
         
         model_param = self.getParam_model()
         for key, value in model_param.items():
@@ -245,13 +252,11 @@ class MainWindows(UIMainWin):
         return model_dict
 
     def onButtonProcessClicked(self):
-        self.log.write("\n==========Process==========\n")
+        
         self.result_whisperx_aligment = None
         self.result_faster_whisper = None
         self.result_whisperx_speaker_diarize = None
-
-        # 重定向输出
-        self.redirectOutput(self.setTextAndMoveCursorToProcessBrowser)
+        
 
         if self.page_process.transceibe_Files_RadioButton.isChecked():
             self.transcribeProcess()
@@ -334,6 +339,11 @@ class MainWindows(UIMainWin):
         process button clicked
         """
         if self.transcribe_thread is None :
+            startTime = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+            self.log.write(f"\n=========={startTime}==========")
+            self.log.write("==========Process==========\n")
+            # 重定向输出
+            self.redirectOutput(self.setTextAndMoveCursorToProcessBrowser)
             self.page_process.processResultText.setText("")
             VAD_param :dict = self.getVADparam()
 
@@ -395,16 +405,20 @@ class MainWindows(UIMainWin):
             self.setStateTool(self.__tr("音频处理"), self.__tr("正在处理中"), False)
         
         elif self.transcribe_thread is not None and self.transcribe_thread.isRunning():
+            startTime = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+            self.log.write(f"\n=========={startTime}==========")
+            self.log.write("==========Cancel==========\n")
 
             messageBoxW = MessageBox(self.__tr("取消")
                                     , self.__tr("是否取消操作？")
                                     , self)
             
             if messageBoxW.exec():
-                self.button_process.setEnabled(False)
+                self.page_process.button_process.setEnabled(False)
                 self.cancelTrancribe()
                 sys.stdout = self.redirectErrOutpur
-                self.setStateTool(text=self.__tr("已取消"),status=True)
+                self.setStateTool(text=self.__tr("已取消"), status=True)
+                
     
     def resetButton_process(self):
         self.page_process.button_process.setEnabled(True)
@@ -414,7 +428,8 @@ class MainWindows(UIMainWin):
     def cancelTrancribe(self):
         print("Canceling...")
         self.transcribe_thread.stop()
-        self.transcribeOver(None)
+        self.transcribe_thread.requestInterruption()
+        self.raiseErrorInfoBar(title=self.__tr("取消"),content=self.__tr("操作已被用户取消"))
         print("【Process Canceled By User!】")
         self.resetButton_process()
         
@@ -763,7 +778,7 @@ class MainWindows(UIMainWin):
     def raiseErrorInfoBar(self, title:str, content:str):
         InfoBar.error(
                         title=title
-                        , content=title
+                        , content=content
                         , isClosable=True
                         , duration=-1
                         , orient=Qt.Orientation.Horizontal
@@ -799,18 +814,19 @@ class MainWindows(UIMainWin):
             return
         
         self.setPageOutButtonStatus()
-
-        self.log.write("\n==========TimeStample_Alignment==========\n")
+        startTime = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        self.log.write(f"\n=========={startTime}==========")
+        self.log.write("==========TimeStample_Alignment==========\n")
         self.setStateTool(title=self.__tr("WhisperX"), text=self.__tr("时间戳对齐"), status=False)
 
         self.whisperXWorker = WhisperXWorker(self.result_faster_whisper, alignment=True,speaker_diarize=False, parent=self)
         self.whisperXWorker.signal_process_over.connect(self.aligmentOver)
         self.whisperXWorker.start()
 
-
     def whisperXDiarizeSpeakers(self):
-        
-        self.log.write("\n==========Speaker_Diarize==========\n")
+        startTime = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        self.log.write(f"\n=========={startTime}==========")
+        self.log.write("==========Speaker_Diarize==========\n")
         whisperParams = self.getParamWhisperX()
 
         result_needed = self.result_whisperx_aligment if self.result_whisperx_aligment is not None else self.result_faster_whisper
@@ -893,7 +909,101 @@ class MainWindows(UIMainWin):
                         , position=InfoBarPosition.TOP
                         , parent=self
                     )
+    
+
+    def is_audio_or_video(self, file_path:str) -> bool:
+        flag = False
+
+        # 判定打开的文件是否音视频文件
+        av_cont = av.open(file_path)
         
+        # 获取文件的全部 流数据
+        av_streams = av_cont.streams
+        for stream in av_streams:
+            # 获取每个文件流的 type 信息
+            if stream.codec_context.type == "audio":
+                flag = True
+                break
+
+        if flag:
+                av_cont.close()
+                return True
+        
+        if not flag:
+            print(f"No audio stream found in file: {file_path}")
+        
+        av_cont.close()
+        return flag
+        
+    def openExcitedFiles(self):
+        
+        datetime_ = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        print(f"\n=========={datetime_}==========")
+        print("==========openExcitedFiles==========\n")
+
+        # 必须手动选择正确的语言选项
+        if self.page_transcribes.combox_language.currentText().lower() == "auto":
+            messageBoxDia_ = MessageBox(self.__tr("选择语言"), self.__tr("必须选择正确的字幕语言"),self)
+            messageBoxDia_.show()
+            return
+        
+        file,_ = QFileDialog.getOpenFileName(self, self.__tr("选择音频文件"), self.page_process.fileNameListView.avDataRootDir)
+        if not file:
+            return
+
+        if not self.is_audio_or_video(file):
+            message_W = MessageBox(self.__tr("文件无效"),
+                        self.__tr("不是音视频文件或文件无法找到音频流，请检查文件及文件格式"),
+                        self)
+            message_W.show()
+            return
+
+        print(f"open audio file: {file}")
+
+        dataDir,_ = os.path.split(file)
+        self.page_process.fileNameListView.avDataRootDir = dataDir
+        # filesList = os.listdir(dataDir)
+        
+        file_subtitle_fileName = ".".join(file.split(".")[:-1]+["srt"])
+
+        if os.path.exists(file_subtitle_fileName):
+            print(f"find existed srt file: {file_subtitle_fileName}")
+        else:
+            file_subtitle_fileName,_ = QFileDialog.getOpenFileName(self, self.__tr("选择字幕文件"), self.page_process.fileNameListView.avDataRootDir, "SRT file(*.srt)")
+            if file_subtitle_fileName and os.path.isfile(file_subtitle_fileName):
+                print(f"get srt file: {file_subtitle_fileName}")
+            else:
+                messageBoxDia_ = MessageBox(self.__tr("无效文件"),self.__tr("必须要有有效的字幕文件"),self)
+                messageBoxDia_.show()
+                return
+        
+        segments = readSRTFileToSegments(file_subtitle_fileName)
+        
+        # 输出字幕文件内容
+        for segment in segments:
+            print(f"[{segment.start}s --> {segment.end}s] | {segment.speaker+':'+segment.text if segment.speaker else segment.text}")
+
+        info = TranscriptionInfo(
+                                    language=self.page_transcribes.combox_language.currentText().split("-")[0],
+                                    language_probability=1,
+                                    duration=None, 
+                                    duration_after_vad=None,
+                                    all_language_probs=[],
+                                    transcription_options={},
+                                    vad_options={}
+                                )
+
+        if file_subtitle_fileName and file:
+            self.result_whisperx_aligment = None
+            self.result_whisperx_speaker_diarize = None
+
+            if self.result_faster_whisper is not None:
+                self.result_faster_whisper.append((segments, file, info))
+            else:
+                self.result_faster_whisper = [(segments, file, info)]
+            # self.tableModel_list[file] = file_subtitle_fileName
+            self.showResultInTable(self.result_faster_whisper)
+
     def singleAndSlotProcess(self):
         """
         process single connect and others
@@ -923,18 +1033,48 @@ class MainWindows(UIMainWin):
 
         self.page_output.WhisperXAligmentTimeStampleButton.clicked.connect(self.whisperXAligmentTimeStample)
         self.page_output.WhisperXSpeakerDiarizeButton.clicked.connect(self.whisperXDiarizeSpeakers)
+        
+        self.page_output.tableTab.tabBar.tabAddRequested.connect(self.openExcitedFiles)
+
 
     def closeEvent(self, event) -> None:
-        
+        """
+        点击窗口关闭按钮时的事件响应
+        """
+
         messageBoxW = MessageBox(self.__tr('退出'), self.__tr("是否要退出程序？"), self)
         if messageBoxW.exec():
             self.use_auth_token_speaker_diarition = self.page_VAD.LineEdit_use_auth_token.text() if (self.use_auth_token_speaker_diarition != self.page_VAD.LineEdit_use_auth_token.text() and self.page_VAD.LineEdit_use_auth_token.text() != "") else self.use_auth_token_speaker_diarition
             
             with open(r'./fasterWhisperGUIConfig.json','w',encoding='utf8')as fp:
                 json.dump({"use_auth_token":self.use_auth_token_speaker_diarition},fp,ensure_ascii=False)
+            
+            # 如果关键进程仍在运行 结束进程
+            if self.transcribe_thread is not None and self.transcribe_thread.is_running:
+                self.transcribe_thread.requestInterruption()
+                self.transcribe_thread.stop()
+            
+            if self.whisperXWorker is not None and self.whisperXWorker.is_running:
+                self.whisperXWorker.requestInterruption()
+                self.whisperXWorker.stop()
+            
+            if self.outputWorker is not None and self.outputWorker.is_running:
+                self.outputWorker.requestInterruption()
+                self.outputWorker.stop()
+            
+            # 退还系统错误输出 和标准输出
             sys.stderr = sys.__stderr__
+            sys.stdout = sys.__stdout__
+
+            # 关闭日志文件 结束全部流
             self.log.close()
-            # del self.FasterWhisperModel
+
+            # TODO:从内存或显存中手动卸除模型时，程序崩溃，该异常与 C++ 2015 运行时环境有关，
+            # 尝试替换该运行时库的系统文件，该功能正常运行，但系统不能再正常开机，
+            # 怀疑需要全面升级所有 C++ 运行时环境，暂时作罢
+            del self.FasterWhisperModel
+
+            # 接受退出事件，程序正常退出
             event.accept()
         else:
             event.ignore()

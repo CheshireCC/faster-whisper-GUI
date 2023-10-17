@@ -103,8 +103,6 @@ class TabInterface(QWidget):
         self.controlLabel_table = StrongBodyLabel(self.tr("表格样式控制"))
         self.controlLabel_wshiperx = StrongBodyLabel(self.tr("whisperX 参数控制"))
 
-
-
         self.hBoxLayout = QHBoxLayout(self)
         self.vBoxLayout = QVBoxLayout(self.tabView)
         self.panelLayout = QVBoxLayout(self.controlPanel)

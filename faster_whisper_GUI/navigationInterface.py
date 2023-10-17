@@ -1,4 +1,5 @@
 # coding:utf-8
+import os
 from PySide6.QtCore import (
                             Qt
                             # , Signal
@@ -81,6 +82,8 @@ class ToolBar(QWidget):
         self.modelStatusLabel.setObjectName("modelStatusLabel")
         self.modelStatusLabel.setFixedWidth(150)
 
+        self.openDirButton = PushButton(self.tr("软件目录"),self, FluentIcon.DICTIONARY)
+
         self.vBoxLayout = QVBoxLayout(self)
         self.buttonLayout = QHBoxLayout()
 
@@ -105,6 +108,7 @@ class ToolBar(QWidget):
         self.buttonLayout.addStretch(1)
 
         self.buttonLayout.addWidget(self.themeButton, 0, Qt.AlignRight)
+        self.buttonLayout.addWidget(self.openDirButton, 0, Qt.AlignRight)
         self.buttonLayout.addWidget(self.separator, 0, Qt.AlignRight)
 
         # self.buttonLayout.addWidget(self.documentButton, 0, Qt.AlignLeft)
@@ -120,14 +124,18 @@ class ToolBar(QWidget):
         self.themeButton.setToolTip(self.tr('切换主题'))
         # self.supportButton.setToolTip(self.tr('Support me'))
         self.questionButton.setToolTip(self.tr('关于'))
+        self.openDirButton.setToolTip(self.tr("打开主目录"))
 
         self.themeButton.clicked.connect(lambda: toggleTheme(True))
         # self.supportButton.clicked.connect(signalBus.supportSignal)
         # self.documentButton.clicked.connect(
         #     lambda: QDesktopServices.openUrl(QUrl(HELP_URL)))
+        
         self.sourceButton.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/CheshireCC/fatser-whisper-GUI/releases")))
         self.questionButton.clicked.connect(lambda: MessageBox(self.tr("关于"),self.tr(f"version: {__version__}" + "\n" + f"faster-whisper: {__FasterWhisper_version__}" + "\n" + f"whisperX: {__WhisperX_version__}"),parent=self.parent()).show())
-
+        self.openDirButton.clicked.connect(lambda: os.startfile(os.path.abspath(r"./").replace("\\","/")))#print(os.path.abspath(r"./").replace("\\","/")))#os.startfile(os.path.abspath(r"./")))
+        
+        
         self.vBoxLayout.addSpacing(4)
 
 class NavigationBaseInterface(ScrollArea):

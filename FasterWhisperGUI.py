@@ -59,13 +59,14 @@ if __name__ == "__main__":
     sys.path.append(os.path.join(BASE_DIR, 'resource'))
     sys.path.append(os.path.join(BASE_DIR, 'faster_whisper_GUI'))
 
+    # cudn 环境现随 PyTorch 提供
     # 修复环境变量 - cudnn
-    cudnn_dir = ";" + os.path.join(BASE_DIR, 'cuDNN')
-    os.environ["path"] += cudnn_dir
+    # cudnn_dir = ";" + os.path.join(BASE_DIR, 'cuDNN')
+    # os.environ["path"] += cudnn_dir
 
-    # 修复环境变量 - cuBLAS
-    cuBLAS_dir = ";" + os.path.join(BASE_DIR, 'cuBLAS')
-    os.environ["path"] += cuBLAS_dir
+    # # 修复环境变量 - cuBLAS
+    # cuBLAS_dir = ";" + os.path.join(BASE_DIR, 'cuBLAS')
+    # os.environ["path"] += cuBLAS_dir
 
     # 修复环境变量 - ffmpeg
     ffmpeg_dir = ";" + os.path.join(BASE_DIR, 'ffmpeg')

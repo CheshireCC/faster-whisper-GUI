@@ -2,6 +2,7 @@
 import os
 
 from PySide6.QtCore import QStringListModel, Qt, QCoreApplication
+import PySide6.QtGui
 
 from PySide6.QtWidgets import (
                                 QWidget
@@ -45,6 +46,9 @@ class FileNameListView(QWidget):
 
         StyleSheet.FILE_LIST.apply(self)
         self.SignalAndSlotConnect()
+
+        # 设置接受文件拖放
+        self.setAcceptDrops(True)
 
 
     def testFileExitedAndNotSubtitle(self, fileNameList):
@@ -94,7 +98,10 @@ class FileNameListView(QWidget):
         
         if fileNames is None or len(fileNames) == 0:
             return
+
+        self.setFileNameListToDataModel(fileNames)
         
+    def setFileNameListToDataModel(self,fileNames)->None:
         baseDir, _ = os.path.split(fileNames[0])
         self.avDataRootDir = baseDir
 
@@ -114,13 +121,14 @@ class FileNameListView(QWidget):
 
         self.FileNameModle.setStringList(self.avFileList)
 
+        # TODO: monkey code
         if len(file_ignored) > 0:
             InfoBar.info(
                     title=self.__tr("忽略已存在的文件")
                     , content=self.__tr("重复添加的文件将被忽略：\n") + "\n".join(file_ignored)
                     , isClosable=False
                     , duration=2000
-                    , parent=self.parent().parent()
+                    , parent=self.parent().parent().parent().parent().parent() 
                 )    
         
     def removeFileNameFromListWidget(self):
@@ -184,3 +192,23 @@ class FileNameListView(QWidget):
     def SignalAndSlotConnect(self):
         self.addFileButton.clicked.connect(self.addFileNamesToListWidget)
         self.removeFileButton.clicked.connect(self.removeFileNameFromListWidget)
+    
+    # ===========================================================================================================
+    def dragEnterEvent(self, event: PySide6.QtGui.QDragEnterEvent):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()  # 接受拖放事件
+        else:
+            event.ignore()
+        
+    def dropEvent(self, a0: PySide6.QtGui.QDropEvent) -> None:
+        """
+        重写鼠标放开事件
+        :param a0:事件
+        :return:None
+        """
+        # 获取拖拽进来的所有文件的路径
+        urls = a0.mimeData().urls()
+        
+        fileNames = [url.toLocalFile() for url in urls]
+        self.setFileNameListToDataModel(fileNames)
+        
