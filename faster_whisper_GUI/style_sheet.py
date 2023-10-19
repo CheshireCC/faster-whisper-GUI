@@ -4,7 +4,6 @@ from enum import Enum
 from qfluentwidgets import (
                             StyleSheetBase
                             , Theme
-                            # , isDarkTheme
                             , qconfig
                         )
 
@@ -17,6 +16,9 @@ class StyleSheet(StyleSheetBase, Enum):
     NAVIGATION_INTERFACE = "navigationBaseInterface"
     TAB_INTERFSCE = "tabInterface"
     FILE_LIST = "fileListWidget"
+    HOME_ITEM = "homeItemLabel"
+    DENUCE_INTERFACE = "demucsInterface"
+    OUTPUT_GROUP_WIDGET = "outputGroupWidget"
 
 
     def path(self, theme=Theme.AUTO):

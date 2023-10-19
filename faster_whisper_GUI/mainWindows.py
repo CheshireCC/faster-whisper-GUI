@@ -1,5 +1,4 @@
 import json
-# from pathlib import Path
 import sys
 import os
 import time
@@ -8,13 +7,7 @@ from threading import Thread
 
 import datetime
 
-from PySide6.QtWidgets import (
-                                QFileDialog,
-                                # QLabel,
-                                # QListWidgetItem
-                                # , QMessageBox
-                                # , QTableView
-                            )
+from PySide6.QtWidgets import QFileDialog
 
 from PySide6.QtGui import QTextCursor
 from PySide6.QtCore import (
@@ -31,18 +24,12 @@ from qfluentwidgets import (
                             , InfoBarIcon
                             , MessageBox
                             , TableView
-                            # , Dialog
+                            , FluentIcon
                         )
 from faster_whisper import TranscriptionInfo
 from .config import (
-                    # SUBTITLE_FORMAT,
-                    Language_dict
-                    # , Preciese_list
-                    # , Model_names
-                    # , Device_list
-                    , Task_list
+                    Task_list
                     , STR_BOOL
-                    # , SUBTITLE_FORMAT
                     , CAPTURE_PARA
                 )
 
@@ -59,6 +46,9 @@ from .fasterWhisperGuiIcon import FasterWhisperGUIIcon
 from .UI_MainWindows import UIMainWin
 from .tableModel_segments_path_info import TableModel
 from .whisper_x import WhisperXWorker
+from .de_mucs import DemucsWorker
+
+# from .style_sheet import StyleSheet
 
 from .subtitleFileRead import readSRTFileToSegments
 
@@ -93,6 +83,11 @@ class MainWindows(UIMainWin):
 
     def __tr(self, text):
         return QCoreApplication.translate(self.__class__.__name__, text)
+
+    def outputWithDateTime(self, text:str):
+        dateTime_ = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        print(f"\n=========={dateTime_}==========")
+        print(f"=========={text}==========\n")
     
     log = open(r"./fasterwhispergui.log" ,"a" ,encoding="utf8", buffering=1)
 
@@ -114,6 +109,8 @@ class MainWindows(UIMainWin):
         self.audio_capture_thread = None
         self.whisperXWorker = None
         self.outputWorker = None
+        self.demucsWorker = None
+
         self.stateTool = None
         self.tableModel_list = {}
 
@@ -124,7 +121,7 @@ class MainWindows(UIMainWin):
         self.modelRootDir = r"./"
 
         self.singleAndSlotProcess()
-    
+
 
     def getDownloadCacheDir(self):
         """
@@ -163,9 +160,7 @@ class MainWindows(UIMainWin):
 
         del self.FasterWhisperModel
         self.FasterWhisperModel = None
-        startTime = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-        self.log.write(f"\n=========={startTime}==========")
-        self.log.write("==========LoadModel==========\n")
+        self.outputWithDateTime("LoadModel")
         
         model_param = self.getParam_model()
         for key, value in model_param.items():
@@ -339,9 +334,8 @@ class MainWindows(UIMainWin):
         process button clicked
         """
         if self.transcribe_thread is None :
-            startTime = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-            self.log.write(f"\n=========={startTime}==========")
-            self.log.write("==========Process==========\n")
+            self.outputWithDateTime("Process")
+            
             # 重定向输出
             self.redirectOutput(self.setTextAndMoveCursorToProcessBrowser)
             self.page_process.processResultText.setText("")
@@ -405,9 +399,7 @@ class MainWindows(UIMainWin):
             self.setStateTool(self.__tr("音频处理"), self.__tr("正在处理中"), False)
         
         elif self.transcribe_thread is not None and self.transcribe_thread.isRunning():
-            startTime = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-            self.log.write(f"\n=========={startTime}==========")
-            self.log.write("==========Cancel==========\n")
+            self.outputWithDateTime("Cancel")
 
             messageBoxW = MessageBox(self.__tr("取消")
                                     , self.__tr("是否取消操作？")
@@ -712,7 +704,7 @@ class MainWindows(UIMainWin):
             self.stateTool.setContent(text)
 
         width = self.width()
-        self.stateTool.move(width-290, 45)
+        self.stateTool.move(width-self.stateTool.width()-30, 45)
         self.stateTool.setState(status)
 
         if  status:    
@@ -739,7 +731,7 @@ class MainWindows(UIMainWin):
             try:
                 page.setModelStatusLabelText(status)
             except Exception as e:
-                self.log.write(str(e))
+                pass
     
     def getLocalModelPath(self):
         """
@@ -766,7 +758,7 @@ class MainWindows(UIMainWin):
         self.log.write("\n==========OutputSubtitleFiles==========\n")
 
         format = self.page_transcribes.combox_output_format.currentText()
-        output_dir = self.page_output.LineEdit_output_dir.text()
+        output_dir = self.page_output.outputGroupWidget.LineEdit_output_dir.text()
 
         result_to_write = self.result_faster_whisper if self.result_whisperx_aligment is None else (self.result_whisperx_aligment if self.result_whisperx_speaker_diarize is None else self.result_whisperx_speaker_diarize)
 
@@ -814,9 +806,8 @@ class MainWindows(UIMainWin):
             return
         
         self.setPageOutButtonStatus()
-        startTime = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-        self.log.write(f"\n=========={startTime}==========")
-        self.log.write("==========TimeStample_Alignment==========\n")
+        self.outputWithDateTime("TimeStample_Alignment")
+
         self.setStateTool(title=self.__tr("WhisperX"), text=self.__tr("时间戳对齐"), status=False)
 
         self.whisperXWorker = WhisperXWorker(self.result_faster_whisper, alignment=True,speaker_diarize=False, parent=self)
@@ -824,9 +815,8 @@ class MainWindows(UIMainWin):
         self.whisperXWorker.start()
 
     def whisperXDiarizeSpeakers(self):
-        startTime = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-        self.log.write(f"\n=========={startTime}==========")
-        self.log.write("==========Speaker_Diarize==========\n")
+        self.outputWithDateTime("Speaker_Diarize")
+        
         whisperParams = self.getParamWhisperX()
 
         result_needed = self.result_whisperx_aligment if self.result_whisperx_aligment is not None else self.result_faster_whisper
@@ -937,9 +927,7 @@ class MainWindows(UIMainWin):
         
     def openExcitedFiles(self):
         
-        datetime_ = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-        print(f"\n=========={datetime_}==========")
-        print("==========openExcitedFiles==========\n")
+        self.outputWithDateTime("openExcitedFiles")
 
         # 必须手动选择正确的语言选项
         if self.page_transcribes.combox_language.currentText().lower() == "auto":
@@ -1004,11 +992,132 @@ class MainWindows(UIMainWin):
             # self.tableModel_list[file] = file_subtitle_fileName
             self.showResultInTable(self.result_faster_whisper)
 
+    def reSetButton_demucs_process(self):
+        self.page_demucs.process_button.setText(self.__tr("提取"))
+        self.page_demucs.process_button.setIcon( FluentIcon.IOT)
+        self.page_demucs.process_button.setEnabled(True)
+        
+
+    def demucs_file_process_status(self, status:dict):
+        if status["task"] == "reasmple audio":
+            content = self.__tr("音频重采样")
+        elif status["task"] == "separate sources":
+            content = self.__tr("音轨分离")
+        elif status["task"] == "save files":
+            content = self.__tr("保存音频文件")
+        elif status["task"] == "load model":
+            content = self.__tr("加载模型...")
+        elif status["task"] == "file over":
+            content = self.__tr("结束")
+        elif status["task"] == "download model":
+            content = self.__tr("下载模型...")
+        
+        if status["file"] != "":
+            _, fileName = os.path.split(status["file"])
+        else:
+            fileName = ""
+        
+        self.setStateTool(text=f"{fileName} {content}", status=status["status"])
+
+
+    def demucs_process_over(self, status:bool):
+        if status:
+            self.setStateTool(text=self.__tr("分离完成"), status=True)
+            self.raiseSuccessInfoBar(self.__tr("Demucs"), self.__tr("音轨分离成功"))
+
+        else:
+            self.setStateTool(text=self.__tr("结束"), status=True)
+            self.raiseErrorInfoBar(self.__tr("Demucs"), self.__tr("分离失败"))
+
+        self.reSetButton_demucs_process()
+
+    def demucsProcess(self):
+        
+        if self.demucsWorker is not None and self.demucsWorker.isRunning():
+            
+            message_w = MessageBox(self.__tr("取消"), self.__tr('确定取消？'),self)
+
+            if not message_w.exec():
+                return
+
+            self.outputWithDateTime("Cancel Demucs")
+            self.page_demucs.process_button.setEnabled(False)
+            self.demucsWorker.requestInterruption()
+            self.demucsWorker.stop()
+
+            while(self.demucsWorker.isRunning()):
+                if self.stateTool is not None:
+                    self.stateTool.setContent(self.__tr("正在取消操作"))
+                    self.stateTool.setTitle(self.__tr("取消"))
+                else:
+                    self.setStateTool(self.__tr("取消"), self.__tr("正在取消操作"), False)
+
+            self.reSetButton_demucs_process()
+            self.setStateTool(self.__tr("取消"), self.__tr("用户取消操作"),True)
+            return
+        
+        self.outputWithDateTime("Demucs")
+    
+        param = self.getDemucsParams()
+
+        if len(param["audio"]) < 1:
+            self.raiseErrorInfoBar(self.__tr("文件错误"), self.__tr("没有选择有效的音视频文件"))
+
+        for key,value in param.items():
+            print(f"{key}: {value}")
+
+        if self.demucsWorker is None:
+            self.demucsWorker = DemucsWorker(
+                                            self,
+                                            param["audio"],
+                                            param["stems"],
+                                            r"./cache/hdemucs_high_trained.pt",
+                                            segment=param["segment"],
+                                            overlap=param["overlap"],
+                                            output_path=param["output_path"]
+                                        )
+        
+        else:
+            self.demucsWorker.audio = param["audio"]
+            self.demucsWorker.stems = param["stems"]
+            self.demucsWorker.segment = param["segment"]
+            self.demucsWorker.overlap = param["overlap"]
+            self.demucsWorker.output_path = param["output_path"]
+        
+        self.demucsWorker.signal_vr_over.connect(self.demucs_process_over)
+        self.demucsWorker.file_process_status.connect(self.demucs_file_process_status)
+
+        self.setStateTool(self.__tr("Demucs"), self.__tr("音轨分离"), False)
+        self.demucsWorker.start()
+
+        self.page_demucs.process_button.setText(self.__tr("取消"))
+        self.page_demucs.process_button.setIcon(":/resource/Image/Cancel_red")
+
+
+    def getDemucsParams(self):
+        demucs_param = {}
+        output_path = self.page_demucs.outputGroupWidget.LineEdit_output_dir.text().strip()
+        demucs_param["output_path"] = output_path
+
+        overlap = self.page_demucs.demucs_param_widget.spinBox_overlap.value()
+        demucs_param["overlap"] = overlap
+
+        segment = self.page_demucs.demucs_param_widget.spinBox_segment.value()
+        demucs_param["segment"] = segment
+
+        stems = self.page_demucs.demucs_param_widget.comboBox_stems.currentText()
+        demucs_param["stems"] = stems
+
+        audio = self.page_demucs.fileListView.avFileList
+        demucs_param["audio"] = audio
+
+        return demucs_param
+
     def singleAndSlotProcess(self):
         """
         process single connect and others
         """
-        # TODO: there is too much methed be writen in this file, 
+        # TODO: there is too much function be writen in this file, 
         # and they are not all must be here, 
         # some of them could be in their own class-code file
         self.statusToolSignalStore.LoadModelSignal.connect(self.loadModelResult)
@@ -1016,26 +1125,24 @@ class MainWindows(UIMainWin):
 
         self.page_model.toolPushButton_get_model_path.clicked.connect(self.getLocalModelPath)
         self.page_model.button_convert_model.clicked.connect(self.onButtonConvertModelClicked)
-
         set_model_output_dir = lambda path: path if path != "" else self.page_model.LineEdit_model_out_dir.text()
         self.page_model.button_set_model_out_dir.clicked.connect(lambda:self.page_model.LineEdit_model_out_dir.setText(set_model_output_dir(QFileDialog.getExistingDirectory(self,"选择转换模型输出目录", self.page_model.LineEdit_model_out_dir.text()))) )
         self.page_model.button_download_root.clicked.connect(self.getDownloadCacheDir)
-
         self.page_model.button_model_lodar.clicked.connect(self.onModelLoadClicked)
         self.page_process.button_process.clicked.connect(self.onButtonProcessClicked)
-
         self.page_process.processResultText.textChanged.connect(lambda: self.page_process.processResultText.moveCursor(QTextCursor.MoveOperation.End, mode=QTextCursor.MoveMode.MoveAnchor))
-        
-        set_output_file = lambda path: path if path != "" else self.page_output.LineEdit_output_dir.text()
-        self.page_output.outputDirChoseButton.clicked.connect(lambda:self.page_output.LineEdit_output_dir.setText(set_output_file(QFileDialog.getExistingDirectory(self,"选择输出文件存放目录", self.page_output.LineEdit_output_dir.text()))))
 
         self.page_output.outputSubtitleFileButton.clicked.connect(self.outputSubtitleFile)
-
         self.page_output.WhisperXAligmentTimeStampleButton.clicked.connect(self.whisperXAligmentTimeStample)
         self.page_output.WhisperXSpeakerDiarizeButton.clicked.connect(self.whisperXDiarizeSpeakers)
-        
         self.page_output.tableTab.tabBar.tabAddRequested.connect(self.openExcitedFiles)
 
+        self.page_home.itemLabel_demucs.mainButton.clicked.connect(lambda:self.stackedWidget.setCurrentWidget(self.page_demucs))
+        self.page_home.itemLabel_faster_whisper.mainButton.clicked.connect(lambda:self.stackedWidget.setCurrentWidget(self.page_process))
+        self.page_home.itemLabel_whisperx.mainButton.clicked.connect(lambda:self.stackedWidget.setCurrentWidget(self.page_output))
+        self.page_home.itemLabel_faster_whisper.subButton.clicked.connect(lambda:self.stackedWidget.setCurrentWidget(self.page_transcribes))
+
+        self.page_demucs.process_button.clicked.connect(self.demucsProcess)
 
     def closeEvent(self, event) -> None:
         """
@@ -1046,8 +1153,18 @@ class MainWindows(UIMainWin):
         if messageBoxW.exec():
             self.use_auth_token_speaker_diarition = self.page_VAD.LineEdit_use_auth_token.text() if (self.use_auth_token_speaker_diarition != self.page_VAD.LineEdit_use_auth_token.text() and self.page_VAD.LineEdit_use_auth_token.text() != "") else self.use_auth_token_speaker_diarition
             
+            overlap = self.page_demucs.demucs_param_widget.spinBox_overlap.value()
+            segment = self.page_demucs.demucs_param_widget.spinBox_segment.value()
+
             with open(r'./fasterWhisperGUIConfig.json','w',encoding='utf8')as fp:
-                json.dump({"use_auth_token":self.use_auth_token_speaker_diarition},fp,ensure_ascii=False)
+                json.dump(
+                            {"use_auth_token":self.use_auth_token_speaker_diarition,
+                            "overlap":overlap,
+                            "segment":segment
+                        },
+                            fp,
+                            ensure_ascii=False
+                        )
             
             # 如果关键进程仍在运行 结束进程
             if self.transcribe_thread is not None and self.transcribe_thread.is_running:
@@ -1062,6 +1179,10 @@ class MainWindows(UIMainWin):
                 self.outputWorker.requestInterruption()
                 self.outputWorker.stop()
             
+            if self.demucsWorker is not None and self.demucsWorker.is_running:
+                self.demucsWorker.requestInterruption()
+                self.demucsWorker.stop()
+            
             # 退还系统错误输出 和标准输出
             sys.stderr = sys.__stderr__
             sys.stdout = sys.__stdout__
@@ -1072,7 +1193,7 @@ class MainWindows(UIMainWin):
             # TODO:从内存或显存中手动卸除模型时，程序崩溃，该异常与 C++ 2015 运行时环境有关，
             # 尝试替换该运行时库的系统文件，该功能正常运行，但系统不能再正常开机，
             # 怀疑需要全面升级所有 C++ 运行时环境，暂时作罢
-            del self.FasterWhisperModel
+            # del self.FasterWhisperModel
 
             # 接受退出事件，程序正常退出
             event.accept()
@@ -1082,7 +1203,8 @@ class MainWindows(UIMainWin):
     def resizeEvent(self, e):
         super().resizeEvent(e)
         if self.stateTool is not None:
+            width_tool = self.stateTool.width()
             width = self.width()
-            self.stateTool.move(width-290, 45)
+            self.stateTool.move(width-width_tool-30, 45)
         return 
     

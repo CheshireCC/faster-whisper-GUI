@@ -3,7 +3,7 @@
 # from threading import Thread
 from concurrent import futures
 import os
-from typing import List, Optional
+from typing import List
 import time
 
 import torch
@@ -27,12 +27,7 @@ from .config import (
                     , Language_without_space
                 )
 
-from .seg_ment import (
-                        segment_Transcribe
-                        # , Removerepetition
-                        # , dictionaryListToSegmentList
-                        # , segmentListToDictionaryList
-                    )
+from .seg_ment import segment_Transcribe
 
 
 class AudioStreamTranscribeWorker(QThread):
@@ -353,8 +348,9 @@ class TranscribeWorker(QThread):
                 writeSubtitles(temp_output_save_file, segments=segments, format="SRT",language=info.language, fileName=path)
                 print(f"save temp file: {temp_output_save_file}")
                 
-
-        torch.cuda.empty_cache()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            
         print("\n【Over】")
         self.signal_process_over.emit(segments_path_info)
 

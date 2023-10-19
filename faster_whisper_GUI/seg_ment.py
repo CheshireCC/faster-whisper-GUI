@@ -1,5 +1,5 @@
 
-from faster_whisper import  Segment, Word
+from faster_whisper import  (Segment, Word)
 from typing import List
 
 class segment_Transcribe():

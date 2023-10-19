@@ -1,0 +1,62 @@
+#mainWidget{
+    background-color: rgb(43, 43, 43);
+    border-radius : 25px;
+}
+
+#mainPushButton{
+    font : 15px 'Segoe UI';
+    font-weight: bold;
+    height: 35px;
+    background-color: rgb(103, 81, 166);
+    color: white;
+    border-radius : 15px;
+}
+
+#mainPushButton:pressed
+{
+    background-color:rgb(148, 126, 211);
+    padding-left:2px;
+    padding-top:2px;
+}
+
+#mainPushButton:hover{
+    background-color:rgb(95, 55, 206);
+}
+
+#subPushButton{
+    font : 15px 'Segoe UI';
+    font-weight: bold;
+    height: 35px;
+    background-color: rgb(235, 225, 253);
+    color: black;
+    border-radius : 15px;
+}
+
+#subPushButton:hover{
+    background-color: rgb(217, 200, 249);
+}
+
+#subPushButton:pressed{
+    background-color:rgb(162, 150, 195);
+    padding-left:2px;
+    padding-top:2px;
+}
+
+TitleLabel{
+    background-color: transparent;
+    color: white;
+    font : 45px 'Segoe UI';
+    font-weight: bold;
+    qproperty-alignment: AlignCenter;
+}
+
+CaptionLabel{
+    background-color: transparent;
+    font-size: 15px;
+    color: rgb(160, 160, 160);
+    qproperty-alignment: AlignCenter;
+}
+
+ImageLabel{
+    background-color: transparent;
+}

@@ -1,7 +1,7 @@
 
 import os
 
-from PySide6.QtCore import QStringListModel, Qt, QCoreApplication
+from PySide6.QtCore import (QStringListModel, Qt, QCoreApplication)
 import PySide6.QtGui
 
 from PySide6.QtWidgets import (
@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
                                 , QListView
                                 , QFileDialog
                             )
+import av
 
 from qfluentwidgets import (
                             ListView
@@ -100,12 +101,52 @@ class FileNameListView(QWidget):
             return
 
         self.setFileNameListToDataModel(fileNames)
+    
+    def testFileWithAudioTrackOrNot(self, fileNames:list[str]):
         
-    def setFileNameListToDataModel(self,fileNames)->None:
+        fileNames_ = []
+        ignoreFile = []
+        for fileName in fileNames:
+            cont = None
+            try:
+                cont = av.open(fileName)
+            except Exception as e:
+                print(f"InvalidDataError : {fileName} \nerror:{str(e)}")
+                ignoreFile.append(fileName)
+            
+            if cont is not None:
+                for s in cont.streams:
+                    if s.codec_context.type == 'audio':
+                        stream_ = s
+                        break
+                    else:
+                        stream_ = None
+                
+                if stream_ is None :
+                    ignoreFile.append(fileName)
+            
+                else:
+                    fileNames_.append(fileName)
+            
+        # TODO: monkey code
+        if len(ignoreFile) > 0:
+            InfoBar.info(
+                    title=self.__tr("忽略无效文件")
+                    , content=self.__tr("不包含音频流的文件将被忽略：\n") + "\n".join(ignoreFile)
+                    , isClosable=False
+                    , duration=2000
+                    , parent=self.parent().parent().parent().parent().parent() 
+                )    
+        
+        return fileNames_
+
+
+    def setFileNameListToDataModel(self, fileNames)->None:
         baseDir, _ = os.path.split(fileNames[0])
         self.avDataRootDir = baseDir
 
         fileNames = self.testFileExitedAndNotSubtitle(fileNames)
+        fileNames = self.testFileWithAudioTrackOrNot(fileNames)
 
         file_ignored = []
         self.avFileList = self.FileNameModle.stringList()

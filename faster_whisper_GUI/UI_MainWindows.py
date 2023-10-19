@@ -10,38 +10,18 @@ from PySide6.QtCore import  (
                             )
 
 from PySide6.QtWidgets import  (
-                                # QFileDialog ,
                                 QSpacerItem
                                 , QWidget
                                 , QStackedWidget
                                 , QVBoxLayout
-                                # , QStyle
                                 , QHBoxLayout
                                 , QGridLayout
-                                # , QCompleter
-                                # , QTextBrowser
-                                # , QLabel
                             )
 
 from PySide6.QtGui import QIcon
 
 from qfluentwidgets import (
                             NavigationInterface
-                            # , Pivot
-                            # , LineEdit
-                            # , CheckBox
-                            # , ComboBox
-                            # , RadioButton
-                            # , ToolButton
-                            # , EditableComboBox
-                            # , PushButton
-                            # , SpinBox
-                            # , DisplayLabel
-                            # , SegmentedWidget
-                            # , StateToolTip
-                            # , InfoBar
-                            # , InfoBarPosition
-                            # , InfoBarIcon
                             , setTheme
                             , Theme
                             , FluentIcon
@@ -56,13 +36,9 @@ from .config import (Language_dict
                     , Preciese_list
                     , Model_names
                     , Device_list
-                    # , Task_list
-                    # , STR_BOOL
-                    # , SUBTITLE_FORMAT
-                    # , CAPTURE_PARA
                 )
 
-from resource import rc_Image, rc_qss
+from resource import (rc_Image, rc_qss)
 import json
 
 from .version import (
@@ -78,6 +54,8 @@ from .tranccribePageNavigationInterface import TranscribeNavigationInterface
 from .vadPageNavigationInterface import VADNavigationInterface
 from .processPageNavigationInterface import ProcessPageNavigationInterface
 from .outputPageNavigationInterface import OutputPageNavigationInterface
+from .homePageNavigationInterface import HomePageNavigationinterface
+from .demucsPageNavigationInterface import DemucsPageNavigation
 
 from .fasterWhisperGuiIcon import FasterWhisperGUIIcon
 
@@ -89,6 +67,14 @@ class UIMainWin(FramelessMainWindow):
 
     def __tr(self, text):
         return QCoreApplication.translate(self.__class__.__name__, text)
+    
+    def readConfigJson(self):
+        self.use_auth_token_speaker_diarition= ""
+        with open(r"./fasterWhisperGUIConfig.json","r") as fp:
+            json_data = json.load(fp)
+            self.use_auth_token_speaker_diarition = json_data["use_auth_token"]
+            self.overlap = json_data["overlap"]
+            self.segment = json_data["segment"]
 
     def __init__(self):
         super().__init__()
@@ -103,11 +89,6 @@ class UIMainWin(FramelessMainWindow):
         # 语言支持
         self.LANGUAGES_DICT = Language_dict
 
-        self.use_auth_token_speaker_diarition= ""
-        with open(r"./fasterWhisperGUIConfig.json","r") as fp:
-            json_data = json.load(fp)
-            self.use_auth_token_speaker_diarition = json_data["use_auth_token"]
-
         userDir = os.path.expanduser("~")
         cache_dir = os.path.join(userDir,".cache","huggingface","hub").replace("\\", "/")
         self.download_cache_path = cache_dir
@@ -118,6 +99,14 @@ class UIMainWin(FramelessMainWindow):
         self.setupUI()
 
         self.initWin()
+
+        # 读配置文件
+        self.readConfigJson()
+        # 设置默认配置
+        self.page_VAD.LineEdit_use_auth_token.setText(self.use_auth_token_speaker_diarition)
+        self.page_demucs.demucs_param_widget.spinBox_overlap.setValue(self.overlap)
+        self.page_demucs.demucs_param_widget.spinBox_segment.setValue(self.segment)
+
         
 
     def initWin(self):
@@ -126,8 +115,8 @@ class UIMainWin(FramelessMainWindow):
         setTheme(Theme.LIGHT)
         StyleSheet.MAIN_WINDOWS.apply(self)
         
-        self.resize(800, 500)
-        self.setGeometry(500, 200, 1147, 775)
+        # self.resize(800, 500)
+        self.setGeometry(500, 200, 1147, 825)
 
         # 添加标题栏 
         self.setTitleBar(StandardTitleBar(self))
@@ -172,9 +161,10 @@ class UIMainWin(FramelessMainWindow):
         self.vBoxLayout.addLayout(self.mainHBoxLayout)
 
         # 创建窗体导航枢 和 stacke 控件
-        self.pivot = NavigationInterface(self, showMenuButton=True, showReturnButton=False)
+        self.pivot = NavigationInterface(self, showMenuButton=True, showReturnButton=True)
         self.pivot.setObjectName("pivot")
         self.pivot.setExpandWidth(300)
+        # self.pivot.panel.returnButton.setEnabled(True)
 
         self.stackedWidget = QStackedWidget(self)
 
@@ -184,6 +174,14 @@ class UIMainWin(FramelessMainWindow):
         self.pages = []
         
         # 添加子界面
+        self.page_home = HomePageNavigationinterface(self)
+        self.addSubInterface(self.page_home, "pageHome", self.__tr("Home"), icon=FluentIcon.HOME)
+        self.pages.append(self.page_home)
+
+        self.page_demucs = DemucsPageNavigation(self)
+        self.addSubInterface(self.page_demucs, "pageDecums", self.__tr("声乐移除"), icon=FasterWhisperGUIIcon.DEMUCS)
+        self.pages.append(self.page_demucs)
+
         self.page_model = ModelNavigationInterface(self)
         self.addSubInterface(self.page_model, "pageModelParameter", self.__tr("模型参数"), icon=FluentIcon.BOOK_SHELF)
         self.pages.append(self.page_model)
@@ -205,8 +203,13 @@ class UIMainWin(FramelessMainWindow):
         self.pages.append(self.page_output)
 
         self.stackedWidget.currentChanged.connect(self.onCurrentIndexChanged)
-        self.stackedWidget.setCurrentWidget(self.page_model)
-        self.pivot.setCurrentItem(self.page_model.objectName())
+        # self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentWidget(self.page_home)
+        self.pivot.setCurrentItem(self.page_home.objectName())
+
+        # 设置默认 RouteKey 防止返回键功能异常
+        self.pivot.panel.history.setDefaultRouteKey(self.stackedWidget, self.page_home.objectName())
+
     
     def addSubInterface(self, layout: QWidget, objectName, text: str, icon:QIcon=None ):
         layout.setObjectName(objectName)
@@ -220,11 +223,14 @@ class UIMainWin(FramelessMainWindow):
             ,icon=icon
         )
 
+        # item.clicked.connect(lambda: self.pivot.panel.history.push(self.stackedWidget , objectName))
+
     def onCurrentIndexChanged(self, index):
         if not index :
             index = self.stackedWidget.currentIndex()
         widget = self.stackedWidget.widget(index)
         self.pivot.setCurrentItem(widget.objectName())
+        self.pivot.panel.history.push(self.stackedWidget , widget.objectName())
         
 
     

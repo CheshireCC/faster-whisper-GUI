@@ -2,9 +2,7 @@
 import os
 from PySide6.QtCore import (
                             Qt
-                            # , Signal
                             , QUrl
-                            # , QEvent
                         )
 from PySide6.QtGui import (
                             QDesktopServices
@@ -17,7 +15,6 @@ from PySide6.QtWidgets import (
                                 , QLabel
                                 , QVBoxLayout
                                 , QHBoxLayout
-                                # , QFrame
                             )
 
 from qfluentwidgets import (ScrollArea
@@ -26,14 +23,9 @@ from qfluentwidgets import (ScrollArea
                             , FluentIcon
                             , isDarkTheme
                             , toggleTheme
-                            # , IconWidget
-                            # , Theme
                             , ToolTipFilter
                             , TitleLabel
                             , CaptionLabel
-                            # , StrongBodyLabel
-                            # , BodyLabel
-                            # , toggleTheme
                             , MessageBox
                         )
 
@@ -184,7 +176,10 @@ class NavigationBaseInterface(ScrollArea):
 
     def resizeEvent(self, e):
         super().resizeEvent(e)
-        self.toolBar.resize(self.width(), self.toolBar.height())
+        try:
+            self.toolBar.resize(self.width(), self.toolBar.height())
+        except Exception as e:
+            pass
 
     def setModelStatusLabelText(self,status:bool=True):
         if status:

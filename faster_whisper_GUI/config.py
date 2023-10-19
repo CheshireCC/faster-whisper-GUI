@@ -142,3 +142,5 @@ CAPTURE_PARA = [
     ,"quality": "Studio Quality"
     }
 ]
+
+STEMS = ["All Stems","Vocals", "Other","Bass", "Drums"]

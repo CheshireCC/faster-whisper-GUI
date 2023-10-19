@@ -31,7 +31,7 @@ app.setObjectName("FasterWhisperGUIAPP")
 splash = MySplashScreen()
 #初始图片
 # splash.setPixmap(QPixmap(r":/resource/Image/FasterWhisper.png")) 
-splash.setPixmap(QPixmap(r":/resource/Image/SplashScreen_0.27.jpg")) 
+splash.setPixmap(QPixmap(r":/resource/Image/SplashScreen_0.4.0.jpg")) 
 #初始文本
 # splash.setWindowTitle("fasterWhisper")
 splash.showMessage("Lodding...", Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignBottom, Qt.white)

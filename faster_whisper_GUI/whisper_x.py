@@ -1,10 +1,9 @@
 
-from PySide6.QtCore import QThread, Signal
+from PySide6.QtCore import (QThread, Signal)
 import torch
 
 import whisperx
 from .seg_ment import (
-                        # segment_Transcribe
                         Removerepetition
                         , dictionaryListToSegmentList
                         , segmentListToDictionaryList

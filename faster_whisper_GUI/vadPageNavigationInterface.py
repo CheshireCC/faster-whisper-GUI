@@ -3,15 +3,12 @@ from PySide6.QtWidgets import (
                                 QGridLayout
                                 , QHBoxLayout
                                 , QLabel
-                                # , QSpinBox
-                                # , QVBoxLayout
                             )
 
 from qfluentwidgets import (
                                 CheckBox
                                 , LineEdit
                                 , ComboBox
-                                # , SpinBox
                             )
 
 from .navigationInterface import NavigationBaseInterface
@@ -140,9 +137,10 @@ class VADNavigationInterface(NavigationBaseInterface):
         # Label_use_auth_token.setPixmap(QPixmap(":/resource/Image/huggingface_logo-noborder.svg"))
 
         self.LineEdit_use_auth_token = self.createLineEditWithTooltip(
-                                                                    self.parent().use_auth_token_speaker_diarition
+                                                                    ""
                                                                     , "访问声源分析、分离模型需要提供经过许可的 HuggingFace 用户令牌\n如果默认令牌失效可以尝试自行注册账号并生成、刷新令牌"
                                                                     )
+        
         self.GridLayout_speakerDiarize_param.addWidget(self.LineEdit_use_auth_token, 0, 1)
 
         # self.setWhisperXUILayout()

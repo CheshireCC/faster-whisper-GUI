@@ -1,36 +1,15 @@
 from PySide6.QtCore import  Qt
 from PySide6.QtWidgets import (
-                                # QFrame,
                                 QHBoxLayout
-                                #, QHeaderView
-                                , QLabel
                                 , QSizePolicy
-                                # QStackedWidget
-                                , QStyle
-                                # , QStyleOptionViewItem
-                                # , QWidget
-                                # , QVBoxLayout
-                                # , QTableView
                             )
 
-from qfluentwidgets import (
-                            ToolButton
-                            , LineEdit
-                            , PushButton
-                        #     , qrouter
-                        #     , CheckBox
-                        #     , BodyLabel
-                        #     , SpinBox
-                        #     , TabBar
-                        #     , TabCloseButtonDisplayMode
-                        #     , ComboBox
-                        #     , TableView
-                        #     , isDarkTheme
-                        #     , TableItemDelegate
-                        )
-
+from qfluentwidgets import PushButton
+                        
 from .navigationInterface import NavigationBaseInterface
 from .tableViewInterface import TabInterface
+
+from .outputLabelLineEditButtonWidget import OutputGroupWidget
 
 
 class OutputPageNavigationInterface(NavigationBaseInterface):
@@ -42,25 +21,28 @@ class OutputPageNavigationInterface(NavigationBaseInterface):
     def setupUI(self):
         # -----------------------------------------------------------------------------------------
 
-        self.outputHBoxLayout = QHBoxLayout()
-        label_output_file = QLabel()
-        label_output_file.setText(self.tr("输出文件目录"))
-        self.outputHBoxLayout.addWidget(label_output_file)
+        # self.outputHBoxLayout = QHBoxLayout()
+        # label_output_file = QLabel()
+        # label_output_file.setText(self.tr("输出文件目录"))
+        # self.outputHBoxLayout.addWidget(label_output_file)
 
-        self.LineEdit_output_dir = LineEdit()
-        self.LineEdit_output_dir.setToolTip(self.tr("输出文件保存的目录"))
-        self.LineEdit_output_dir.setPlaceholderText(self.tr("当目录为空的时候将会自动输出到每一个音频文件所在目录"))
-        self.LineEdit_output_dir.setClearButtonEnabled(True)
-        self.outputHBoxLayout.addWidget(self.LineEdit_output_dir)
+        # self.LineEdit_output_dir = LineEdit()
+        # self.LineEdit_output_dir.setToolTip(self.tr("输出文件保存的目录"))
+        # self.LineEdit_output_dir.setPlaceholderText(self.tr("当目录为空的时候将会自动输出到每一个音频文件所在目录"))
+        # self.LineEdit_output_dir.setClearButtonEnabled(True)
+        # self.outputHBoxLayout.addWidget(self.LineEdit_output_dir)
 
-        outputDirChoseButton = ToolButton()
-        self.outputDirChoseButton = outputDirChoseButton
-        outputDirChoseButton.setToolTip(self.tr("选择输出目录"))
-        outputDirChoseButton.setIcon(self.style().standardPixmap(QStyle.StandardPixmap.SP_DirIcon))
-        outputDirChoseButton.resize(385,420)
-        self.outputHBoxLayout.addWidget(outputDirChoseButton)
+        # outputDirChoseButton = ToolButton()
+        # self.outputDirChoseButton = outputDirChoseButton
+        # outputDirChoseButton.setToolTip(self.tr("选择输出目录"))
+        # outputDirChoseButton.setIcon(self.style().standardPixmap(QStyle.StandardPixmap.SP_DirIcon))
+        # outputDirChoseButton.resize(385,420)
+        # self.outputHBoxLayout.addWidget(outputDirChoseButton)
+        # self.addLayout(self.outputHBoxLayout)
 
-        self.addLayout(self.outputHBoxLayout)
+        self.outputGroupWidget = OutputGroupWidget(self)
+        self.addWidget(self.outputGroupWidget)
+        
 
         self.WhisperXAligmentTimeStampleButton = PushButton()
         self.WhisperXAligmentTimeStampleButton.setText(self.tr("WhisperX 时间戳对齐"))

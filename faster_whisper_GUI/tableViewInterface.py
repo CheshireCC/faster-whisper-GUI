@@ -1,24 +1,17 @@
 from PySide6.QtCore import QModelIndex, Qt
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import (
-                                # QApplication,
                                 QFrame,
                                 QHBoxLayout,
-                                # QHeaderView
-                                # , QLabel,
                                 QSizePolicy,
                                 QStackedWidget
-                                # , QStyle
                                 ,QStyleOptionViewItem
                                 , QWidget
                                 , QVBoxLayout
-                                # , QTableView
                             )
 
 from qfluentwidgets import (
-                            # ToolButton, 
                             LineEdit, 
-                            # , PushButton
                             qrouter
                             , CheckBox
                             , BodyLabel
@@ -31,6 +24,7 @@ from qfluentwidgets import (
                             , isDarkTheme
                             , TableItemDelegate
                             , HorizontalSeparator
+                            , Router
                         )
 
 from .style_sheet import StyleSheet
@@ -106,6 +100,8 @@ class TabInterface(QWidget):
         self.hBoxLayout = QHBoxLayout(self)
         self.vBoxLayout = QVBoxLayout(self.tabView)
         self.panelLayout = QVBoxLayout(self.controlPanel)
+
+        self.router = Router()
 
 
         # add items to pivot
@@ -249,7 +245,7 @@ class TabInterface(QWidget):
             return
         
         self.tabBar.setCurrentTab(widget.objectName())
-        qrouter.push(self.stackedWidget, widget.objectName())
+        self.router.push(self.stackedWidget, widget.objectName())
 
     def removeTab(self, index):
         item = self.tabBar.tabItem(index)

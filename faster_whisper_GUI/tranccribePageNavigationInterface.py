@@ -1,6 +1,8 @@
+import os
 from PySide6.QtCore import QCoreApplication, Qt
 from PySide6.QtWidgets import (
-                                QCompleter
+                                QCompleter,
+                                QFileDialog
                                 , QGridLayout
                                 , QLabel
                             )
@@ -9,13 +11,17 @@ from qfluentwidgets import (
                             EditableComboBox
                             , ComboBox
                             , LineEdit
+                            , PushButton
+                            , InfoBar
+                            , InfoBarPosition
                         )
 
-# from qfluentwidgets.components.widgets.combo_box import ComboBox
-# from qfluentwidgets.components.widgets.line_edit import LineEdit
 
-from faster_whisper_GUI.config import SUBTITLE_FORMAT, Language_dict
+from faster_whisper_GUI.config import (SUBTITLE_FORMAT, Language_dict)
 from .navigationInterface import NavigationBaseInterface
+
+import datetime
+import json
 
 class TranscribeNavigationInterface(NavigationBaseInterface):
     def __tr(self, text):
@@ -29,6 +35,8 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
                         , parent=parent
                     )
         
+        self.paramDir = r"./"
+        
         self.LANGUAGES_DICT = Language_dict
         
         self.setObjectName('transcribeNavigationInterface')
@@ -36,8 +44,54 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
 
         self.SignalAndSlotConnect()
     
+
+
+    def saveParams(self):
+        datatime_ = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        print(f"\n=========={datatime_}==========")
+        print(f"==========SaveParaments==========\n")
+
+        params = self.getParamTranscribe()
+        for key, value in params.items():
+            print(f"{key}:{value}")
+        print("")
+        
+        file, _ = QFileDialog.getSaveFileName(self, self.__tr("选择保存文件"),self.paramDir,selectedFilter="file(*.pa)")
+
+        paraDir, _ = os.path.split(file)
+
+        self.paramDir = paraDir
+
+        if file:
+            print(f"save params to: {file}")
+
+            try:
+                with open(file, "w", encoding="utf8") as f:
+                    json.dump(params, f)
+                
+                InfoBar.success(self.__tr("保存参数"),
+                                self.__tr("保存成功"),
+                                duration=-1,
+                                position=InfoBarPosition.TOP,
+                                parent=self.toolBar
+                            )
+            except Exception as e:
+                print(f"Error In Save Process:\n{str(e)}")
+                InfoBar.error(self.__tr("保存参数"),
+                                self.__tr("保存失败 查看 fasterWhisperGUI.log 可能会获取更多信息"),
+                                duration=-1,
+                                position=InfoBarPosition.TOP,
+                                parent=self.toolBar
+                            )
+
+        else:
+            return
+        
+
+
     def SignalAndSlotConnect(self):
-        pass
+        self.saveParamButton.clicked.connect(self.saveParams)
+        self.loadParamsButton.clicked.connect(self.loadParamsFromFile)
 
     def setupUI(self):
         # 使用网格布局存放参数列表
@@ -268,4 +322,225 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         # VBoxLayout_Transcribes.setAlignment(Qt.AlignmentFlag.AlignTop)
         
 
-    
+        self.toolBar.buttonLayout.insertSpacing(1,10)
+
+        self.saveParamButton = PushButton()
+        self.saveParamButton.setText(self.__tr("保存参数"))
+        self.saveParamButton.setToolTip(self.__tr("将转写参数保存到文件"))
+        self.toolBar.buttonLayout.insertWidget(2, self.saveParamButton)
+        
+        self.loadParamsButton = PushButton()
+        self.loadParamsButton.setText(self.__tr("载入参数"))
+        self.loadParamsButton.setToolTip(self.__tr("从参数文件中加载以前保存的参数"))
+        self.toolBar.buttonLayout.insertWidget(3, self.loadParamsButton)
+        
+        
+    def loadParamsFromFile(self):
+
+        datatime_ = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        print(f"\n=========={datatime_}==========")
+        print(f"==========LoadParaments==========\n")
+
+        file,_ = QFileDialog.getOpenFileName(   self,
+                                                self.__tr("选择参数文件"),
+                                                self.paramDir,
+                                                "file(*.pa)"
+                                            )
+
+        paraDir, _ = os.path.split(file)
+        self.paramDir = paraDir
+
+        if not file:
+            return
+
+        params = None
+        try:
+            with open(file, "r", encoding="utf8") as f:
+                params:dict = json.load(f)
+        except Exception as e:
+            print(f"read paraments error: \n{str(e)}")
+            InfoBar.error(self.__tr("读取参数"),
+                                self.__tr("读取失败 查看 fasterWhisperGUI.log 可能会获取更多信息"),
+                                duration=-1,
+                                position=InfoBarPosition.TOP,
+                                parent=self.toolBar
+                            )
+            params = None
+
+        if params is None:
+            return
+        
+        for key,value in params.items():
+            print(f"{key}:{value}")
+        
+        print("")
+
+        try:
+            self.setParamsToUI(params)
+            print("set paraments over")
+        except Exception as e:
+            print(f"set paraments error: \n{str(e)}")
+            InfoBar.error(self.__tr("设置参数"),
+                                self.__tr("设置失败 查看 fasterWhisperGUI.log 可能会获取更多信息"),
+                                duration=-1,
+                                position=InfoBarPosition.TOP,
+                                parent=self.toolBar
+                            )
+            return
+
+        InfoBar.success(
+            self.__tr("设置参数"),
+            self.__tr("设置成功"),
+            duration=-1,
+            position=InfoBarPosition.TOP,
+            parent=self.toolBar
+        )
+
+    def setParamsToUI(self, Transcribe_params:dict):
+
+        self.combox_language.setCurrentIndex(Transcribe_params["language"])
+        # Transcribe_params["language"] = language_index
+
+        self.combox_Translate_to_English.setCurrentIndex(Transcribe_params["task"])
+        # Transcribe_params["task"] = task
+
+        self.LineEdit_beam_size.setText(Transcribe_params["beam_size"] )
+        # Transcribe_params["beam_size"] = beam_size
+
+        self.LineEdit_best_of.setText(Transcribe_params["best_of"] )
+        # Transcribe_params["best_of"] = best_of
+
+        self.LineEdit_patience.setText(Transcribe_params["patience"] )
+        # Transcribe_params["patience"] = patience
+
+        self.LineEdit_length_penalty.setText(Transcribe_params["length_penalty"])
+        # Transcribe_params["length_penalty"] = length_penalty
+
+        self.LineEdit_temperature.setText(Transcribe_params["temperature"] )
+        # Transcribe_params["temperature"] = temperature 
+
+        self.LineEdit_compression_ratio_threshold.setText(Transcribe_params["compression_ratio_threshold"])
+        # Transcribe_params["compression_ratio_threshold"] = compression_ratio_threshold
+
+        self.LineEdit_log_prob_threshold.setText(Transcribe_params["log_prob_threshold"])
+        # Transcribe_params["log_prob_threshold"] = log_prob_threshold
+
+        self.LineEdit_no_speech_threshold.setText(Transcribe_params["no_speech_threshold"] )
+        # Transcribe_params["no_speech_threshold"] = no_speech_threshold
+
+        self.combox_condition_on_previous_text.setCurrentIndex(Transcribe_params["condition_on_previous_text"] )
+        # Transcribe_params["condition_on_previous_text"] = condition_on_previous_text
+
+        self.LineEdit_initial_prompt.setText(Transcribe_params["initial_prompt"] )
+        # Transcribe_params["initial_prompt"] = initial_prompt
+
+        self.LineEdit_prefix.setText(Transcribe_params["prefix"] )
+        # Transcribe_params["prefix"] = prefix
+
+        self.combox_suppress_blank.setCurrentIndex(Transcribe_params["suppress_blank"])
+        # Transcribe_params["suppress_blank"] = suppress_blank
+
+        self.LineEdit_suppress_tokens.setText(Transcribe_params["suppress_tokens"] )
+        # Transcribe_params["suppress_tokens"] = suppress_tokens
+
+        self.combox_without_timestamps.setCurrentIndex(Transcribe_params["without_timestamps"] )
+        # Transcribe_params["without_timestamps"] = without_timestamps
+
+        self.LineEdit_max_initial_timestamp.setText(Transcribe_params["max_initial_timestamp"])
+        # Transcribe_params["max_initial_timestamp"] = max_initial_timestamp
+
+        self.combox_word_timestamps.setCurrentIndex(Transcribe_params["word_timestamps"] )
+        # Transcribe_params["word_timestamps"] = word_timestamps
+
+        self.LineEdit_prepend_punctuations.setText(Transcribe_params["prepend_punctuations"] )
+        # Transcribe_params["prepend_punctuations"] = prepend_punctuations
+
+        self.LineEdit_append_punctuations.setText(Transcribe_params["append_punctuations"] )
+        # Transcribe_params["append_punctuations"] = append_punctuations
+
+        self.LineRdit_repetition_penalty.setText(Transcribe_params['repetition_penalty'] )
+        # Transcribe_params['repetition_penalty'] = repetition_penalty  
+
+        self.LineEdit_no_repeat_ngram_size.setText(Transcribe_params["no_repeat_ngram_size"] )
+        # Transcribe_params["no_repeat_ngram_size"]  = no_repeat_ngram_size 
+
+        self.LineEdit_prompt_reset_on_temperature.setText(Transcribe_params['prompt_reset_on_temperature']  )
+        # Transcribe_params['prompt_reset_on_temperature']  = prompt_reset_on_temperature 
+
+
+    def getParamTranscribe(self) -> dict:
+        Transcribe_params = {}
+
+        # audio = self.page_process.LineEdit_audio_fileName.text().strip()
+        # audio = audio.split(";;") if audio != "" else []
+
+        language_index = self.combox_language.currentIndex()
+        Transcribe_params["language"] = language_index
+
+        task = self.combox_Translate_to_English.currentIndex()
+        Transcribe_params["task"] = task
+
+        beam_size = self.LineEdit_beam_size.text().replace(" ", "")
+        Transcribe_params["beam_size"] = beam_size
+
+        best_of = self.LineEdit_best_of.text().replace(" ", "")
+        Transcribe_params["best_of"] = best_of
+
+        patience = self.LineEdit_patience.text().replace(" ", "")
+        Transcribe_params["patience"] = patience
+
+        length_penalty = self.LineEdit_length_penalty.text().replace(" ", "")
+        Transcribe_params["length_penalty"] = length_penalty
+
+        temperature = self.LineEdit_temperature.text().replace(" ", "")
+        Transcribe_params["temperature"] = temperature 
+
+        compression_ratio_threshold = self.LineEdit_compression_ratio_threshold.text().replace(" ", "")
+        Transcribe_params["compression_ratio_threshold"] = compression_ratio_threshold
+
+        log_prob_threshold = self.LineEdit_log_prob_threshold.text().replace(" ", "")
+        Transcribe_params["log_prob_threshold"] = log_prob_threshold
+
+        no_speech_threshold = self.LineEdit_no_speech_threshold.text().replace(" ", "")
+        Transcribe_params["no_speech_threshold"] = no_speech_threshold
+
+        condition_on_previous_text = self.combox_condition_on_previous_text.currentIndex()
+        Transcribe_params["condition_on_previous_text"] = condition_on_previous_text
+
+        initial_prompt = self.LineEdit_initial_prompt.text().replace(" ", "")
+        Transcribe_params["initial_prompt"] = initial_prompt
+
+        prefix = self.LineEdit_prefix.text().replace(" ", "")
+        Transcribe_params["prefix"] = prefix
+
+        suppress_blank = self.combox_suppress_blank.currentIndex()
+        Transcribe_params["suppress_blank"] = suppress_blank
+
+        suppress_tokens = self.LineEdit_suppress_tokens.text().replace(" ", "")
+        Transcribe_params["suppress_tokens"] = suppress_tokens
+
+        without_timestamps = self.combox_without_timestamps.currentIndex()
+        Transcribe_params["without_timestamps"] = without_timestamps
+
+        max_initial_timestamp = self.LineEdit_max_initial_timestamp.text().replace(" ", "")
+        Transcribe_params["max_initial_timestamp"] = max_initial_timestamp
+
+        word_timestamps = self.combox_word_timestamps.currentIndex()
+        Transcribe_params["word_timestamps"] = word_timestamps
+
+        prepend_punctuations = self.LineEdit_prepend_punctuations.text().replace(" ", "")
+        Transcribe_params["prepend_punctuations"] = prepend_punctuations
+
+        append_punctuations = self.LineEdit_append_punctuations.text().replace(" ","")
+        Transcribe_params["append_punctuations"] = append_punctuations
+
+        repetition_penalty = self.LineRdit_repetition_penalty.text().strip()
+        Transcribe_params['repetition_penalty'] = repetition_penalty  
+
+        no_repeat_ngram_size = self.LineEdit_no_repeat_ngram_size.text().strip()
+        Transcribe_params["no_repeat_ngram_size"]  = no_repeat_ngram_size 
+
+        prompt_reset_on_temperature  = self.LineEdit_prompt_reset_on_temperature.text().strip()
+        Transcribe_params['prompt_reset_on_temperature']  = prompt_reset_on_temperature 
+
+        return Transcribe_params

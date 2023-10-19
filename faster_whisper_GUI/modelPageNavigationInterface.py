@@ -1,21 +1,28 @@
-from PySide6.QtCore import QCoreApplication, Qt
-from PySide6.QtWidgets import QCompleter, QGridLayout, QHBoxLayout, QLabel, QStyle
+from PySide6.QtCore import (QCoreApplication, Qt)
 
-from qfluentwidgets import ComboBox, RadioButton
-from qfluentwidgets.components.widgets.button import PushButton, ToolButton
-from qfluentwidgets.components.widgets.combo_box import EditableComboBox
-from qfluentwidgets.components.widgets.line_edit import LineEdit
+from PySide6.QtWidgets import (
+                                QCompleter, 
+                                QGridLayout, 
+                                QHBoxLayout, 
+                                QLabel, 
+                                QStyle
+                            )
+
+from qfluentwidgets import (
+                            ComboBox, 
+                            RadioButton, 
+                            PushButton, 
+                            ToolButton, 
+                            EditableComboBox, 
+                            LineEdit 
+                        )
 
 from .navigationInterface import NavigationBaseInterface
 
-from .config import (# Language_dict, 
+from .config import (
                     Preciese_list
                     , Model_names
                     , Device_list
-                    # , Task_list
-                    # , STR_BOOL
-                    # , SUBTITLE_FORMAT
-                    # , CAPTURE_PARA
                 )
 
 class ModelNavigationInterface(NavigationBaseInterface):

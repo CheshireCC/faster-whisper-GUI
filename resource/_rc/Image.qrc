@@ -16,7 +16,8 @@
     <file>Image/FasterWhisper.png</file>
     <file>Image/Cancel_red.svg</file>
     <file>Image/huggingface_logo-noborder.svg</file>
-    <file>Image/SplashScreen_0.25.jpg</file>
-    <file>Image/SplashScreen_0.27.jpg</file>
+    <file>Image/SplashScreen_0.4.0.jpg</file>
+    <file>Image/Demucs_white.svg</file>
+    <file>Image/Demucs_black.svg</file>
   </qresource>
 </RCC>
