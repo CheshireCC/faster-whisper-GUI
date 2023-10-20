@@ -1200,7 +1200,7 @@ class MainWindows(UIMainWin):
             # TODO:从内存或显存中手动卸除模型时，程序崩溃，该异常与 C++ 2015 运行时环境有关，
             # 尝试替换该运行时库的系统文件，该功能正常运行，但系统不能再正常开机，
             # 怀疑需要全面升级所有 C++ 运行时环境，暂时作罢
-            # del self.FasterWhisperModel
+            del self.FasterWhisperModel
 
             # 接受退出事件，程序正常退出
             event.accept()

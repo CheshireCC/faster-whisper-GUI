@@ -22,6 +22,10 @@
 
 ![软件使用-模型参数](./README.assets/软件使用-模型参数.png)
 
+-   ### Demucs AVE
+
+    ![DemucsFunction](./README.assets/DemucsFunction.png)
+
 -   ### batch process
 
 ![image-20231008150849827](./README.assets/image-20231008150849827.png)
@@ -29,6 +33,10 @@
 -   ### File List
 
     ![0.3.0_newFIleSystem](./README.assets/0.3.0_newFIleSystem.png)
+
+-   ### FileFilter
+
+    ![fileFilter](./README.assets/fileFilter.png)
 
 -   ###  WhisperX function
 
