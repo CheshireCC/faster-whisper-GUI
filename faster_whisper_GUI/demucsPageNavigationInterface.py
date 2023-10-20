@@ -105,7 +105,7 @@ class DemucsParamGroupWidget(QWidget):
 
 class DemucsPageNavigation(NavigationBaseInterface):
     def __init__(self, parent=None):
-        super().__init__(title="Demucs", subtitle=self.tr("使用 Decums4.0 模型的 AVE（自动人声提取）方案"), parent=parent)
+        super().__init__(title="Demucs", subtitle=self.tr("使用 Demucs4.0 模型的 AVE（自动人声提取）方案"), parent=parent)
         # self.parent = parent
 
         self.setupUI()

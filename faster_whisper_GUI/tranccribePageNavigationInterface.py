@@ -56,7 +56,12 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
             print(f"{key}:{value}")
         print("")
         
-        file, _ = QFileDialog.getSaveFileName(self, self.__tr("选择保存文件"),self.paramDir,selectedFilter="file(*.pa)")
+        file, _ = QFileDialog.getSaveFileName(
+                                                self, 
+                                                self.__tr("选择保存文件"),
+                                                self.paramDir,
+                                                "file(*.pa)"
+                                        )
 
         paraDir, _ = os.path.split(file)
 

@@ -905,24 +905,29 @@ class MainWindows(UIMainWin):
         flag = False
 
         # 判定打开的文件是否音视频文件
-        av_cont = av.open(file_path)
-        
-        # 获取文件的全部 流数据
-        av_streams = av_cont.streams
-        for stream in av_streams:
-            # 获取每个文件流的 type 信息
-            if stream.codec_context.type == "audio":
-                flag = True
-                break
+        try:
+            av_cont = av.open(file_path)
+            
+            # 获取文件的全部 流数据
+            av_streams = av_cont.streams
+            for stream in av_streams:
+                # 获取每个文件流的 type 信息
+                if stream.codec_context.type == "audio":
+                    flag = True
+                    break
 
-        if flag:
-                av_cont.close()
-                return True
-        
-        if not flag:
-            print(f"No audio stream found in file: {file_path}")
-        
-        av_cont.close()
+            if flag:
+                    av_cont.close()
+                    return True
+            
+            if not flag:
+                print(f"No audio stream found in file: {file_path}")
+            
+            av_cont.close()
+        except Exception as e:
+            print(f"file open error: {e}")
+            flag = None
+            
         return flag
         
     def openExcitedFiles(self):
