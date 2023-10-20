@@ -478,8 +478,8 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
 
         # audio = self.page_process.LineEdit_audio_fileName.text().strip()
         # audio = audio.split(";;") if audio != "" else []
-
-        language_index = self.combox_language.currentIndex()
+        
+        language_index = self.combox_language.findText(self.combox_language.currentText())
         Transcribe_params["language"] = language_index
 
         task = self.combox_Translate_to_English.currentIndex()

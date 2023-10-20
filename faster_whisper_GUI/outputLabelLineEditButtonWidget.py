@@ -1,4 +1,6 @@
 
+import os
+from PySide6.QtGui import QDragEnterEvent, QDropEvent
 from PySide6.QtWidgets import (QFileDialog, 
                                 QHBoxLayout, 
                                 QLabel, 
@@ -28,6 +30,10 @@ class OutputGroupWidget(QWidget):
         self.setupUI()
 
         StyleSheet.OUTPUT_GROUP_WIDGET.apply(self)
+
+        # 设置接受文件拖放
+        self.setAcceptDrops(True)
+
     
     def addWidget(self, widget, alignment):
         self.mainLayout.addWidget(widget, alignment=alignment)
@@ -59,4 +65,36 @@ class OutputGroupWidget(QWidget):
 
         set_output_file = lambda path: path if path != "" else self.LineEdit_output_dir.text()
         self.outputDirChoseButton.clicked.connect(lambda:self.LineEdit_output_dir.setText(set_output_file(QFileDialog.getExistingDirectory(self,"选择输出文件存放目录", self.LineEdit_output_dir.text()))))
+    
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()  # 接受拖放事件
+        else:
+            event.ignore()
+        
+    def dropEvent(self, a0: QDropEvent) -> None:
+        """
+        重写鼠标放开事件
+        :param a0:事件
+        :return:None
+        """
+        # 获取拖拽进来的所有文件的路径
+        urls = a0.mimeData().urls()
+        
+        fileNames = [url.toLocalFile() for url in urls]
+        
+        fileName = fileNames[0]
+
+        
+        if os.path.isfile(fileName):
+            dir_, _ = os.path.split(fileName)
+
+        elif os.path.isdir(fileName):
+            dir_ = fileName
+
+        self.LineEdit_output_dir.setText(dir_)
+
+
+
+
         

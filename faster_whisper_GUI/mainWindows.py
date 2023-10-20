@@ -587,6 +587,8 @@ class MainWindows(UIMainWin):
         else:
             lambda_initial_prompt = lambda w : int(w) if (w.isdigit()) else w
             initial_prompt = [lambda_initial_prompt(w) for w in initial_prompt.split(",")]
+        if len(initial_prompt) == 1:
+            initial_prompt = initial_prompt[0]
         Transcribe_params["initial_prompt"] = initial_prompt
 
         prefix = self.page_transcribes.LineEdit_prefix.text().replace(" ", "") or None

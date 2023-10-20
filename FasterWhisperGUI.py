@@ -38,6 +38,8 @@ splash.showMessage("Lodding...", Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.
 # splash.showMessage("Lodding...", Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop, Qt.white)
 # 设置字体
 splash.setFont(QFont('MicrosoftYaHei', 10))
+splash.setStyleSheet("MySplashScreen{border-radius: 10px;}")
+
 # 显示启动界面
 splash.show()
 app.processEvents()  # 处理主进程事件

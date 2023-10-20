@@ -251,5 +251,10 @@ class FileNameListView(QWidget):
         urls = a0.mimeData().urls()
         
         fileNames = [url.toLocalFile() for url in urls]
-        self.setFileNameListToDataModel(fileNames)
+        fileNames = [url for url in fileNames if os.path.isfile(url)]
+
+        if len(fileNames) > 0:
+            self.setFileNameListToDataModel(fileNames)
+        else:
+            pass
         
