@@ -68,7 +68,9 @@ class OutputGroupWidget(QWidget):
     
     def dragEnterEvent(self, event: QDragEnterEvent):
         if event.mimeData().hasUrls():
-            event.acceptProposedAction()  # 接受拖放事件
+            event.accept()
+            # acceptProposedAction 将导致 Nuitka 编译之后 拖放功能失效
+            # event.acceptProposedAction()  # 接受拖放事件
         else:
             event.ignore()
         

@@ -333,7 +333,7 @@ class MainWindows(UIMainWin):
         """
         process button clicked
         """
-        if self.transcribe_thread is None :
+        if self.transcribe_thread is None or not self.transcribe_thread.isRunning():
             self.outputWithDateTime("Process")
             
             # 重定向输出
@@ -399,7 +399,10 @@ class MainWindows(UIMainWin):
             self.setStateTool(self.__tr("音频处理"), self.__tr("正在处理中"), False)
         
         elif self.transcribe_thread is not None and self.transcribe_thread.isRunning():
-            self.outputWithDateTime("Cancel")
+            # 此处由于输出被重定向只能手动写log文件
+            dateTime_ = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+            self.log.write(f"\n=========={dateTime_}==========\n")
+            self.log.write(f"==========Cancel==========\n")
 
             messageBoxW = MessageBox(self.__tr("取消")
                                     , self.__tr("是否取消操作？")
@@ -484,7 +487,7 @@ class MainWindows(UIMainWin):
 
             self.page_output.tableTab.addSubInterface(
                                                     table_view_widget
-                                                    , f"tab_{i}" 
+                                                    , f"tab_{file}" 
                                                     , text
                                                     , None
                                                 )
@@ -587,8 +590,11 @@ class MainWindows(UIMainWin):
         else:
             lambda_initial_prompt = lambda w : int(w) if (w.isdigit()) else w
             initial_prompt = [lambda_initial_prompt(w) for w in initial_prompt.split(",")]
-        if len(initial_prompt) == 1:
-            initial_prompt = initial_prompt[0]
+
+        if initial_prompt and isinstance(initial_prompt[0], str):
+            initial_prompt = "".join(initial_prompt)
+        elif initial_prompt :
+            initial_prompt = [initial_prompt]
         Transcribe_params["initial_prompt"] = initial_prompt
 
         prefix = self.page_transcribes.LineEdit_prefix.text().replace(" ", "") or None
@@ -797,10 +803,19 @@ class MainWindows(UIMainWin):
                                 , content=self.__tr("时间戳对齐结束")
                             )
         
+        try:
+            del self.whisperXWorker.model_alignment
+        except Exception:
+            pass
+        try:
+            del self.whisperXWorker.diarize_model
+        except Exception:
+            pass
+
         self.whisperXWorker = None
 
     def whisperXAligmentTimeStample(self):
-        if self.result_faster_whisper is None:
+        if self.result_faster_whisper is None :
             self.raiseErrorInfoBar(
                                     self.__tr("错误"),
                                     self.__tr("没有有效的 音频-字幕 转写结果，无法进行对齐")
@@ -812,7 +827,13 @@ class MainWindows(UIMainWin):
 
         self.setStateTool(title=self.__tr("WhisperX"), text=self.__tr("时间戳对齐"), status=False)
 
-        self.whisperXWorker = WhisperXWorker(self.result_faster_whisper, alignment=True,speaker_diarize=False, parent=self)
+        if self.whisperXWorker is None:
+            self.whisperXWorker = WhisperXWorker(self.result_faster_whisper, alignment=True,speaker_diarize=False, parent=self)
+        else:
+            self.whisperXWorker.result_segments_path_info = self.result_faster_whisper
+            self.whisperXWorker.alignment = True
+            self.whisperXWorker.speaker_diarize = False
+        
         self.whisperXWorker.signal_process_over.connect(self.aligmentOver)
         self.whisperXWorker.start()
 
@@ -821,7 +842,13 @@ class MainWindows(UIMainWin):
         
         whisperParams = self.getParamWhisperX()
 
-        result_needed = self.result_whisperx_aligment if self.result_whisperx_aligment is not None else self.result_faster_whisper
+        result_needed = self.result_whisperx_aligment or self.result_faster_whisper
+        # print(f"result_useing: {result_needed}")
+        # try:
+        #     print(len(result_needed))
+        # except:
+        #     pass
+
         if result_needed is None:
             self.raiseErrorInfoBar(
                                     self.__tr("错误"),
@@ -947,9 +974,11 @@ class MainWindows(UIMainWin):
             return
 
         if not self.is_audio_or_video(file):
-            message_W = MessageBox(self.__tr("文件无效"),
-                        self.__tr("不是音视频文件或文件无法找到音频流，请检查文件及文件格式"),
-                        self)
+            message_W = MessageBox(
+                                    self.__tr("文件无效"),
+                                    self.__tr("不是音视频文件或文件无法找到音频流，请检查文件及文件格式"),
+                                    self
+                                )
             message_W.show()
             return
 
@@ -960,11 +989,19 @@ class MainWindows(UIMainWin):
         # filesList = os.listdir(dataDir)
         
         file_subtitle_fileName = ".".join(file.split(".")[:-1]+["srt"])
+        fileName_subtitle_without_Ext = '.'.join(os.path.split(file_subtitle_fileName)[-1].split('.')[:-1])
 
         if os.path.exists(file_subtitle_fileName):
             print(f"find existed srt file: {file_subtitle_fileName}")
         else:
-            file_subtitle_fileName,_ = QFileDialog.getOpenFileName(self, self.__tr("选择字幕文件"), self.page_process.fileNameListView.avDataRootDir, "SRT file(*.srt)")
+            file_subtitle_fileName,_ = QFileDialog.getOpenFileName(
+                                                                    self, 
+                                                                    self.__tr("选择字幕文件"), 
+                                                                    file_subtitle_fileName, 
+                                                                    # self.page_process.fileNameListView.avDataRootDir, 
+                                                                    "SRT file(*.srt)",
+                                                                    
+                                                                )
             if file_subtitle_fileName and os.path.isfile(file_subtitle_fileName):
                 print(f"get srt file: {file_subtitle_fileName}")
             else:
@@ -1150,6 +1187,50 @@ class MainWindows(UIMainWin):
         self.page_home.itemLabel_faster_whisper.subButton.clicked.connect(lambda:self.stackedWidget.setCurrentWidget(self.page_transcribes))
 
         self.page_demucs.process_button.clicked.connect(self.demucsProcess)
+
+        self.page_output.tableTab.signal_delete_table.connect(self.deleteResultTableEvent)
+
+    def deleteResultTableEvent(self, routeKey:str):
+        
+        self.outputWithDateTime("deleteTable")
+
+        print(f"len_DataModel:{len(self.tableModel_list)}")
+        print(routeKey)
+        file_key ="_".join(routeKey.split("_")[1:]) 
+        print(file_key)
+        self.tableModel_list.pop(file_key)
+        print(f"len_DataModel_after_pop:{len(self.tableModel_list)}")
+
+        for result in [se for se in [self.result_faster_whisper, self.result_whisperx_aligment, self.result_whisperx_speaker_diarize] if se is not None]:
+            print(f"len_result: {len(self.result_faster_whisper)}")
+            for segmengs in result:
+                if segmengs[1] == file_key:
+                    result.remove(segmengs)
+
+        try:
+            print(f"len_result_faster_wisper_after_pop: {len(self.result_faster_whisper)}")
+            if self.result_faster_whisper is not None and len(self.result_faster_whisper) == 0:
+                self.result_faster_whisper = None
+        except Exception:
+            pass
+
+        try:
+            print(f"len_result_whisperX_alignment_after_pop: {len(self.result_whisperx_aligment)}")
+            if self.result_whisperx_aligment is not None and len(self.result_whisperx_aligment) == 0:
+                self.result_whisperx_aligment = None
+        except Exception:
+            pass
+        try:
+            print(f"len_result_whisperX_diarize_after_pop: {len(self.result_whisperx_speaker_diarize)}")
+            if self.result_whisperx_speaker_diarize is not None and len(self.result_whisperx_speaker_diarize) == 0:
+                self.result_whisperx_speaker_diarize = None
+        except Exception:
+            pass
+
+        
+
+    
+
 
     def closeEvent(self, event) -> None:
         """

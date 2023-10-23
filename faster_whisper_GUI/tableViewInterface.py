@@ -1,4 +1,4 @@
-from PySide6.QtCore import QModelIndex, Qt
+from PySide6.QtCore import QModelIndex, Qt, Signal
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import (
                                 QFrame,
@@ -68,6 +68,9 @@ class CustomTableItemDelegate(TableItemDelegate):
 
 class TabInterface(QWidget):
     """ Tab interface """
+
+    signal_delete_table = Signal(str)
+    signal_addTable_request = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -248,9 +251,15 @@ class TabInterface(QWidget):
         self.router.push(self.stackedWidget, widget.objectName())
 
     def removeTab(self, index):
+        
         item = self.tabBar.tabItem(index)
+        self.signal_delete_table.emit(item.routeKey())
+
         widget = self.findChild(TableView, item.routeKey())
 
         self.stackedWidget.removeWidget(widget)
         self.tabBar.removeTab(index)
         widget.deleteLater()
+
+        
+

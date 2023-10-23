@@ -141,7 +141,7 @@ class OutputWorker(QThread):
         if output_dir != "" and not os.path.exists(output_dir):
             print(f"\nCreate output dir : {output_dir}")
             # 给定的输出目录不存在时 创建输出目录
-            os.mkdir(output_dir)
+            os.makedirs(output_dir)
             
         # 后续处理
         for segments, path, info in self.segments_path_info:

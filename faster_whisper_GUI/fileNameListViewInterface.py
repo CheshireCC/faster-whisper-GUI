@@ -1,8 +1,9 @@
-
 import os
+import av
 
 from PySide6.QtCore import (QStringListModel, Qt, QCoreApplication)
-import PySide6.QtGui
+
+from PySide6.QtGui import (QDropEvent, QDragEnterEvent)
 
 from PySide6.QtWidgets import (
                                 QWidget
@@ -12,7 +13,8 @@ from PySide6.QtWidgets import (
                                 , QListView
                                 , QFileDialog
                             )
-import av
+
+
 
 from qfluentwidgets import (
                             ListView
@@ -20,10 +22,11 @@ from qfluentwidgets import (
                             , FluentIcon
                             , InfoBar
                             , InfoBarPosition
-                            )
+                        )
 
 from .style_sheet import StyleSheet
 from .config import SUBTITLE_FORMAT
+
 
 class FileNameListView(QWidget):
     def __tr(self, text):
@@ -235,13 +238,15 @@ class FileNameListView(QWidget):
         self.removeFileButton.clicked.connect(self.removeFileNameFromListWidget)
     
     # ===========================================================================================================
-    def dragEnterEvent(self, event: PySide6.QtGui.QDragEnterEvent):
+    def dragEnterEvent(self, event: QDragEnterEvent):
         if event.mimeData().hasUrls():
-            event.acceptProposedAction()  # 接受拖放事件
+            # acceptProposedAction 将导致 Nuitka 编译之后 拖放功能失效
+            # event.acceptProposedAction()  # 接受拖放事件
+            event.accept()
         else:
             event.ignore()
         
-    def dropEvent(self, a0: PySide6.QtGui.QDropEvent) -> None:
+    def dropEvent(self, a0: QDropEvent) -> None:
         """
         重写鼠标放开事件
         :param a0:事件

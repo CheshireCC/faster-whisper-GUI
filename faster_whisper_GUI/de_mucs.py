@@ -268,12 +268,15 @@ class DemucsWorker(QThread):
         if not output_path:
             output_path = data_dir
 
+        # if not os.path.exists(output_path):
+        #     os.mkdir(output_path)
+
         for stem in stems:
             spec = audios[stem.lower()][:, :].cpu()
             output_path_ = os.path.join(output_path, stem)
             if not os.path.exists(output_path_):
                 print(f"create output folder: {stem}")
-                os.mkdir(output_path_)
+                os.makedirs(output_path_)
             
             output_fileName = os.path.join(output_path_, ".".join(file_output+[f"_{stem.lower()}", "wav"]))
             print(f"save file: {output_fileName}")

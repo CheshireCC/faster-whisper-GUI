@@ -8,7 +8,7 @@ from .seg_ment import (
                         , dictionaryListToSegmentList
                         , segmentListToDictionaryList
                     )
-
+import gc
 
 class WhisperXWorker(QThread):
     signal_process_over = Signal(list)
@@ -89,6 +89,7 @@ class WhisperXWorker(QThread):
                     self.alignment = False
                     self.signal_process_over.emit(None)
                     result_a_c = segments
+                    del audio
                     return
             else:
                 result_a_c = segments
@@ -150,15 +151,22 @@ class WhisperXWorker(QThread):
                 print(str(e))
                 self.signal_process_over.emit(None)
                 return
-        
+
             self.result_segments_path_info.append((segments, path, info))
-        
+
+            # 清除显存缓存
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+            # gc强制回收，避免内存泄露
+            gc.collect()
+            
         self.signal_process_over.emit(self.result_segments_path_info)
 
 
     def setStateTool(self, text:str , status:bool=False):
         try:
-            self.parent().setStateTool(text=text,status=False)
+            self.parent().setStateTool(text=text,status=status)
         except Exception as e:
             print(f"To set StateTool Error: {e}")
 
