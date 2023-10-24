@@ -1,4 +1,4 @@
-# fatser-whisper-GUI
+# faster-whisper-GUI
 
     faster-whisper、whisperX，GUI with PySide6
 
@@ -22,27 +22,24 @@
 
 ![软件使用-模型参数](./README.assets/软件使用-模型参数.png)
 
--   ### Demucs AVE
+- ### Demucs AVE
 
-    ![DemucsFunction](./README.assets/DemucsFunction.png)
-
--   ### batch process
+  ![DemucsFunction](./README.assets/DemucsFunction.png)
+- ### batch process
 
 ![image-20231008150849827](./README.assets/image-20231008150849827.png)
 
--   ### File List
+- ### File List
 
-    ![0.3.0_newFIleSystem](./README.assets/0.3.0_newFIleSystem.png)
+  ![0.3.0_newFIleSystem](./README.assets/0.3.0_newFIleSystem.png)
+- ### FileFilter
 
--   ### FileFilter
-
-    ![fileFilter](./README.assets/fileFilter.png)
-
--   ###  WhisperX function
+  ![fileFilter](./README.assets/fileFilter.png)
+- ### WhisperX function
 
 ![0.3.0_whisperx](./README.assets/0.3.0_whisperx.png)
 
--   ### paraments of faster-whisper model
+- ### paraments of faster-whisper model
 
 ![image-20230806072114168](./README.assets/image-20230806072114168.png)
 
@@ -52,13 +49,11 @@
 
 ![转写执行效果](./README.assets/转写执行效果.png)
 
--   ### Show result and edit timestample
+- ### Show result and edit timestample
 
-    ![0.3.0_result](./README.assets/0.3.0_result.png)![image-20231007191942864](./README.assets/image-20231007191942864.png)
-
-    
-
+  ![0.3.0_result](./README.assets/0.3.0_result.png)![image-20231007191942864](./README.assets/image-20231007191942864.png)
 - ### words-level timestamps —— karaoka lyric (work in `VTT`/`LRC`/`SMI` format)
+
 
   - play with foobar2000 , ESLyric plugin, `lrc` format lyric
 
