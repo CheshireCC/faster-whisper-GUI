@@ -30,7 +30,11 @@ from qfluentwidgets import (ScrollArea
                         )
 
 from .style_sheet import StyleSheet
-from .version import __version__, __FasterWhisper_version__, __WhisperX_version__
+from .version import (__version__,
+                        __FasterWhisper_version__,
+                        __WhisperX_version__, 
+                        __Demucs_version__
+                    )
 
 
 class SeparatorWidget(QWidget):
@@ -124,7 +128,7 @@ class ToolBar(QWidget):
         #     lambda: QDesktopServices.openUrl(QUrl(HELP_URL)))
         
         self.sourceButton.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/CheshireCC/fatser-whisper-GUI/releases")))
-        self.questionButton.clicked.connect(lambda: MessageBox(self.tr("关于"),self.tr(f"version: {__version__}" + "\n" + f"faster-whisper: {__FasterWhisper_version__}" + "\n" + f"whisperX: {__WhisperX_version__}"),parent=self.parent()).show())
+        self.questionButton.clicked.connect(lambda: MessageBox(self.tr("关于"),self.tr(f"version: {__version__}" + "\n" + f"faster-whisper: {__FasterWhisper_version__}" + "\n" + f"whisperX: {__WhisperX_version__}" + "\n" + f"Demucs: {__Demucs_version__}"),parent=self.parent()).show())
         self.openDirButton.clicked.connect(lambda: os.startfile(os.path.abspath(r"./").replace("\\","/")))#print(os.path.abspath(r"./").replace("\\","/")))#os.startfile(os.path.abspath(r"./")))
         
         

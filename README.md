@@ -67,3 +67,7 @@
   [whisperX](https://github.com/m-bain/whisperX)
 
   [HuggingFace model download](https://huggingface.co/models)
+  
+  [Demucs](https://github.com/facebookresearch/demucs)
+  
+  

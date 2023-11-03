@@ -106,15 +106,15 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         widget_list = []
 
         # -----------------------------------------------------------------------------------------
-        label_format = QLabel()
-        label_format.setText(self.__tr("输出文件格式"))
-        label_format.setObjectName("outputFormatLabel")
-        label_format.setStyleSheet("#outputFormatLabel{background : rgba(0, 128, 0, 120);}")
-        self.combox_output_format = ComboBox()
-        self.combox_output_format.setToolTip(self.__tr("输出字幕文件的格式"))
-        self.combox_output_format.addItems(["ALL"] + SUBTITLE_FORMAT)
-        self.combox_output_format.setCurrentIndex(0)
-        widget_list.append((label_format, self.combox_output_format))
+        # label_format = QLabel()
+        # label_format.setText(self.__tr("输出文件格式"))
+        # label_format.setObjectName("outputFormatLabel")
+        # label_format.setStyleSheet("#outputFormatLabel{background : rgba(0, 128, 0, 120);}")
+        # self.combox_output_format = ComboBox()
+        # self.combox_output_format.setToolTip(self.__tr("输出字幕文件的格式"))
+        # self.combox_output_format.addItems(["ALL"] + SUBTITLE_FORMAT)
+        # self.combox_output_format.setCurrentIndex(0)
+        # widget_list.append((label_format, self.combox_output_format))
         
         # --------------------------------------------------------------------------------------------
         Label_language = QLabel(self.__tr("语言"))
@@ -155,7 +155,7 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         # --------------------------------------------------------------------------------------------
         label_best_of = QLabel(self.__tr("最佳热度"))
         self.LineEdit_best_of = LineEdit()
-        self.LineEdit_best_of.setText("5")
+        self.LineEdit_best_of.setText("1")
         self.LineEdit_best_of.setToolTip(self.__tr("采样时使用非零热度的候选数"))
         widget_list.append((label_best_of, self.LineEdit_best_of))
 
@@ -180,8 +180,8 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         # --------------------------------------------------------------------------------------------
         label_temperature = QLabel(self.__tr("采样热度候选"))
         self.LineEdit_temperature = LineEdit()
-        self.LineEdit_temperature.setText("0.0,0.2,0.4,0.6,0.8,1.0")
-        self.LineEdit_temperature.setToolTip(self.__tr("采样的温度。\n当程序因为压缩比参数或者采样标记概率参数失败时会依次使用"))
+        self.LineEdit_temperature.setText("0")
+        self.LineEdit_temperature.setToolTip(self.__tr("温度。用于调整概率分布，从而生成不同的结果，可用于生成深度学习的数据标注。同时\n当程序因为压缩比参数或者采样标记概率参数失败时会依次使用"))
         widget_list.append((label_temperature, self.LineEdit_temperature))
 
         # --------------------------------------------------------------------------------------------
@@ -224,7 +224,7 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         label_condition_on_previous_text.setStyleSheet("#labelConditionOnPreviousText{background-color : rgba(0, 255, 255, 60)}")
         self.combox_condition_on_previous_text = ComboBox()
         self.combox_condition_on_previous_text.addItems(["True", "False"])
-        self.combox_condition_on_previous_text.setCurrentIndex(0)
+        self.combox_condition_on_previous_text.setCurrentIndex(1)
         self.combox_condition_on_previous_text.setToolTip(self.__tr("如果启用，则将模型的前一个输出作为下一个音频段的提示;\n禁用可能会导致文本在段与段之间不一致，\n但模型不太容易陷入失败循环，\n比如重复循环或时间戳失去同步。"))
         widget_list.append((label_condition_on_previous_text, self.combox_condition_on_previous_text))
 

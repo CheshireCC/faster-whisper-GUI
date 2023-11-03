@@ -7,6 +7,7 @@ from torchaudio.transforms import Fade
 import av
 import soundfile
 import numpy as np
+import gc
 
 from faster_whisper import decode_audio
 
@@ -45,7 +46,7 @@ class DemucsWorker(QThread):
     def run(self) -> None:
         self.is_running = True
 
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(f"device: {device}")
 
         if not self.is_running:
@@ -72,6 +73,7 @@ class DemucsWorker(QThread):
 
             try:
                 samples = self.reSampleAudio(audio, 44100, device=device)
+                samples = torch.tensor(samples,dtype=torch.float32).to(device)
             except Exception as e:
                 print(f"resample audio error:\n{str(e)}")
                 self.signal_vr_over.emit(False)
@@ -123,13 +125,31 @@ class DemucsWorker(QThread):
                 return
 
             self.file_process_status.emit({"file":audio, "status":False, "task": "file over"})
+            del samples
+            del sources
+            del audio
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
             
         self.signal_vr_over.emit(True)
         print("over!")
+        
+        # self.model.to("cpu")
+        del self.model
+        self.model = None
+
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        # print(torch.cuda.memory_allocated(device=device))
+        # print(torch.cuda.memory_reserved())
+        # print(torch.cuda.memory_stats(device=device))
+    
+        gc.collect()
+
         self.requestInterruption()
         self.stop()
+
     
     def stop(self):
         self.is_running = False
@@ -155,7 +175,7 @@ class DemucsWorker(QThread):
         if device is None:
             device = mix.device
         else:
-            device = torch.device(device)
+            device = device
 
         batch, channels, length = mix.shape
 
@@ -174,7 +194,7 @@ class DemucsWorker(QThread):
             chunk = mix[:, :, start:end]
             with torch.no_grad():
                 out = model.forward(chunk)
-            
+
             if not self.is_running:
                 return None
             
@@ -188,6 +208,16 @@ class DemucsWorker(QThread):
             end += chunk_len
             if end >= length:
                 fade.fade_out_len = 0
+
+            del out
+            del chunk
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+        # del model
+        
+        del fade
+        del mix
         return final
 
     def loadModel(self, model_path:str, device=None):
@@ -210,16 +240,15 @@ class DemucsWorker(QThread):
         if not self.is_running:
             return
 
-        model = bundle.get_model()
+        self.model = bundle.get_model()
 
         if not self.is_running:
             return
         
-        model.to(device)
+        del bundle
+        self.model.to(device)
 
-        self.model = model
-
-    def reSampleAudio(self, audio, sample_rate, device) -> torch.Tensor:
+    def reSampleAudio(self, audio, sample_rate, device) -> np.ndarray:
         file_path = os.path.abspath(audio)
 
         split_setore = True
@@ -234,10 +263,11 @@ class DemucsWorker(QThread):
 
         print("resample audio data")
         samples = decode_audio(file_path, sample_rate, split_setore)
-        samples = np.array(samples)
+        # samples = np.array(samples)
 
-        samples_t = torch.tensor(samples,dtype=torch.float32).to(device)
-        return samples_t
+        # samples_t = torch.tensor(samples,dtype=torch.float32).to(device)
+        # del samples
+        return samples
     
     def saveResult(self, model, file_path:str, sources:torch.Tensor, stems:str, output_path:str, sample_rate=44100):
 

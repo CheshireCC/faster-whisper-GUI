@@ -144,3 +144,9 @@ CAPTURE_PARA = [
 ]
 
 STEMS = ["All Stems","Vocals", "Other","Bass", "Drums"]
+ENCODING_DICT = {"UTF-8":"utf8", 
+                    "UTF-8 BOM":"utf_8_sig", 
+                    "GBK":"gbk", 
+                    "GB2312":"gb18030", 
+                    "ANSI":"ansi"
+                }

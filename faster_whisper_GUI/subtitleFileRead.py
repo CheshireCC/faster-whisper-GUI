@@ -1,11 +1,11 @@
 from typing import List
 from .seg_ment import segment_Transcribe
 
-def readSRTFileToSegments(file:str) -> List[segment_Transcribe]:
+def readSRTFileToSegments(file:str, file_code = "utf8") -> List[segment_Transcribe]:
 
     segments = []
 
-    with open(file, "r", encoding="utf8") as f:
+    with open(file, "r", encoding=file_code) as f:
         timesStample = None
         content = None
 

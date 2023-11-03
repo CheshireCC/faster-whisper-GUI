@@ -109,6 +109,14 @@ class WhisperXWorker(QThread):
                                                                         , device=device
                                                                         , cache_dir=r"./cache"
                                                                     )
+                        
+                    # 检查结果
+                    if self.diarize_model is None:
+                        print("load speaker brain model failed...")
+                        self.setStateTool("load model failed", False)
+                        self.signal_process_over.emit(None)
+                        return
+
                     print("speaker diarize...")
                     self.setStateTool("start diarize...", False)
                     diarize_segments = self.diarize_model(audio
@@ -122,6 +130,14 @@ class WhisperXWorker(QThread):
                     print("speaker alignment...")
                     self.setStateTool("assign speakers to words...")
                     result_s = whisperx.assign_word_speakers(diarize_segments, result_a_c)
+
+                    # 检查结果
+                    if result_s is None:
+                        print("assign speakers to words failed...")
+                        self.setStateTool("assign speakers to words failed", False)
+                        self.signal_process_over.emit(None)
+                        return
+                    
                     print("alignment result: ")
                     for segment in result_s['segments']:
                         try:

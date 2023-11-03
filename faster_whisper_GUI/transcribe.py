@@ -28,6 +28,7 @@ from .config import (
                 )
 
 from .seg_ment import segment_Transcribe
+from .config import ENCODING_DICT
 
 
 class AudioStreamTranscribeWorker(QThread):
@@ -121,12 +122,20 @@ class CaptureAudioWorker(QThread):
 class OutputWorker(QThread):
     signal_write_over = Signal()
 
-    def __init__(self, segments_path_info:list, output_dir:str, format:str, parent=None) -> None:
+    def __init__(self, 
+                    segments_path_info:list, 
+                    output_dir:str, 
+                    format:str, 
+                    output_code = "UTF-8",
+                    parent=None
+                ) -> None:
+        
         super().__init__(parent)
         self.is_running = False
         self.segments_path_info = segments_path_info
         self.format = format
         self.output_dir = output_dir
+        self.output_code = output_code
 
     def stop(self):
         self.is_running = False
@@ -142,7 +151,10 @@ class OutputWorker(QThread):
             print(f"\nCreate output dir : {output_dir}")
             # 给定的输出目录不存在时 创建输出目录
             os.makedirs(output_dir)
-            
+        
+        if self.segments_path_info is None:
+            return
+        
         # 后续处理
         for segments, path, info in self.segments_path_info:
 
@@ -165,6 +177,7 @@ class OutputWorker(QThread):
                             , format=format
                             , language=info.language
                             , fileName=path
+                            , file_code = self.output_code
                         )
 
         print("\n【Over】")
@@ -362,10 +375,16 @@ class TranscribeWorker(QThread):
 
 # ---------------------------------------------------------------------------------------------------------------------------
 
-def writeSubtitles(outputFileName:str, segments:List[segment_Transcribe], format:str, language:str="",fileName = ""):
+def writeSubtitles(outputFileName:str, 
+                    segments:List[segment_Transcribe], 
+                    format:str, 
+                    language:str="",
+                    fileName = "",
+                    file_code = "UTF-8"
+                ):
     
     if format == "SRT":
-        writeSRT(outputFileName, segments)
+        writeSRT(outputFileName, segments, file_code = file_code)
     elif format == "TXT":
         writeTXT(outputFileName, segments)
     elif format == "VTT":
@@ -375,6 +394,7 @@ def writeSubtitles(outputFileName:str, segments:List[segment_Transcribe], format
     elif format == "SMI":
         writeSMI(outputFileName, segments, language=language, avFile=fileName)
     print(f"write over | {outputFileName}")
+    
 
 def writeSMI(fileName:str, segments:List[segment_Transcribe], language:str, avFile = ""):
 
@@ -591,9 +611,10 @@ def writeTXT(fileName:str, segments):
 
             f.write(f"{text} \n\n")
 
-def writeSRT(fileName:str, segments):
+def writeSRT(fileName:str, segments, file_code="UTF-8"):
     index = 1
-    with open(fileName, "w", encoding="utf8") as f:
+    encoding = ENCODING_DICT[file_code]
+    with open(fileName, "w", encoding=encoding) as f:
         for segment in segments:
             start_time:float = segment.start
             end_time:float = segment.end

@@ -89,16 +89,7 @@ class TabInterface(QWidget):
         self.closeDisplayModeLabel = BodyLabel(self.tr('关闭按钮显示模式'), self)
         self.closeDisplayModeComboBox = ComboBox(self)
 
-        self.Label_min_speaker = BodyLabel(self.tr("最少声源数"))
-        self.SpinBox_min_speaker = SpinBox()
-        self.SpinBox_min_speaker.setToolTip(self.tr("音频中需分出来的最少的说话人的人数"))
-
-        self.Label_max_speaker = BodyLabel(self.tr("最大声源数"))
-        self.SpinBox_max_speaker = SpinBox()
-        self.SpinBox_max_speaker.setToolTip(self.tr("音频中需分出来的最多的说话人的人数"))
-
         self.controlLabel_table = StrongBodyLabel(self.tr("表格样式控制"))
-        self.controlLabel_wshiperx = StrongBodyLabel(self.tr("whisperX 参数控制"))
 
         self.hBoxLayout = QHBoxLayout(self)
         self.vBoxLayout = QVBoxLayout(self.tabView)
@@ -178,17 +169,7 @@ class TabInterface(QWidget):
         self.panelLayout.addWidget(self.closeDisplayModeLabel)
         self.panelLayout.addWidget(self.closeDisplayModeComboBox)
 
-        self.panelLayout.addSpacing(15)
-        self.panelLayout.addWidget(self.controlLabel_wshiperx)
-        self.panelLayout.addWidget(HorizontalSeparator())
         
-        self.panelLayout.addSpacing(4)
-        self.panelLayout.addWidget(self.Label_min_speaker)
-        self.panelLayout.addWidget(self.SpinBox_min_speaker)
-
-        self.panelLayout.addSpacing(4)
-        self.panelLayout.addWidget(self.Label_max_speaker)
-        self.panelLayout.addWidget(self.SpinBox_max_speaker)
 
     def addSubInterface(self
                         , widget: QWidget = None

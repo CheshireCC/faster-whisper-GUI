@@ -16,6 +16,7 @@ from PySide6.QtWidgets import  (
                                 , QVBoxLayout
                                 , QHBoxLayout
                                 , QGridLayout
+                                , QMainWindow
                             )
 
 from PySide6.QtGui import QIcon
@@ -62,10 +63,10 @@ from .fasterWhisperGuiIcon import FasterWhisperGUIIcon
 # =======================================================================================
 # UI
 # =======================================================================================
-class UIMainWin(FramelessMainWindow):
+class UIMainWin(QMainWindow):
     """V"""
 
-    def __tr(self, text):
+    def tr(self, text):
         return QCoreApplication.translate(self.__class__.__name__, text)
     
     def readConfigJson(self):
@@ -78,6 +79,9 @@ class UIMainWin(FramelessMainWindow):
 
     def __init__(self):
         super().__init__()
+
+        # self.setWindowFlags(Qt.FramelessWindowHint)
+        # self.setAttribute(Qt.WA_TranslucentBackground)  
 
         self.model_path = ""
         self.model_names = Model_names
@@ -119,12 +123,13 @@ class UIMainWin(FramelessMainWindow):
         self.setGeometry(500, 200, 1147, 825)
 
         # 添加标题栏 
-        self.setTitleBar(StandardTitleBar(self))
+        # self.setTitleBar(StandardTitleBar(self))
+        # self.titleBar.setAttribute(Qt.WA_StyledBackground)
 
         self.setWindowTitle(f"FasterWhisperGUI-{__version__}--fw-{__FasterWhisper_version__}--WhisperX-{__WhisperX_version__}")
         
         self.setWindowIcon(QIcon(":/resource/Image/microphone.png"))
-        self.titleBar.setAttribute(Qt.WA_StyledBackground)
+        
 
     def setupUI(self):
         
@@ -149,8 +154,8 @@ class UIMainWin(FramelessMainWindow):
         self.setCentralWidget(self.mainWindowsWidget)
 
         # 创建一个空对象 用于改善布局顶部
-        self.spacer_main = QSpacerItem(0,25)
-        self.vBoxLayout.addItem(self.spacer_main)
+        # self.spacer_main = QSpacerItem(0,25)
+        # self.vBoxLayout.addItem(self.spacer_main)
 
         # 设置显示图层到最后避免遮挡窗体按钮
         self.mainWindowsWidget.lower()
@@ -175,31 +180,31 @@ class UIMainWin(FramelessMainWindow):
         
         # 添加子界面
         self.page_home = HomePageNavigationinterface(self)
-        self.addSubInterface(self.page_home, "pageHome", self.__tr("Home"), icon=FluentIcon.HOME)
+        self.addSubInterface(self.page_home, "pageHome", self.tr("Home"), icon=FluentIcon.HOME)
         self.pages.append(self.page_home)
 
         self.page_demucs = DemucsPageNavigation(self)
-        self.addSubInterface(self.page_demucs, "pageDecums", self.__tr("声乐移除"), icon=FasterWhisperGUIIcon.DEMUCS)
+        self.addSubInterface(self.page_demucs, "pageDecums", self.tr("声乐移除"), icon=FasterWhisperGUIIcon.DEMUCS)
         self.pages.append(self.page_demucs)
 
         self.page_model = ModelNavigationInterface(self)
-        self.addSubInterface(self.page_model, "pageModelParameter", self.__tr("模型参数"), icon=FluentIcon.BOOK_SHELF)
+        self.addSubInterface(self.page_model, "pageModelParameter", self.tr("模型参数"), icon=FluentIcon.BOOK_SHELF)
         self.pages.append(self.page_model)
 
         self.page_VAD = VADNavigationInterface(self)
-        self.addSubInterface(self.page_VAD, "pageVADParameter", self.__tr("VAD及WhisperX"), icon=FasterWhisperGUIIcon.VAD_PAGE)
+        self.addSubInterface(self.page_VAD, "pageVADParameter", self.tr("VAD及WhisperX"), icon=FasterWhisperGUIIcon.VAD_PAGE)
         self.pages.append(self.page_VAD)
 
         self.page_transcribes = TranscribeNavigationInterface(self)
-        self.addSubInterface(self.page_transcribes, "pageTranscribesParameter", self.__tr("转写参数"), icon=FasterWhisperGUIIcon.TRANSCRIPTION_PAGE)
+        self.addSubInterface(self.page_transcribes, "pageTranscribesParameter", self.tr("转写参数"), icon=FasterWhisperGUIIcon.TRANSCRIPTION_PAGE)
         self.pages.append(self.page_transcribes)
 
         self.page_process = ProcessPageNavigationInterface(self)
-        self.addSubInterface(self.page_process, "pageProcess", self.__tr("执行转写"), icon=FasterWhisperGUIIcon.HEAD_PHONE)
+        self.addSubInterface(self.page_process, "pageProcess", self.tr("执行转写"), icon=FasterWhisperGUIIcon.HEAD_PHONE)
         self.pages.append(self.page_process)
 
         self.page_output = OutputPageNavigationInterface(self)
-        self.addSubInterface(self.page_output, "pageOutput", self.__tr("后处理及输出"), icon=FluentIcon.SAVE_AS)
+        self.addSubInterface(self.page_output, "pageOutput", self.tr("后处理及输出"), icon=FluentIcon.SAVE_AS)
         self.pages.append(self.page_output)
 
         self.stackedWidget.currentChanged.connect(self.onCurrentIndexChanged)
