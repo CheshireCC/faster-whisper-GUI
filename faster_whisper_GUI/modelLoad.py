@@ -26,7 +26,8 @@ def loadModel(model_size_or_path: str
                                 cpu_threads=cpu_threads,
                                 num_workers=num_workers,
                                 download_root=download_root,
-                                local_files_only=local_files_only)
+                                local_files_only=local_files_only
+                            )
         except Exception as e:
             model_ = None
             if setStatusSignal is not None:
@@ -61,5 +62,5 @@ def loadModel(model_size_or_path: str
     
     if setStatusSignal is not None:
         setStatusSignal.emit(True)
-    
+
     return model

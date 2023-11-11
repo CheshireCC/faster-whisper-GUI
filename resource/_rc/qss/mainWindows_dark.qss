@@ -9,7 +9,3 @@ QLabel{
         background-color : rgb(125,125,125);
     }
 
-QTextBrowser{
-            font: 15px 'TimesNewRoman';
-}
-

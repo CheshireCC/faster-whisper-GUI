@@ -92,6 +92,7 @@ class WhisperXWorker(QThread):
                     del audio
                     return
             else:
+                del audio
                 result_a_c = segments
 
             if self.speaker_diarize:
@@ -119,7 +120,7 @@ class WhisperXWorker(QThread):
 
                     print("speaker diarize...")
                     self.setStateTool("start diarize...", False)
-                    diarize_segments = self.diarize_model(audio
+                    self.diarize_segments = self.diarize_model(audio
                                                             , min_speakers=self.min_speaker
                                                             , max_speakers=self.max_speaker
                                                         )
@@ -129,7 +130,7 @@ class WhisperXWorker(QThread):
 
                     print("speaker alignment...")
                     self.setStateTool("assign speakers to words...")
-                    result_s = whisperx.assign_word_speakers(diarize_segments, result_a_c)
+                    result_s = whisperx.assign_word_speakers(self.diarize_segments, result_a_c)
 
                     # 检查结果
                     if result_s is None:
@@ -155,6 +156,7 @@ class WhisperXWorker(QThread):
 
             else:
                 result_s = result_a_c
+
             if not(audio is None):
                 del audio
 
@@ -170,14 +172,23 @@ class WhisperXWorker(QThread):
 
             self.result_segments_path_info.append((segments, path, info))
 
-            # 清除显存缓存
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-
-            # gc强制回收，避免内存泄露
-            gc.collect()
-            
         self.signal_process_over.emit(self.result_segments_path_info)
+
+        del self.model_alignment
+        self.model_alignment = None
+
+        del self.metadata_alignment
+        self.metadata_alignment = None
+
+        del self.diarize_segments
+        self.diarize_segments = None
+
+        # 清除显存缓存
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        # gc强制回收，避免内存泄露
+        gc.collect()
 
 
     def setStateTool(self, text:str , status:bool=False):

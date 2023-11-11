@@ -4,24 +4,29 @@ from PySide6.QtWidgets import (
                                 QCompleter,
                                 QFileDialog
                                 , QGridLayout
-                                , QLabel
                             )
 
 from qfluentwidgets import (
                             EditableComboBox
-                            , ComboBox
                             , LineEdit
                             , PushButton
                             , InfoBar
                             , InfoBarPosition
+                            , TitleLabel
+                            , SwitchButton
                         )
 
-
-from faster_whisper_GUI.config import (SUBTITLE_FORMAT, Language_dict)
+from .config import Language_dict
 from .navigationInterface import NavigationBaseInterface
 
-import datetime
+# import datetime
 import json
+
+from .util import outputWithDateTime
+from .style_sheet import StyleSheet
+
+from .paramItemWidget import ParamWidget
+
 
 class TranscribeNavigationInterface(NavigationBaseInterface):
     def __tr(self, text):
@@ -43,13 +48,11 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         self.setupUI()
 
         self.SignalAndSlotConnect()
-    
+        StyleSheet.TRANSCRIBEPAGEINTERFACE.apply(self.view)
 
 
     def saveParams(self):
-        datatime_ = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-        print(f"\n=========={datatime_}==========")
-        print(f"==========SaveParaments==========\n")
+        outputWithDateTime("SaveParaments")
 
         params = self.getParamTranscribe()
         for key, value in params.items():
@@ -102,24 +105,16 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         # 使用网格布局存放参数列表
         GridBoxLayout_other_paramters = QGridLayout()
         GridBoxLayout_other_paramters.setAlignment(Qt.AlignmentFlag.AlignTop)
+        GridBoxLayout_other_paramters.setContentsMargins(0,0,0,0)
+        GridBoxLayout_other_paramters.setSpacing(0)
         self.addLayout(GridBoxLayout_other_paramters)
         widget_list = []
 
-        # -----------------------------------------------------------------------------------------
-        # label_format = QLabel()
-        # label_format.setText(self.__tr("输出文件格式"))
-        # label_format.setObjectName("outputFormatLabel")
-        # label_format.setStyleSheet("#outputFormatLabel{background : rgba(0, 128, 0, 120);}")
-        # self.combox_output_format = ComboBox()
-        # self.combox_output_format.setToolTip(self.__tr("输出字幕文件的格式"))
-        # self.combox_output_format.addItems(["ALL"] + SUBTITLE_FORMAT)
-        # self.combox_output_format.setCurrentIndex(0)
-        # widget_list.append((label_format, self.combox_output_format))
-        
+        # ============================================================================================
+        self.titleLabel_normal = TitleLabel(self.__tr("常规"))
+        widget_list.append(self.titleLabel_normal)
         # --------------------------------------------------------------------------------------------
-        Label_language = QLabel(self.__tr("语言"))
-        Label_language.setObjectName("LabelLanguage")
-        Label_language.setStyleSheet("#LabelLanguage{ background : rgba(0, 128, 0, 120); }")
+
         self.combox_language = EditableComboBox()
         self.combox_language.addItem("Auto")
         for key, value in self.LANGUAGES_DICT.items():
@@ -131,202 +126,283 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         self.combox_language.setCompleter(completer_language)
         self.combox_language.setToolTip(self.__tr("音频中的语言。如果选择 Auto，则自动在音频的前30秒内检测语言。"))
         self.combox_language.setClearButtonEnabled(True)
-        widget_list.append((Label_language, self.combox_language))
+
+        # GridBoxLayout_other_paramters.addWidget(self.strongBodyLabel_normal,0,0)
+
+        self.language_param_widget = ParamWidget(self.__tr("音频语言"),
+                                                self.__tr("音频中使用的语言。如果选择 Auto，则自动在音频的前30秒内检测语言。也可使用此参数做强制翻译输出，但效果不佳"),
+                                                self.combox_language
+                                            )
+        # GridBoxLayout_other_paramters.addWidget(self.language_param_widget, 1, 0)
+        
+        widget_list.append(self.language_param_widget)
         
         # --------------------------------------------------------------------------------------------
-        label_Translate_to_English = QLabel(self.__tr("翻译为英语"))
-        label_Translate_to_English.setObjectName("labelTranslateToEnglish")
-        label_Translate_to_English.setStyleSheet("#labelTranslateToEnglish{background-color : rgba(240, 113, 0, 128);}")
-        self.combox_Translate_to_English = ComboBox()
-        self.combox_Translate_to_English.addItems(["False", "True"])
-        self.combox_Translate_to_English.setCurrentIndex(0)
-        self.combox_Translate_to_English.setToolTip(self.__tr("输出转写结果翻译为英语的翻译结果"))
-        widget_list.append((label_Translate_to_English, self.combox_Translate_to_English))
+    
+        self.switchButton_Translate_to_English = SwitchButton()
+        self.switchButton_Translate_to_English.setChecked(False)
+        # self.switchButton_Translate_to_English.setToolTip(self.__tr("输出转写结果翻译为英语的翻译结果"))
+
+        self.task_param_widget = ParamWidget(self.__tr("翻译为英语"),
+                                                self.__tr("输出转写结果翻译为英语的翻译结果"),
+                                                self.switchButton_Translate_to_English
+                                            )
+        widget_list.append(self.task_param_widget)
 
         # --------------------------------------------------------------------------------------------
-        label_beam_size = QLabel(self.__tr("分块大小"))
-        label_beam_size.setObjectName("labelBeamSize")
-        label_beam_size.setStyleSheet("#labelBeamSize{background-color : rgba(0, 255, 255, 60);}")
-        self.LineEdit_beam_size = LineEdit()
-        self.LineEdit_beam_size.setText("5")
-        self.LineEdit_beam_size.setToolTip(self.__tr("用于解码的音频块的大小。"))
-        widget_list.append((label_beam_size, self.LineEdit_beam_size))
+        self.switchButton_without_timestamps = SwitchButton()
+        self.switchButton_without_timestamps.setChecked(False)
+
+        self.without_timestampels_param_widget = ParamWidget(self.__tr("关闭时间戳细分"),
+                                                            self.__tr("开启时将会输出长文本段落并对应长段落时间戳，不再进行段落细分以及相应的时间戳输出"),
+                                                            self.switchButton_without_timestamps
+                                                        )
+        
+        widget_list.append(self.without_timestampels_param_widget)
 
         # --------------------------------------------------------------------------------------------
-        label_best_of = QLabel(self.__tr("最佳热度"))
-        self.LineEdit_best_of = LineEdit()
-        self.LineEdit_best_of.setText("1")
-        self.LineEdit_best_of.setToolTip(self.__tr("采样时使用非零热度的候选数"))
-        widget_list.append((label_best_of, self.LineEdit_best_of))
+        self.switchButton_word_level_timestampels = SwitchButton()
+        self.switchButton_word_level_timestampels.setChecked(False)
+    
+        self.word_level_timestampels_param_widget = ParamWidget(self.__tr("单词级时间戳"),
+                                                                self.__tr("输出卡拉OK式歌词，支持 SMI VTT LRC 格式"),
+                                                                self.switchButton_word_level_timestampels
+                                                            )
+
+        widget_list.append(self.word_level_timestampels_param_widget)
+
+        # =======================================================================================================
+        self.titleLabel_auditory_hallucination = TitleLabel(self.__tr("幻听参数"))
+        widget_list.append(self.titleLabel_auditory_hallucination)
 
         # --------------------------------------------------------------------------------------------
-        label_patience = QLabel(self.__tr("搜索耐心"))
-        label_patience.setObjectName("labelPatience")
-        label_patience.setStyleSheet("#labelPatience{background-color : rgba(0, 255, 255, 60)}")
+        
         self.LineEdit_patience = LineEdit()
-        self.LineEdit_patience.setToolTip(self.__tr("搜索音频块时的耐心因子"))
         self.LineEdit_patience.setText("1.0")
-        widget_list.append((label_patience, self.LineEdit_patience))
+        self.patience_param_widget = ParamWidget(self.__tr("搜索耐心"),
+                                                    self.__tr("搜索音频块时的耐心因子"),
+                                                    self.LineEdit_patience
+                                                )
+        
+        widget_list.append(self.patience_param_widget)
 
         # --------------------------------------------------------------------------------------------
-        label_length_penalty = QLabel(self.__tr("惩罚常数"))
-        label_length_penalty.setObjectName("labelLengthPenalty")
-        label_length_penalty.setStyleSheet("#labelLengthPenalty{background-color : rgba(0, 255, 255, 60)}")
+        
         self.LineEdit_length_penalty = LineEdit()
         self.LineEdit_length_penalty.setText("1.0")
-        self.LineEdit_length_penalty.setToolTip(self.__tr("指数形式的长度惩罚常数"))
-        widget_list.append((label_length_penalty, self.LineEdit_length_penalty))
+        
+        self.length_penalty_param_widget = ParamWidget(self.__tr("惩罚常数"),
+                                                        self.__tr("指数形式的长度惩罚常数"),
+                                                        self.LineEdit_length_penalty
+                                                    )
+        widget_list.append(self.length_penalty_param_widget)
 
         # --------------------------------------------------------------------------------------------
-        label_temperature = QLabel(self.__tr("采样热度候选"))
-        self.LineEdit_temperature = LineEdit()
-        self.LineEdit_temperature.setText("0")
-        self.LineEdit_temperature.setToolTip(self.__tr("温度。用于调整概率分布，从而生成不同的结果，可用于生成深度学习的数据标注。同时\n当程序因为压缩比参数或者采样标记概率参数失败时会依次使用"))
-        widget_list.append((label_temperature, self.LineEdit_temperature))
-
-        # --------------------------------------------------------------------------------------------
-        label_prompt_reset_on_temperature = QLabel(self.__tr("温度回退提示重置"))
-        self.LineEdit_prompt_reset_on_temperature = LineEdit()
-        self.LineEdit_prompt_reset_on_temperature.setText("0.5")
-        self.LineEdit_prompt_reset_on_temperature.setToolTip(self.__tr("如果运行中热度回退配置生效，则配置温度回退步骤后，应重置带有先前文本的提示"))
-        widget_list.append((label_prompt_reset_on_temperature, self.LineEdit_prompt_reset_on_temperature))
-
-        # --------------------------------------------------------------------------------------------
-        label_compression_ratio_threshold = QLabel(self.__tr("gzip 压缩比阈值"))
-        label_compression_ratio_threshold.setObjectName("labelCompressionRatioThreshold")
-        label_compression_ratio_threshold.setStyleSheet("#labelCompressionRatioThreshold{background-color : rgba(0, 255, 255, 60)}")
+    
         self.LineEdit_compression_ratio_threshold = LineEdit()
         self.LineEdit_compression_ratio_threshold.setText("2.4")
-        self.LineEdit_compression_ratio_threshold.setToolTip(self.__tr("如果音频的gzip压缩比高于此值，则视为失败。"))
-        widget_list.append((label_compression_ratio_threshold, self.LineEdit_compression_ratio_threshold))
+        
+        self.compression_ratio_threshold_param_widget = ParamWidget(self.__tr("gzip 压缩比阈值"),
+                                                                    self.__tr("如果音频的gzip压缩比高于此值，则视为失败。"),
+                                                                    self.LineEdit_compression_ratio_threshold
+                                                                )
+        widget_list.append(self.compression_ratio_threshold_param_widget)
 
         # --------------------------------------------------------------------------------------------
-        label_log_prob_threshold = QLabel(self.__tr("采样概率阈值"))
-        label_log_prob_threshold.setObjectName("labelLogProbThreshold")
-        label_log_prob_threshold.setStyleSheet("#labelLogProbThreshold{background-color : rgba(0, 255, 255, 60)}")
+        
         self.LineEdit_log_prob_threshold = LineEdit()
         self.LineEdit_log_prob_threshold.setText("-1.0")
-        self.LineEdit_log_prob_threshold.setToolTip(self.__tr("如果采样标记的平均对数概率阈值低于此值，则视为失败"))
-        widget_list.append((label_log_prob_threshold, self.LineEdit_log_prob_threshold))
         
+        self.log_prob_thresthold_param_widget = ParamWidget(self.__tr("采样概率阈值"),
+                                                            self.__tr("如果采样标记的平均对数概率阈值低于此值，则视为失败"),
+                                                            self.LineEdit_log_prob_threshold
+                                                        )
+        widget_list.append(self.log_prob_thresthold_param_widget)
+
         # --------------------------------------------------------------------------------------------
-        label_no_speech_threshold  = QLabel(self.__tr("静音阈值"))
-        label_no_speech_threshold.setObjectName("labelNoSpeechThreshold")
-        label_no_speech_threshold.setStyleSheet("#labelNoSpeechThreshold{background-color : rgba(0, 255, 255, 60)}")
+        
         self.LineEdit_no_speech_threshold = LineEdit()
         self.LineEdit_no_speech_threshold.setText("0.6")
-        self.LineEdit_no_speech_threshold.setToolTip(self.__tr("音频段的如果非语音概率高于此值，\n并且对采样标记的平均对数概率低于阈值，\n则将该段视为静音。"))
-        widget_list.append((label_no_speech_threshold, self.LineEdit_no_speech_threshold))
+
+        self.no_speech_threshold_param_widget = ParamWidget(self.__tr("静音阈值"),
+                                                            self.__tr("音频段的如果非语音概率高于此值，并且对采样标记的平均对数概率低于阈值，则将该段视为静音。"),
+                                                            self.LineEdit_no_speech_threshold
+                                                        )
+        widget_list.append(self.no_speech_threshold_param_widget)
         
         # --------------------------------------------------------------------------------------------
-        label_condition_on_previous_text = QLabel(self.__tr("循环提示"))
-        label_condition_on_previous_text.setObjectName("labelConditionOnPreviousText")
-        label_condition_on_previous_text.setStyleSheet("#labelConditionOnPreviousText{background-color : rgba(0, 255, 255, 60)}")
-        self.combox_condition_on_previous_text = ComboBox()
-        self.combox_condition_on_previous_text.addItems(["True", "False"])
-        self.combox_condition_on_previous_text.setCurrentIndex(1)
-        self.combox_condition_on_previous_text.setToolTip(self.__tr("如果启用，则将模型的前一个输出作为下一个音频段的提示;\n禁用可能会导致文本在段与段之间不一致，\n但模型不太容易陷入失败循环，\n比如重复循环或时间戳失去同步。"))
-        widget_list.append((label_condition_on_previous_text, self.combox_condition_on_previous_text))
+        
+        self.switchButton_condition_on_previous_text = SwitchButton()
+        self.switchButton_condition_on_previous_text.setChecked(False)
+
+        self.condition_on_previous_text_param_widget = ParamWidget(self.__tr("循环提示"),
+                                                                    self.__tr("如果启用，则将模型的前一个输出作为下一个音频段的提示;禁用可能会导致文本在段与段之间不一致，\n但模型不太容易陷入失败循环，比如重复循环或时间戳失去同步。"),
+                                                                    self.switchButton_condition_on_previous_text
+                                                                )
+        widget_list.append(self.condition_on_previous_text_param_widget)
 
         # --------------------------------------------------------------------------------------------
-        label_repetition_penalty = QLabel(self.__tr("重复惩罚"))
-        label_repetition_penalty.setObjectName("labelRepetitionPenalty")
-        label_repetition_penalty.setStyleSheet("#labelRepetitionPenalty{background-color : rgba(0, 255, 255, 60)}")
-        self.LineRdit_repetition_penalty = LineEdit()
-        self.LineRdit_repetition_penalty.setText("1.0")
-        self.LineRdit_repetition_penalty.setToolTip(self.__tr("对先前输出进行惩罚的分数（防重复），设置值>1以进行惩罚"))
-        widget_list.append((label_repetition_penalty, self.LineRdit_repetition_penalty))
+        
+        self.LineEdit_repetition_penalty = LineEdit()
+        self.LineEdit_repetition_penalty.setText("1.0")
+
+        self.repetition_penalty_param_switch = ParamWidget(self.__tr("重复惩罚"),
+                                                            self.__tr("对先前输出进行惩罚的分数（防重复），设置值>1以进行惩罚"),
+                                                            self.LineEdit_repetition_penalty 
+                                                        )
+        widget_list.append(self.repetition_penalty_param_switch)
 
         # --------------------------------------------------------------------------------------------
-        label_no_repeat_ngram_size = QLabel(self.__tr("禁止重复的ngram大小"))
-        label_no_repeat_ngram_size.setObjectName("labelNoRepeatNgramSize")
-        label_no_repeat_ngram_size.setStyleSheet("#labelNoRepeatNgramSize{background-color : rgba(0, 255, 255, 60)}")
+        
         self.LineEdit_no_repeat_ngram_size = LineEdit()
         self.LineEdit_no_repeat_ngram_size.setText("0")
-        self.LineEdit_no_repeat_ngram_size.setToolTip(self.__tr("如果重复惩罚配置生效，该参数防止程序重复使用此大小进行 n-gram 匹配"))
-        widget_list.append((label_no_repeat_ngram_size, self.LineEdit_no_repeat_ngram_size))
-
-        # --------------------------------------------------------------------------------------------
-        label_initial_prompt = QLabel(self.__tr("初始提示词"))
-        self.LineEdit_initial_prompt = LineEdit()
-        self.LineEdit_initial_prompt.setToolTip(self.__tr("为第一个音频段提供的可选文本字符串或词元 id 提示词，可迭代项。"))
-        widget_list.append((label_initial_prompt, self.LineEdit_initial_prompt))
-
-        # --------------------------------------------------------------------------------------------
-        label_prefix = QLabel(self.__tr("初始文本前缀"))
-        self.LineEdit_prefix = LineEdit()
-        self.LineEdit_prefix.setToolTip(self.__tr("为初始音频段提供的可选文本前缀。"))
-        widget_list.append((label_prefix, self.LineEdit_prefix))
-
-        # --------------------------------------------------------------------------------------------
-        label_suppress_blank = QLabel(self.__tr("空白抑制"))
-        self.combox_suppress_blank = ComboBox()
-        self.combox_suppress_blank.addItems(["True", "False"])
-        self.combox_suppress_blank.setCurrentIndex(0)
-        self.combox_suppress_blank.setToolTip(self.__tr("在采样开始时抑制空白输出。"))
-        widget_list.append((label_suppress_blank, self.combox_suppress_blank))
-
-        # --------------------------------------------------------------------------------------------
-        label_suppress_tokens = QLabel(self.__tr("特定标记抑制"))
-        self.LineEdit_suppress_tokens = LineEdit()
-        self.LineEdit_suppress_tokens.setText("-1")
-        self.LineEdit_suppress_tokens.setToolTip(self.__tr("要抑制的标记ID列表。 \n-1 将抑制模型配置文件 config.json 中定义的默认符号集。"))
-        widget_list.append((label_suppress_tokens, self.LineEdit_suppress_tokens))
-
-        # --------------------------------------------------------------------------------------------
-        label_without_timestamps  = QLabel(self.__tr("关闭时间戳细分"))
-        label_without_timestamps.setObjectName("labelWithoutTimestamps")
-        label_without_timestamps.setStyleSheet("#labelWithoutTimestamps{background-color : rgba(240, 113, 0, 128)}")
-        self.combox_without_timestamps = ComboBox()
-        self.combox_without_timestamps.addItems(["False", "True"])
-        self.combox_without_timestamps.setCurrentIndex(0)
-        self.combox_without_timestamps.setToolTip(self.__tr("开启时将会输出长文本段落并对应长段落时间戳，不再进行段落细分以及相应的时间戳输出"))
-        widget_list.append((label_without_timestamps, self.combox_without_timestamps))
-
-        # --------------------------------------------------------------------------------------------
-        label_max_initial_timestamp = QLabel(self.__tr("最晚初始时间戳"))
-        self.LineEdit_max_initial_timestamp = LineEdit()
-        self.LineEdit_max_initial_timestamp.setText("1.0")
-        self.LineEdit_max_initial_timestamp.setToolTip(self.__tr("首个时间戳不能晚于此时间。"))
-        widget_list.append((label_max_initial_timestamp, self.LineEdit_max_initial_timestamp))
-
-        # --------------------------------------------------------------------------------------------
-        label_word_timestamps = QLabel(self.__tr("单词级时间戳"))
-        label_word_timestamps.setObjectName("labelWordTimestamps")
-        # label_word_timestamps.setAlignment(Qt.AlignmentFlag.AlignVCenter|Qt.AlignmentFlag.AlignRight)
-        label_word_timestamps.setStyleSheet("#labelWordTimestamps{background-color : rgba(240, 113, 0, 128)}")
-        self.combox_word_timestamps = ComboBox()
-        self.combox_word_timestamps.addItems(["False", "True"])
-        self.combox_word_timestamps.setCurrentIndex(0)
-        self.combox_word_timestamps.setToolTip(self.__tr("输出卡拉OK式歌词，支持 SMI VTT LRC 格式"))
-        widget_list.append((label_word_timestamps, self.combox_word_timestamps))
-
-        # --------------------------------------------------------------------------------------------
-        label_prepend_punctuations = QLabel(self.__tr("标点向后合并"))
-        self.LineEdit_prepend_punctuations = LineEdit()
-        self.LineEdit_prepend_punctuations.setText("\"'“¿([{-")
-        self.LineEdit_prepend_punctuations.setToolTip(self.__tr("如果开启单词级时间戳，\n则将这些标点符号与下一个单词合并。"))
-        widget_list.append((label_prepend_punctuations, self.LineEdit_prepend_punctuations))
-
-        # --------------------------------------------------------------------------------------------
-        label_append_punctuations = QLabel(self.__tr("标点向前合并"))
-        self.LineEdit_append_punctuations = LineEdit()
-        self.LineEdit_append_punctuations.setText("\"'.。,，!！?？:：”)]}、")
-        self.LineEdit_append_punctuations.setToolTip(self.__tr("如果开启单词级时间戳，\n则将这些标点符号与前一个单词合并。"))
-        widget_list.append((label_append_punctuations, self.LineEdit_append_punctuations))
-
-        # 批量添加控件到布局中
-        # i = 0 
-        for i,item in enumerate(widget_list):
-            # print(i)
-            GridBoxLayout_other_paramters.addWidget(item[0], i, 0)
-            GridBoxLayout_other_paramters.addWidget(item[1], i, 1)
-            # i += 1
-
-        # self.page_transcribes.setStyleSheet("#pageTranscribesParameter{border: 1px solid blue; padding: 5px}")
-        # VBoxLayout_Transcribes.setAlignment(Qt.AlignmentFlag.AlignTop)
+        
+        self.no_repeat_ngram_size_param_widget = ParamWidget(self.__tr("禁止重复的ngram大小"),
+                                                                self.__tr("如果重复惩罚配置生效，该参数防止程序反复使用此相同长度的语句进行重复检查"),
+                                                                self.LineEdit_no_repeat_ngram_size
+                                                            )
+        widget_list.append(self.no_repeat_ngram_size_param_widget)
         
 
+        # --------------------------------------------------------------------------------------------
+        
+        self.switchButton_suppress_blank = SwitchButton()
+        self.switchButton_suppress_blank.setChecked(True)
+
+        self.suppress_blank_param_widget = ParamWidget(self.__tr("空白抑制"),
+                                                        self.__tr("在采样开始时抑制空白输出。"),
+                                                        self.switchButton_suppress_blank
+                                                    )
+        widget_list.append(self.suppress_blank_param_widget)
+
+        # ============================================================================================
+        self.titleLabel_performance= TitleLabel(self.__tr("性能设置"))
+        widget_list.append(self.titleLabel_performance)
+
+        # --------------------------------------------------------------------------------------------
+
+        self.LineEdit_beam_size = LineEdit()
+        self.LineEdit_beam_size.setText("5")
+
+        self.beam_size_param_widget = ParamWidget(self.__tr("分块大小"), 
+                                                self.__tr("用于解码的音频块的大小。值越大占用越多计算机性能，速度越慢。但该值也影响转写效果"),
+                                                self.LineEdit_beam_size
+                                            )
+        
+        widget_list.append(self.beam_size_param_widget)
+
+        # ============================================================================================
+        self.titleLabel_temperature= TitleLabel(self.__tr("概率分布"))
+        widget_list.append(self.titleLabel_temperature)
+
+        # --------------------------------------------------------------------------------------------
+        
+        self.LineEdit_best_of = LineEdit()
+        self.LineEdit_best_of.setText("1")
+
+        self.best_of_param_widget = ParamWidget(self.__tr("温度回退候选值个数"), 
+                                                self.__tr("采样时使用非零热度的候选值个数，也即回退配置生效的时的回退次数"), 
+                                                self.LineEdit_best_of
+                                            )
+        widget_list.append(self.best_of_param_widget)
+
+        # --------------------------------------------------------------------------------------------
+        
+        self.LineEdit_temperature = LineEdit()
+        self.LineEdit_temperature.setText("0")
+
+        self.temperature_param_widget = ParamWidget(self.__tr("温度候选"), self.__tr("温度。用于调整概率分布，从而生成不同的结果，可用于生成深度学习的数据标注。同时\n当程序因为压缩比参数或者采样标记概率参数失败时会依次使用,输入多个值时使用英文逗号分隔"), self.LineEdit_temperature)
+        widget_list.append(self.temperature_param_widget)
+
+        # --------------------------------------------------------------------------------------------
+        
+        self.LineEdit_prompt_reset_on_temperature = LineEdit()
+        self.LineEdit_prompt_reset_on_temperature.setText("0.5")
+
+        self.prompt_reset_on_temperature_param_widget = ParamWidget(self.__tr("温度回退提示重置"), 
+                                                                    self.__tr("如果运行中温度回退配置生效，则配置温度回退步骤后，应重置带有先前文本的提示词"), 
+                                                                    self.LineEdit_prompt_reset_on_temperature
+                                                                )
+        widget_list.append(self.prompt_reset_on_temperature_param_widget)
+
+        
+        # ============================================================================================
+        self.titleLabel_other_settings  = TitleLabel(self.__tr("其他设置"))
+        widget_list.append(self.titleLabel_other_settings)
+        
+        # --------------------------------------------------------------------------------------------
+        
+        self.LineEdit_initial_prompt = LineEdit()
+        
+        self.initial_prompt_param_widget = ParamWidget(self.__tr("初始提示词"), 
+                                                        self.__tr("为第一个音频段提供的可选文本字符串或词元 id 提示词，可迭代项。"), 
+                                                        self.LineEdit_initial_prompt
+                                                    )
+        
+        widget_list.append(self.initial_prompt_param_widget)
+
+        # --------------------------------------------------------------------------------------------
+        self.LineEdit_prefix = LineEdit()
+
+        self.prefix_param_widget = ParamWidget(self.__tr("初始文本前缀"), 
+                                            self.__tr("为初始音频段提供的可选文本前缀。"), 
+                                            self.LineEdit_prefix
+                                        )
+        
+        widget_list.append(self.prefix_param_widget)
+
+        # --------------------------------------------------------------------------------------------
+        self.LineEdit_suppress_tokens = LineEdit()
+        self.LineEdit_suppress_tokens.setText("-1")
+
+        self.suppress_tokens_param_widget = ParamWidget(self.__tr("特定标记抑制"), 
+                                                        self.__tr("要抑制的标记ID列表。 -1 将抑制模型配置文件 config.json 中定义的默认符号集。"),
+                                                        self.LineEdit_suppress_tokens
+                                                    )
+        widget_list.append(self.suppress_tokens_param_widget)
+
+        # --------------------------------------------------------------------------------------------
+        self.LineEdit_max_initial_timestamp = LineEdit()
+        self.LineEdit_max_initial_timestamp.setText("1.0")
+
+        self.max_initial_timestamp_param_widget = ParamWidget(self.__tr("最晚初始时间戳"), 
+                                                            self.__tr("首个时间戳不能晚于此时间。"),
+                                                            self.LineEdit_max_initial_timestamp
+                                                        )
+        
+        widget_list.append(self.max_initial_timestamp_param_widget )
+
+        # --------------------------------------------------------------------------------------------
+        self.LineEdit_prepend_punctuations = LineEdit()
+        self.LineEdit_prepend_punctuations.setText("\"'“¿([{-")
+
+        self.prepend_punctuations_param_widget = ParamWidget(self.__tr("标点向后合并"),
+                    self.__tr("如果开启单词级时间戳，则将这些标点符号与下一个单词合并。"),
+                    self.LineEdit_prepend_punctuations
+                )
+        
+        widget_list.append(self.prepend_punctuations_param_widget)
+
+        # --------------------------------------------------------------------------------------------
+        self.LineEdit_append_punctuations = LineEdit()
+        self.LineEdit_append_punctuations.setText("\"'.。,，!！?？:：”)]}、")
+
+        self.append_punctuations_param_widget = ParamWidget(self.__tr("标点向前合并"), 
+                    self.__tr("如果开启单词级时间戳，则将这些标点符号与前一个单词合并。"), 
+                    self.LineEdit_append_punctuations
+                )
+        widget_list.append(self.append_punctuations_param_widget)
+
+        # 批量添加控件到布局中
+        
+        for i ,item in enumerate(widget_list):
+            try:
+                GridBoxLayout_other_paramters.addWidget(item, i, 0)
+            except Exception as e:
+                pass
+            # GridBoxLayout_other_paramters.addWidget(item[1], i, 1)
+
+    
         self.toolBar.buttonLayout.insertSpacing(1,10)
 
         self.saveParamButton = PushButton()
@@ -342,9 +418,7 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         
     def loadParamsFromFile(self):
 
-        datatime_ = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-        print(f"\n=========={datatime_}==========")
-        print(f"==========LoadParaments==========\n")
+        outputWithDateTime("LoadParaments")
 
         file,_ = QFileDialog.getOpenFileName(   self,
                                                 self.__tr("选择参数文件"),
@@ -406,83 +480,84 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         self.combox_language.setCurrentIndex(Transcribe_params["language"])
         # Transcribe_params["language"] = language_index
 
-        self.combox_Translate_to_English.setCurrentIndex(Transcribe_params["task"])
+        self.switchButton_Translate_to_English.setChecked(Transcribe_params["task"])
         # Transcribe_params["task"] = task
 
-        self.LineEdit_beam_size.setText(Transcribe_params["beam_size"] )
+        self.LineEdit_beam_size.setText(str(Transcribe_params["beam_size"]))
         # Transcribe_params["beam_size"] = beam_size
 
-        self.LineEdit_best_of.setText(Transcribe_params["best_of"] )
+        self.LineEdit_best_of.setText(str(Transcribe_params["best_of"] ))
         # Transcribe_params["best_of"] = best_of
 
-        self.LineEdit_patience.setText(Transcribe_params["patience"] )
+        self.LineEdit_patience.setText(str(Transcribe_params["patience"] ))
         # Transcribe_params["patience"] = patience
 
-        self.LineEdit_length_penalty.setText(Transcribe_params["length_penalty"])
+        self.LineEdit_length_penalty.setText(str(Transcribe_params["length_penalty"]))
         # Transcribe_params["length_penalty"] = length_penalty
 
-        self.LineEdit_temperature.setText(Transcribe_params["temperature"] )
+        self.LineEdit_temperature.setText(str(Transcribe_params["temperature"] ))
         # Transcribe_params["temperature"] = temperature 
 
-        self.LineEdit_compression_ratio_threshold.setText(Transcribe_params["compression_ratio_threshold"])
+        self.LineEdit_compression_ratio_threshold.setText(str(Transcribe_params["compression_ratio_threshold"]))
         # Transcribe_params["compression_ratio_threshold"] = compression_ratio_threshold
 
-        self.LineEdit_log_prob_threshold.setText(Transcribe_params["log_prob_threshold"])
+        self.LineEdit_log_prob_threshold.setText(str(Transcribe_params["log_prob_threshold"]))
         # Transcribe_params["log_prob_threshold"] = log_prob_threshold
 
-        self.LineEdit_no_speech_threshold.setText(Transcribe_params["no_speech_threshold"] )
+        self.LineEdit_no_speech_threshold.setText(str(Transcribe_params["no_speech_threshold"] ))
         # Transcribe_params["no_speech_threshold"] = no_speech_threshold
 
-        self.combox_condition_on_previous_text.setCurrentIndex(Transcribe_params["condition_on_previous_text"] )
+        self.switchButton_condition_on_previous_text.setChecked(Transcribe_params["condition_on_previous_text"] )
         # Transcribe_params["condition_on_previous_text"] = condition_on_previous_text
 
-        self.LineEdit_initial_prompt.setText(Transcribe_params["initial_prompt"] )
+        self.LineEdit_initial_prompt.setText(str(Transcribe_params["initial_prompt"] ))
         # Transcribe_params["initial_prompt"] = initial_prompt
 
-        self.LineEdit_prefix.setText(Transcribe_params["prefix"] )
+        self.LineEdit_prefix.setText(str(Transcribe_params["prefix"] ))
         # Transcribe_params["prefix"] = prefix
 
-        self.combox_suppress_blank.setCurrentIndex(Transcribe_params["suppress_blank"])
+        self.switchButton_suppress_blank.setChecked(Transcribe_params["suppress_blank"])
         # Transcribe_params["suppress_blank"] = suppress_blank
 
-        self.LineEdit_suppress_tokens.setText(Transcribe_params["suppress_tokens"] )
+        self.LineEdit_suppress_tokens.setText(str(Transcribe_params["suppress_tokens"] ))
         # Transcribe_params["suppress_tokens"] = suppress_tokens
 
-        self.combox_without_timestamps.setCurrentIndex(Transcribe_params["without_timestamps"] )
+        self.switchButton_without_timestamps.setChecked(Transcribe_params["without_timestamps"] )
         # Transcribe_params["without_timestamps"] = without_timestamps
 
-        self.LineEdit_max_initial_timestamp.setText(Transcribe_params["max_initial_timestamp"])
+        self.LineEdit_max_initial_timestamp.setText(str(Transcribe_params["max_initial_timestamp"]))
         # Transcribe_params["max_initial_timestamp"] = max_initial_timestamp
 
-        self.combox_word_timestamps.setCurrentIndex(Transcribe_params["word_timestamps"] )
+        self.switchButton_word_level_timestampels.setChecked(Transcribe_params["word_timestamps"] )
         # Transcribe_params["word_timestamps"] = word_timestamps
 
-        self.LineEdit_prepend_punctuations.setText(Transcribe_params["prepend_punctuations"] )
+        self.LineEdit_prepend_punctuations.setText(str(Transcribe_params["prepend_punctuations"] ))
         # Transcribe_params["prepend_punctuations"] = prepend_punctuations
 
-        self.LineEdit_append_punctuations.setText(Transcribe_params["append_punctuations"] )
+        self.LineEdit_append_punctuations.setText(str(Transcribe_params["append_punctuations"] ))
         # Transcribe_params["append_punctuations"] = append_punctuations
 
-        self.LineRdit_repetition_penalty.setText(Transcribe_params['repetition_penalty'] )
+        self.LineEdit_repetition_penalty.setText(str(Transcribe_params['repetition_penalty'] ))
         # Transcribe_params['repetition_penalty'] = repetition_penalty  
 
-        self.LineEdit_no_repeat_ngram_size.setText(Transcribe_params["no_repeat_ngram_size"] )
+        self.LineEdit_no_repeat_ngram_size.setText(str(Transcribe_params["no_repeat_ngram_size"] ))
         # Transcribe_params["no_repeat_ngram_size"]  = no_repeat_ngram_size 
 
-        self.LineEdit_prompt_reset_on_temperature.setText(Transcribe_params['prompt_reset_on_temperature']  )
+        self.LineEdit_prompt_reset_on_temperature.setText(str(Transcribe_params['prompt_reset_on_temperature']  ))
         # Transcribe_params['prompt_reset_on_temperature']  = prompt_reset_on_temperature 
 
 
     def getParamTranscribe(self) -> dict:
         Transcribe_params = {}
 
-        # audio = self.page_process.LineEdit_audio_fileName.text().strip()
-        # audio = audio.split(";;") if audio != "" else []
+        # 从数据模型获取文件列表
         
-        language_index = self.combox_language.findText(self.combox_language.currentText())
-        Transcribe_params["language"] = language_index
+        language = self.combox_language.currentIndex()
+        Transcribe_params["language"] = language
+        
 
-        task = self.combox_Translate_to_English.currentIndex()
+        task = self.switchButton_Translate_to_English.isChecked()
+        # task = STR_BOOL[task]
         Transcribe_params["task"] = task
 
         beam_size = self.LineEdit_beam_size.text().replace(" ", "")
@@ -498,6 +573,7 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         Transcribe_params["length_penalty"] = length_penalty
 
         temperature = self.LineEdit_temperature.text().replace(" ", "")
+        # temperature = [float(t) for t in temperature.split(",")]
         Transcribe_params["temperature"] = temperature 
 
         compression_ratio_threshold = self.LineEdit_compression_ratio_threshold.text().replace(" ", "")
@@ -509,28 +585,44 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         no_speech_threshold = self.LineEdit_no_speech_threshold.text().replace(" ", "")
         Transcribe_params["no_speech_threshold"] = no_speech_threshold
 
-        condition_on_previous_text = self.combox_condition_on_previous_text.currentIndex()
+        condition_on_previous_text = self.switchButton_condition_on_previous_text.isChecked()
+        # condition_on_previous_text = STR_BOOL[condition_on_previous_text]
         Transcribe_params["condition_on_previous_text"] = condition_on_previous_text
 
-        initial_prompt = self.LineEdit_initial_prompt.text().replace(" ", "")
+        initial_prompt = self.LineEdit_initial_prompt.text().strip()
+        # if not initial_prompt:
+        #     initial_prompt = None
+        # else:
+        #     lambda_initial_prompt = lambda w : int(w) if (w.isdigit()) else w
+        #     initial_prompt = [lambda_initial_prompt(w) for w in initial_prompt.split(",")]
+
+        # if initial_prompt and isinstance(initial_prompt[0], str):
+        #     initial_prompt = "".join(initial_prompt)
+        # elif initial_prompt :
+        #     initial_prompt = [initial_prompt]
         Transcribe_params["initial_prompt"] = initial_prompt
 
-        prefix = self.LineEdit_prefix.text().replace(" ", "")
+        prefix = self.LineEdit_prefix.text().replace(" ", "") 
         Transcribe_params["prefix"] = prefix
 
-        suppress_blank = self.combox_suppress_blank.currentIndex()
+        suppress_blank = self.switchButton_suppress_blank.isChecked()
+        # suppress_blank = STR_BOOL[suppress_blank]
         Transcribe_params["suppress_blank"] = suppress_blank
 
         suppress_tokens = self.LineEdit_suppress_tokens.text().replace(" ", "")
+        # suppress_tokens = [int(s) for s in suppress_tokens.split(",")]
         Transcribe_params["suppress_tokens"] = suppress_tokens
 
-        without_timestamps = self.combox_without_timestamps.currentIndex()
+        without_timestamps = self.switchButton_without_timestamps.isChecked()
+        # without_timestamps = STR_BOOL[without_timestamps]
         Transcribe_params["without_timestamps"] = without_timestamps
 
         max_initial_timestamp = self.LineEdit_max_initial_timestamp.text().replace(" ", "")
+        # max_initial_timestamp = float(max_initial_timestamp)
         Transcribe_params["max_initial_timestamp"] = max_initial_timestamp
 
-        word_timestamps = self.combox_word_timestamps.currentIndex()
+        word_timestamps = self.switchButton_word_level_timestampels.isChecked()
+        # word_timestamps = STR_BOOL[word_timestamps]
         Transcribe_params["word_timestamps"] = word_timestamps
 
         prepend_punctuations = self.LineEdit_prepend_punctuations.text().replace(" ", "")
@@ -539,13 +631,17 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         append_punctuations = self.LineEdit_append_punctuations.text().replace(" ","")
         Transcribe_params["append_punctuations"] = append_punctuations
 
-        repetition_penalty = self.LineRdit_repetition_penalty.text().strip()
+        repetition_penalty = self.LineEdit_repetition_penalty.text().strip()
+        # repetition_penalty = float(repetition_penalty)
         Transcribe_params['repetition_penalty'] = repetition_penalty  
 
         no_repeat_ngram_size = self.LineEdit_no_repeat_ngram_size.text().strip()
+        # no_repeat_ngram_size = int(no_repeat_ngram_size)
         Transcribe_params["no_repeat_ngram_size"]  = no_repeat_ngram_size 
 
         prompt_reset_on_temperature  = self.LineEdit_prompt_reset_on_temperature.text().strip()
+        # prompt_reset_on_temperature = float(prompt_reset_on_temperature)
         Transcribe_params['prompt_reset_on_temperature']  = prompt_reset_on_temperature 
 
         return Transcribe_params
+    

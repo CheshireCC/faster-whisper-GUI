@@ -17,6 +17,7 @@ from qfluentwidgets import (
 from .navigationInterface import NavigationBaseInterface
 from .fasterWhisperGuiIcon import FasterWhisperGUIIcon
 from .config import CAPTURE_PARA
+from .style_sheet import StyleSheet
 
 # from .style_sheet import StyleSheet
 from .fileNameListViewInterface import FileNameListView
@@ -32,6 +33,7 @@ class ProcessPageNavigationInterface(NavigationBaseInterface):
         
         self.setupUI()
         # self.SignalAndSlotConnect()
+        StyleSheet.PROCESS_INTERFACE.apply(self.processResultText)
 
         
     def setupUI(self):
@@ -79,4 +81,5 @@ class ProcessPageNavigationInterface(NavigationBaseInterface):
         # ------------------------------------------------------------------------------------------
         self.processResultText = TextEdit()
         self.processResultText.setFixedHeight(400)
+        
         self.addWidget(self.processResultText)

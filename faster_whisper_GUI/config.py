@@ -99,6 +99,7 @@ Language_dict = {
                 "ba": "bashkir",
                 "jw": "javanese",
                 "su": "sundanese",
+                "yue": "cantonese"
             }
 
 Preciese_list = ['int8',
@@ -111,7 +112,7 @@ Preciese_list = ['int8',
             ]
 
 Model_names = ["tiny", "tiny.en", "base", "base.en", "small", 
-                "small.en", "medium", "medium.en", "large-v1", "large-v2"]
+                "small.en", "medium", "medium.en", "large-v1", "large-v2","large-v3"]
 
 Device_list = ["cpu", "cuda", "auto"]
 Task_list = ["transcribe" , "translate"]

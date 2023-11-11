@@ -121,6 +121,21 @@ class ModelNavigationInterface(NavigationBaseInterface):
         GridLayout_model_param = QGridLayout()
         GridLayout_model_param.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.addLayout(GridLayout_model_param)
+        GridLayout_model_param_widgets_list = []
+
+        # 是否使用 v3 模型
+        label_use_v3 = QLabel()
+        label_use_v3.setText(self.__tr("使用 v3 模型"))
+        label_use_v3.setObjectName("LabelUseV3")
+        label_use_v3.setStyleSheet("#LabelUseV3{background : rgba(240, 113, 0, 128);}")
+        self.combox_use_v3 = ComboBox()
+        self.combox_use_v3.addItems(["False", "True"])
+        self.combox_use_v3.setCurrentIndex(0)
+
+        GridLayout_model_param_widgets_list.append((label_use_v3, self.combox_use_v3))
+
+        # GridLayout_model_param.addWidget(label_use_v3, 0, 0)
+        # GridLayout_model_param.addWidget(self.combox_use_v3, 0, 1)
 
         # 设备
         label_device = QLabel()
@@ -131,8 +146,9 @@ class ModelNavigationInterface(NavigationBaseInterface):
         device_combox.addItems(self.device_list)
         device_combox.setCurrentIndex(1)
         self.device_combox = device_combox
-        GridLayout_model_param.addWidget(label_device,0,0)
-        GridLayout_model_param.addWidget(device_combox,0,1)
+        GridLayout_model_param_widgets_list.append((label_device, device_combox))   
+        # GridLayout_model_param.addWidget(label_device,0,0)
+        # GridLayout_model_param.addWidget(device_combox,0,1)
 
         label_device_index = QLabel()
         label_device_index.setText(self.__tr("设备号："))
@@ -140,8 +156,10 @@ class ModelNavigationInterface(NavigationBaseInterface):
         LineEdit_device_index.setText("0")
         LineEdit_device_index.setToolTip(self.__tr("要使用的设备ID。也可以通过传递ID列表(例如0,1,2,3)在多GPU上加载模型。"))
         self.LineEdit_device_index = LineEdit_device_index
-        GridLayout_model_param.addWidget(label_device_index,1,0)
-        GridLayout_model_param.addWidget(LineEdit_device_index,1,1)
+        GridLayout_model_param_widgets_list.append((label_device_index, LineEdit_device_index)) 
+
+        # GridLayout_model_param.addWidget(label_device_index,1,0)
+        # GridLayout_model_param.addWidget(LineEdit_device_index,1,1)
 
         # 计算精度
         VLayout_preciese = QHBoxLayout()
@@ -155,8 +173,10 @@ class ModelNavigationInterface(NavigationBaseInterface):
         preciese_combox.setCompleter(QCompleter(self.preciese_list))
         preciese_combox.setToolTip(self.__tr("要使用的计算精度，尽管某些设备不支持半精度，\n但事实上不论选择什么精度类型都可以隐式转换。\n请参阅 https://opennmt.net/CTranslate2/quantization.html。"))
         self.preciese_combox = preciese_combox
-        GridLayout_model_param.addWidget(label_preciese,2,0)
-        GridLayout_model_param.addWidget(preciese_combox,2,1)
+
+        GridLayout_model_param_widgets_list.append((label_preciese, preciese_combox))   
+        # GridLayout_model_param.addWidget(label_preciese,2,0)
+        # GridLayout_model_param.addWidget(preciese_combox,2,1)
 
         label_cpu_threads = QLabel()
         label_cpu_threads.setText(self.__tr("线程数（CPU）"))
@@ -164,8 +184,10 @@ class ModelNavigationInterface(NavigationBaseInterface):
         LineEdit_cpu_threads.setText("4")
         LineEdit_cpu_threads.setToolTip(self.__tr("在CPU上运行时使用的线程数(默认为4)。非零值会覆盖"))
         self.LineEdit_cpu_threads = LineEdit_cpu_threads
-        GridLayout_model_param.addWidget(label_cpu_threads,3,0)
-        GridLayout_model_param.addWidget(LineEdit_cpu_threads,3,1)
+
+        GridLayout_model_param_widgets_list.append((label_cpu_threads, LineEdit_cpu_threads))   
+        # GridLayout_model_param.addWidget(label_cpu_threads,3,0)
+        # GridLayout_model_param.addWidget(LineEdit_cpu_threads,3,1)
 
         label_num_workers = QLabel()
         label_num_workers.setText(self.__tr("并发数"))
@@ -173,8 +195,10 @@ class ModelNavigationInterface(NavigationBaseInterface):
         LineEdit_num_workers.setText("1")
         LineEdit_num_workers.setToolTip(self.__tr("具有多个工作线程可以在运行模型时实现真正的并行性。\n这可以以增加内存使用为代价提高整体吞吐量。"))
         self.LineEdit_num_workers = LineEdit_num_workers
-        GridLayout_model_param.addWidget(label_num_workers,4,0)
-        GridLayout_model_param.addWidget(LineEdit_num_workers,4,1)
+
+        GridLayout_model_param_widgets_list.append((label_num_workers, LineEdit_num_workers))
+        # GridLayout_model_param.addWidget(label_num_workers,4,0)
+        # GridLayout_model_param.addWidget(LineEdit_num_workers,4,1)
 
         button_download_root = PushButton()
         button_download_root.setText(self.__tr("下载缓存目录"))
@@ -184,8 +208,10 @@ class ModelNavigationInterface(NavigationBaseInterface):
         # self.LineEdit_download_root.setText(self.download_cache_path)
         self.LineEdit_download_root = self.LineEdit_download_root
         self.button_download_root = button_download_root
-        GridLayout_model_param.addWidget(button_download_root,5,0)
-        GridLayout_model_param.addWidget(self.LineEdit_download_root,5,1)
+
+        GridLayout_model_param_widgets_list.append((button_download_root, self.LineEdit_download_root)) 
+        # GridLayout_model_param.addWidget(button_download_root,5,0)
+        # GridLayout_model_param.addWidget(self.LineEdit_download_root,5,1)
 
         label_local_files_only =QLabel()
         label_local_files_only.setText(self.__tr("是否使用本地缓存"))
@@ -194,24 +220,33 @@ class ModelNavigationInterface(NavigationBaseInterface):
         combox_local_files_only.setCurrentIndex(1)
         combox_local_files_only.setToolTip(self.__tr("如果为True，在本地缓存的文件存在时返回其路径，不再重新下载文件。"))
         self.combox_local_files_only = combox_local_files_only
-        GridLayout_model_param.addWidget(label_local_files_only,6,0)
-        GridLayout_model_param.addWidget(combox_local_files_only,6,1)
 
+        GridLayout_model_param_widgets_list.append((label_local_files_only, combox_local_files_only))  
+        # GridLayout_model_param.addWidget(label_local_files_only,6,0)
+        # GridLayout_model_param.addWidget(combox_local_files_only,6,1)
+    
+        for i,item in enumerate(GridLayout_model_param_widgets_list):
+            GridLayout_model_param.addWidget(item[0],i,0)
+            GridLayout_model_param.addWidget(item[1],i,1)
+        
         hBoxLayout_model_convert = QHBoxLayout()
         self.addLayout(hBoxLayout_model_convert)
 
         self.button_set_model_out_dir =  PushButton()
         self.button_set_model_out_dir.setText(self.__tr("模型输出目录"))
         hBoxLayout_model_convert.addWidget(self.button_set_model_out_dir)
+        self.button_set_model_out_dir.setEnabled(False)
 
         self.LineEdit_model_out_dir = LineEdit()
         self.LineEdit_model_out_dir.setToolTip(self.__tr("转换模型的保存目录，不会自动创建子目录"))
         hBoxLayout_model_convert.addWidget(self.LineEdit_model_out_dir)
+        self.LineEdit_model_out_dir.setEnabled(False)
 
         self.button_convert_model = PushButton()
         self.button_convert_model.setText(self.__tr("下载并转换模型"))
         self.button_convert_model.setToolTip(self.__tr("转换 OpenAi 模型到本地格式，\n必须选择在线模型"))
         hBoxLayout_model_convert.addWidget(self.button_convert_model)
+        self.button_convert_model.setEnabled(False)
 
         self.button_model_lodar = PushButton()
         self.button_model_lodar.setText(self.__tr("加载模型"))

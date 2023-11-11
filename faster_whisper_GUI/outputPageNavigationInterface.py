@@ -26,25 +26,6 @@ class OutputPageNavigationInterface(NavigationBaseInterface):
     def setupUI(self):
         # -----------------------------------------------------------------------------------------
 
-        # self.outputHBoxLayout = QHBoxLayout()
-        # label_output_file = QLabel()
-        # label_output_file.setText(self.tr("输出文件目录"))
-        # self.outputHBoxLayout.addWidget(label_output_file)
-
-        # self.LineEdit_output_dir = LineEdit()
-        # self.LineEdit_output_dir.setToolTip(self.tr("输出文件保存的目录"))
-        # self.LineEdit_output_dir.setPlaceholderText(self.tr("当目录为空的时候将会自动输出到每一个音频文件所在目录"))
-        # self.LineEdit_output_dir.setClearButtonEnabled(True)
-        # self.outputHBoxLayout.addWidget(self.LineEdit_output_dir)
-
-        # outputDirChoseButton = ToolButton()
-        # self.outputDirChoseButton = outputDirChoseButton
-        # outputDirChoseButton.setToolTip(self.tr("选择输出目录"))
-        # outputDirChoseButton.setIcon(self.style().standardPixmap(QStyle.StandardPixmap.SP_DirIcon))
-        # outputDirChoseButton.resize(385,420)
-        # self.outputHBoxLayout.addWidget(outputDirChoseButton)
-        # self.addLayout(self.outputHBoxLayout)
-
         self.outputGroupWidget = OutputGroupWidget(self)
         self.addWidget(self.outputGroupWidget)
         
@@ -70,8 +51,8 @@ class OutputPageNavigationInterface(NavigationBaseInterface):
         self.WhisperXHBoxLayout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         self.unloadWhisperModelPushbutton = PushButton()
-        self.unloadWhisperModelPushbutton.setText(self.tr("卸载模型"))
-        self.unloadWhisperModelPushbutton.setToolTip(self.tr("卸载当前使用的模型"))
+        self.unloadWhisperModelPushbutton.setText(self.tr("卸载 Whisper 模型"))
+        self.unloadWhisperModelPushbutton.setToolTip(self.tr("卸载当前使用的 Whisper 模型"))
         self.WhisperXHBoxLayout.addSpacing(10)
         self.WhisperXHBoxLayout.addWidget(self.unloadWhisperModelPushbutton, 0, Qt.AlignmentFlag.AlignRight)
 
@@ -122,7 +103,7 @@ class OutputPageNavigationInterface(NavigationBaseInterface):
         self.combox_output_code = ComboBox()
         self.combox_output_code.setToolTip(self.tr("输出文件的编码"))
         self.combox_output_code.addItems([item[0] for item in ENCODING_DICT.items()])
-        self.combox_output_code.setCurrentIndex(0)
+        self.combox_output_code.setCurrentIndex(1)
 
         self.tableTab.panelLayout.addSpacing(15)
         self.tableTab.panelLayout.addWidget(self.controlLabel_output)

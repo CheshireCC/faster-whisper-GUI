@@ -1,0 +1,15 @@
+AboutPageNavigationInterface{
+    background: transparent;
+}
+
+#mainObject {
+    background-color: rgb(70, 70, 70);
+}
+
+QScrollArea {
+    border: none;
+}
+
+#imageViewer{
+    background-color: transparent;
+}

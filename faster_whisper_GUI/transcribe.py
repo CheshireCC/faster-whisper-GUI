@@ -28,7 +28,7 @@ from .config import (
                 )
 
 from .seg_ment import segment_Transcribe
-from .config import ENCODING_DICT
+from .config import ENCODING_DICT, Task_list
 
 
 class AudioStreamTranscribeWorker(QThread):
@@ -197,6 +197,7 @@ class TranscribeWorker(QThread):
             ) -> None:
         
         super().__init__(parent)
+
         self.is_running = False
         self.model = model
         self.parameters = parameters
@@ -220,7 +221,7 @@ class TranscribeWorker(QThread):
         segments, info = self.model.transcribe(
                                         audio=file,
                                         language=self.parameters["language"],
-                                        task=self.parameters["task"],
+                                        task=Task_list[int(self.parameters["task"])],
                                         beam_size=self.parameters["beam_size"],
                                         best_of=self.parameters["best_of"],
                                         patience=self.parameters["patience"],

@@ -19,6 +19,10 @@ class StyleSheet(StyleSheetBase, Enum):
     HOME_ITEM = "homeItemLabel"
     DENUCE_INTERFACE = "demucsInterface"
     OUTPUT_GROUP_WIDGET = "outputGroupWidget"
+    PROCESS_INTERFACE = "processPageInterface"
+    TRANSCRIBEPARAMITEMWIDGET = "TranscribeParamItemWidget"
+    TRANSCRIBEPAGEINTERFACE = "transcribePageInterface" 
+    ABOUTPAGEINTERFACE = "aboutPageInterface"
 
 
     def path(self, theme=Theme.AUTO):

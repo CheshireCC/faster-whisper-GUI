@@ -14,5 +14,13 @@
         <file>qss/demucsInterface_dark.qss</file>
         <file>qss/outputGroupWidget_light.qss</file>
         <file>qss/outputGroupWidget_dark.qss</file>
+        <file>qss/processPageInterface_light.qss</file>
+        <file>qss/processPageInterface_dark.qss</file>
+        <file>qss/TranscribeParamItemWidget_dark.qss</file>
+        <file>qss/TranscribeParamItemWidget_light.qss</file>
+        <file>qss/transcribePageInterface_light.qss</file>
+        <file>qss/transcribePageInterface_dark.qss</file>
+        <file>qss/aboutPageInterface_light.qss</file>
+        <file>qss/aboutPageInterface_dark.qss</file>
     </qresource>
 </RCC>

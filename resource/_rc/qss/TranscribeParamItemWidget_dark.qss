@@ -1,0 +1,15 @@
+StrongBodyLabel{
+    font-size: 16px;
+    background-color: transparent;
+}
+
+CaptionLabel{
+    font-size: 12px;
+    background-color: transparent;
+    color: rgb(225, 225, 225);
+}
+
+#mainObject{
+    background-color: rgb(43, 43, 43);
+    /* border-radius: 10px; */
+}

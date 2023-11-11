@@ -1,0 +1,7 @@
+TitleLabel {
+    background-color: transparent;
+    color: white;
+    font-size : 20px ;
+    font-weight: bold;
+    qproperty-alignment: AlignLeft;
+}

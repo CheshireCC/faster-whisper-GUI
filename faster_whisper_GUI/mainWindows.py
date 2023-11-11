@@ -54,6 +54,8 @@ from .de_mucs import DemucsWorker
 from .subtitleFileRead import readSRTFileToSegments
 from .config import ENCODING_DICT
 
+from .util import outputWithDateTime
+
 # =======================================================================================
 # SignalStore
 # =======================================================================================
@@ -86,11 +88,6 @@ class MainWindows(UIMainWin):
     # @override
     # def tr(self, text):
     #     return QCoreApplication.translate(self.__class__.__name__, text)
-
-    def outputWithDateTime(self, text:str):
-        dateTime_ = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-        print(f"\n=========={dateTime_}==========")
-        print(f"=========={text}==========\n")
     
     log = open(r"./fasterwhispergui.log" ,"a" ,encoding="utf8", buffering=1)
 
@@ -105,6 +102,8 @@ class MainWindows(UIMainWin):
         sys.stdout = self.redirectErrOutpur
 
         super().__init__()
+
+        self.outputWithDateTime = outputWithDateTime
 
         self.statusToolSignalStore = statusToolsSignalStore()
 
@@ -209,7 +208,15 @@ class MainWindows(UIMainWin):
                         , local_files_only=model_param["local_files_only"]
                         , setStatusSignal=self.statusToolSignalStore.LoadModelSignal
                     )
-        
+            
+            if self.page_model.combox_use_v3.currentText() == "True":
+                # 修正 V3 模型的 mel 滤波器组参数
+                print("\n[Using V3 model, modify  number of mel-filters to 128]")
+                self.FasterWhisperModel.feature_extractor.mel_filters = self.FasterWhisperModel.feature_extractor.get_mel_filters(self.FasterWhisperModel.feature_extractor.sampling_rate, self.FasterWhisperModel.feature_extractor.n_fft, n_mels=128)
+                # del self.FasterWhisperModel.model.is_multilingual
+                # self.FasterWhisperModel.model.is_multilingual = True
+
+
         thread_go = Thread(target= go, daemon=True)
         thread_go.start()
         self.setStateTool(self.tr("加载模型"), self.tr("模型加载中，请稍候"), False)
@@ -283,7 +290,7 @@ class MainWindows(UIMainWin):
                 VAD_param = {}
 
             # 转写参数
-            Transcribe_params : dict = self.getParamTranscribe()
+            Transcribe_params : dict = self.page_transcribes.getParamTranscribe()
             print("Transcribes options:")
             for key, value in Transcribe_params.items():
                 print(f"  {key} : {value}")
@@ -291,6 +298,7 @@ class MainWindows(UIMainWin):
             if self.FasterWhisperModel is None:
                 print(self.tr("模型未加载！进程退出"))
                 self.transcribeOver(None)
+                
                 return
             
             rate_channel_dType = self.combox_capture.currentIndex()
@@ -317,8 +325,8 @@ class MainWindows(UIMainWin):
 
         dict_WhisperXParams["use_auth_token"] = self.page_VAD.LineEdit_use_auth_token.text()
 
-        dict_WhisperXParams["min_speaker"] = int(self.page_output.tableTab.SpinBox_min_speaker.text())
-        dict_WhisperXParams["max_speaker"] = int(self.page_output.tableTab.SpinBox_max_speaker.text())
+        dict_WhisperXParams["min_speaker"] = int(self.page_output.SpinBox_min_speaker.text())
+        dict_WhisperXParams["max_speaker"] = int(self.page_output.SpinBox_max_speaker.text())
 
         if dict_WhisperXParams["min_speaker"] > dict_WhisperXParams["max_speaker"]:
             dict_WhisperXParams["max_speaker"] = dict_WhisperXParams["min_speaker"]
@@ -362,6 +370,7 @@ class MainWindows(UIMainWin):
 
             # 转写参数
             Transcribe_params : dict = self.getParamTranscribe()
+            
             print("Transcribes options:")
             for key, value in Transcribe_params.items():
                 print(f"    -{key} : {value}")
@@ -370,6 +379,7 @@ class MainWindows(UIMainWin):
                 print(self.tr("模型未加载！进程退出"))
                 self.raiseErrorInfoBar(title=self.tr("错误") , content=self.tr("模型未加载！"))
                 self.transcribeOver(None)
+                self.stackedWidget.setCurrentWidget(self.page_model)
                 return
             
             # print(Transcribe_params['audio'])
@@ -536,6 +546,7 @@ class MainWindows(UIMainWin):
             self.showResultInTable(self.result_faster_whisper)
             
         
+
     def getParamTranscribe(self) -> dict:
         Transcribe_params = {}
 
@@ -550,14 +561,14 @@ class MainWindows(UIMainWin):
         
         Transcribe_params["audio"] = audio
 
-        language = self.page_transcribes.combox_language.text().split("-")[0]
+        language = self.page_transcribes.combox_language.currentText().split("-")[0]
         if language == "Auto":
             language = None
         Transcribe_params["language"] = language
 
-        task = self.page_transcribes.combox_Translate_to_English.currentText()
-        task = STR_BOOL[task]
-        task = Task_list[int(task)]
+        task = self.page_transcribes.switchButton_Translate_to_English.isChecked()
+        # task = STR_BOOL[task]
+        # task = Task_list[int(task)]
         Transcribe_params["task"] = task
 
         beam_size = int(self.page_transcribes.LineEdit_beam_size.text().replace(" ", ""))
@@ -585,8 +596,8 @@ class MainWindows(UIMainWin):
         no_speech_threshold = float(self.page_transcribes.LineEdit_no_speech_threshold.text().replace(" ", ""))
         Transcribe_params["no_speech_threshold"] = no_speech_threshold
 
-        condition_on_previous_text = self.page_transcribes.combox_condition_on_previous_text.currentText()
-        condition_on_previous_text = STR_BOOL[condition_on_previous_text]
+        condition_on_previous_text = self.page_transcribes.switchButton_condition_on_previous_text.isChecked()
+        # condition_on_previous_text = STR_BOOL[condition_on_previous_text]
         Transcribe_params["condition_on_previous_text"] = condition_on_previous_text
 
         initial_prompt = self.page_transcribes.LineEdit_initial_prompt.text().replace(" ", "")
@@ -605,24 +616,24 @@ class MainWindows(UIMainWin):
         prefix = self.page_transcribes.LineEdit_prefix.text().replace(" ", "") or None
         Transcribe_params["prefix"] = prefix
 
-        suppress_blank = self.page_transcribes.combox_suppress_blank.currentText()
-        suppress_blank = STR_BOOL[suppress_blank]
+        suppress_blank = self.page_transcribes.switchButton_suppress_blank.isChecked()
+        # suppress_blank = STR_BOOL[suppress_blank]
         Transcribe_params["suppress_blank"] = suppress_blank
 
         suppress_tokens = self.page_transcribes.LineEdit_suppress_tokens.text().replace(" ", "")
         suppress_tokens = [int(s) for s in suppress_tokens.split(",")]
         Transcribe_params["suppress_tokens"] = suppress_tokens
 
-        without_timestamps = self.page_transcribes.combox_without_timestamps.currentText()
-        without_timestamps = STR_BOOL[without_timestamps]
+        without_timestamps = self.page_transcribes.switchButton_without_timestamps.isChecked()
+        # without_timestamps = STR_BOOL[without_timestamps]
         Transcribe_params["without_timestamps"] = without_timestamps
 
         max_initial_timestamp = self.page_transcribes.LineEdit_max_initial_timestamp.text().replace(" ", "")
         max_initial_timestamp = float(max_initial_timestamp)
         Transcribe_params["max_initial_timestamp"] = max_initial_timestamp
 
-        word_timestamps = self.page_transcribes.combox_word_timestamps.currentText()
-        word_timestamps = STR_BOOL[word_timestamps]
+        word_timestamps = self.page_transcribes.switchButton_word_level_timestampels.isChecked()
+        # word_timestamps = STR_BOOL[word_timestamps]
         Transcribe_params["word_timestamps"] = word_timestamps
 
         prepend_punctuations = self.page_transcribes.LineEdit_prepend_punctuations.text().replace(" ", "")
@@ -631,7 +642,7 @@ class MainWindows(UIMainWin):
         append_punctuations = self.page_transcribes.LineEdit_append_punctuations.text().replace(" ","")
         Transcribe_params["append_punctuations"] = append_punctuations
 
-        repetition_penalty = self.page_transcribes.LineRdit_repetition_penalty.text().strip()
+        repetition_penalty = self.page_transcribes.LineEdit_repetition_penalty.text().strip()
         repetition_penalty = float(repetition_penalty)
         Transcribe_params['repetition_penalty'] = repetition_penalty  
 
@@ -644,21 +655,21 @@ class MainWindows(UIMainWin):
         Transcribe_params['prompt_reset_on_temperature']  = prompt_reset_on_temperature 
 
         return Transcribe_params
-        
 
+        
     def getVADparam(self) -> dict:
         """
         get param of VAD
         """
 
-        vad_filter = self.page_VAD.VAD_check.isChecked()
+        vad_filter = self.page_VAD.VAD_check_switchButton.isChecked()
         # print(vad_filter)
         VAD_param = {"vad_filter":vad_filter} 
 
         if not vad_filter:
             return VAD_param
         
-        threshold = float(self.page_VAD.LineEdit_VAD_param_threshold.text().replace(" ", ""))
+        threshold = round(self.page_VAD.doubleSpin_VAD_param_threshold.value(),2)
         min_speech_duration_ms = int(self.page_VAD.LineEdit_VAD_patam_min_speech_duration_ms.text().replace(" ", ""))
         max_speech_duration_s = float(self.page_VAD.LineEdit_VAD_patam_max_speech_duration_s.text().replace(" ", ""))
         min_silence_duration_ms = int(self.page_VAD.LineEdit_VAD_patam_min_silence_duration_ms.text().replace(" ", ""))

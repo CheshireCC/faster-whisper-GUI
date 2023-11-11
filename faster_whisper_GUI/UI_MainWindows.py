@@ -5,13 +5,13 @@ import os
 # from pathlib import Path
 
 from PySide6.QtCore import  ( 
-                                Qt
-                                , QCoreApplication
+                                # Qt,
+                                QCoreApplication
                             )
 
 from PySide6.QtWidgets import  (
-                                QSpacerItem
-                                , QWidget
+                                # QSpacerItem,
+                                QWidget
                                 , QStackedWidget
                                 , QVBoxLayout
                                 , QHBoxLayout
@@ -22,16 +22,18 @@ from PySide6.QtWidgets import  (
 from PySide6.QtGui import QIcon
 
 from qfluentwidgets import (
+                            NavigationAvatarWidget,
                             NavigationInterface
                             , setTheme
                             , Theme
                             , FluentIcon
                         )
+from qfluentwidgets.components.navigation.navigation_panel import NavigationItemPosition
 
-from qframelesswindow import (
-                                FramelessMainWindow 
-                                , StandardTitleBar
-                            )
+# from qframelesswindow import (
+#                                 FramelessMainWindow 
+#                                 , StandardTitleBar
+#                             )
 
 from .config import (Language_dict
                     , Preciese_list
@@ -57,6 +59,7 @@ from .processPageNavigationInterface import ProcessPageNavigationInterface
 from .outputPageNavigationInterface import OutputPageNavigationInterface
 from .homePageNavigationInterface import HomePageNavigationinterface
 from .demucsPageNavigationInterface import DemucsPageNavigation
+from .aboutPageNavigationInterface import AboutPageNavigationInterface
 
 from .fasterWhisperGuiIcon import FasterWhisperGUIIcon
 
@@ -120,7 +123,7 @@ class UIMainWin(QMainWindow):
         StyleSheet.MAIN_WINDOWS.apply(self)
         
         # self.resize(800, 500)
-        self.setGeometry(500, 200, 1147, 825)
+        self.setGeometry(500, 200, 1250, 825)
 
         # 添加标题栏 
         # self.setTitleBar(StandardTitleBar(self))
@@ -206,6 +209,18 @@ class UIMainWin(QMainWindow):
         self.page_output = OutputPageNavigationInterface(self)
         self.addSubInterface(self.page_output, "pageOutput", self.tr("后处理及输出"), icon=FluentIcon.SAVE_AS)
         self.pages.append(self.page_output)
+
+        self.page_About = AboutPageNavigationInterface(self)
+        self.page_About.setObjectName("pageAbout")
+        self.stackedWidget.addWidget(self.page_About)
+
+        self.navigationAvatarWidget = NavigationAvatarWidget('', ':/resource/Image/killua.png')
+        self.pivot.addWidget(
+                            routeKey='avatar',
+                            widget=self.navigationAvatarWidget,
+                            onClick=lambda: self.stackedWidget.setCurrentWidget(self.page_About),
+                            position=NavigationItemPosition.BOTTOM
+                        ) 
 
         self.stackedWidget.currentChanged.connect(self.onCurrentIndexChanged)
         # self.stackedWidget.setCurrentIndex(0)

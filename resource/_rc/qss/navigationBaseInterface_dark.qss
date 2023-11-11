@@ -16,7 +16,8 @@ QScrollArea {
 
 ToolBar > CaptionLabel {
     background-color: transparent;
-    color: rgb(160, 160, 160);
+    color: rgb(200, 200, 200);
+    font-size: 13px;
     qproperty-alignment: AlignLeft;
 }
 
@@ -28,8 +29,8 @@ ToolBar > TitleLabel {
     qproperty-alignment: AlignLeft;
 }
 
-.QLabel{
+/* .QLabel{
     font : 15px 'Segoe UI';
     color: white;
     border-radius : 8px;
-}
+} */

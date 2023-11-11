@@ -17,6 +17,7 @@ QScrollArea {
 ToolBar > CaptionLabel {
     background-color: transparent;
     color: rgb(95, 95, 95);
+    font-size: 13px;
     qproperty-alignment: AlignLeft;
 }
 

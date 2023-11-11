@@ -13,6 +13,8 @@
     - convert online OpenAI-whisper-models to ct2 format
     - provide all paraments of VAD-model and whisper-model
     - now, it support whisperX
+    - Demucs model support
+    - whisper large-v3 model support
 
 ---
 
@@ -22,9 +24,14 @@
 
 ![软件使用-模型参数](./README.assets/软件使用-模型参数.png)
 
+- ### Large-v3 模型支持
+
+  ![image-20231111131301664](./README.assets/image-20231111131301664.png)
+
 - ### Demucs AVE
 
   ![DemucsFunction](./README.assets/DemucsFunction.png)
+  
 - ### batch process
 
 ![image-20231008150849827](./README.assets/image-20231008150849827.png)
