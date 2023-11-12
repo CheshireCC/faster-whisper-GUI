@@ -46,7 +46,7 @@ class WhisperXWorker(QThread):
     def run(self):
         self.is_running = True
         self.result_segments_path_info = []
-
+        # audio = None
         for (segments, path, info) in self.segments_path_info:
             audio = None
             # wav2vec2 对齐
@@ -93,6 +93,7 @@ class WhisperXWorker(QThread):
                     return
             else:
                 del audio
+                audio = None
                 result_a_c = segments
 
             if self.speaker_diarize:
@@ -174,14 +175,23 @@ class WhisperXWorker(QThread):
 
         self.signal_process_over.emit(self.result_segments_path_info)
 
-        del self.model_alignment
-        self.model_alignment = None
+        try:
+            del self.model_alignment
+            self.model_alignment = None
+        except:
+            pass
+        
+        try:
+            del self.metadata_alignment
+            self.metadata_alignment = None
+        except:
+            pass
 
-        del self.metadata_alignment
-        self.metadata_alignment = None
-
-        del self.diarize_segments
-        self.diarize_segments = None
+        try:
+            del self.diarize_segments
+            self.diarize_segments = None
+        except:
+            pass
 
         # 清除显存缓存
         if torch.cuda.is_available():

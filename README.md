@@ -5,16 +5,64 @@
 - ## model download
 
   - https://huggingface.co/models?sort=trending&search=faster-whisper
+
   - you can also download and convert models in software
+
+      
+
+- ### Links
+
+    [pyside6-fluent-widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)
+
+    [faster-whisper](https://github.com/guillaumekln/faster-whisper)
+
+    [whisperX](https://github.com/m-bain/whisperX)
+
+    [HuggingFace model download](https://huggingface.co/models)
+
+    [Demucs](https://github.com/facebookresearch/demucs)
+
+    
+
 - ## What's this
 
   - this is a GUI software of faster-whisper , you can:
     - Transcrib audio or video files to srt/txt/smi/vtt/lrc file
+
     - convert online OpenAI-whisper-models to ct2 format
+
     - provide all paraments of VAD-model and whisper-model
+
     - now, it support whisperX
+
     - Demucs model support
+
     - whisper large-v3 model support
+
+        
+
+------
+
+
+
+- ## Best wishes to the world that received this message ##
+
+    - ### Agreement
+
+        - By using this software, you have read and agreed to the following user agreement:
+            - You agree to use this software in compliance with the laws of your country or region.
+            - You may not perform, including, but not limited to, the following acts, nor facilitate any violation of the law:
+                -   those who oppose the basic principles laid down in the Constitution.
+                -   endangering national security, divulging state secrets, subverting state power and undermining national unity.
+                -   harming the honor and interests of the country.
+                -   inciting ethnic hatred and racial discrimination.
+                -   those who sabotage the country's religious policy and promote cults.
+                -   spreading rumors, disturbing social order and undermining social stability.
+                -   spreading pornography, gambling, violence, murder, terrorism or abetting crime.
+                -   insulting or slandering others and infringing upon the legitimate rights and interests of others.
+                -   containing other contents prohibited by laws or administrative regulations.
+            - All consequences and responsibilities caused by violations of laws and regulations in any related matters such as the generation, collection, processing and use of your data shall be borne by you.
+
 
 ---
 
@@ -48,9 +96,11 @@
 
 - ### paraments of faster-whisper model
 
-![image-20230806072114168](./README.assets/image-20230806072114168.png)
+![image-20231113020210745](./README.assets/image-20231113020210745.png)
 
-![软件使用-转写参数](./README.assets/软件使用-转写参数.png)
+- ### Silero VAD
+
+    ![image-20231113020407272](./README.assets/image-20231113020407272.png)
 
 - ### process a video file
 
@@ -65,16 +115,3 @@
   - play with foobar2000 , ESLyric plugin, `lrc` format lyric
 
   ![image-20230811130449688](./README.assets/image-20230811130449688.png)
-- ### Links
-
-  [pyside6-fluent-widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)
-
-  [faster-whisper](https://github.com/guillaumekln/faster-whisper)
-
-  [whisperX](https://github.com/m-bain/whisperX)
-
-  [HuggingFace model download](https://huggingface.co/models)
-  
-  [Demucs](https://github.com/facebookresearch/demucs)
-  
-  
