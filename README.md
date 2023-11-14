@@ -8,7 +8,13 @@
 
   - you can also download and convert models in software
 
-      
+  - large-v3 model float32 :
+    - [Huggingface](https://huggingface.co/CheshireCC/faster-whisper-large-v3-float32)
+    - [百度云网盘链接](https://pan.baidu.com/s/1JJJASDFd6iNyZkcEXEkq3g?pwd=sif3 )
+    
+
+
+
 
 - ### Links
 
@@ -18,7 +24,7 @@
 
     [whisperX](https://github.com/m-bain/whisperX)
 
-    [HuggingFace model download](https://huggingface.co/models)
+    [HuggingFace models download](https://huggingface.co/models)
 
     [Demucs](https://github.com/facebookresearch/demucs)
 

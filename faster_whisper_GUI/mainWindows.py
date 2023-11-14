@@ -259,6 +259,7 @@ class MainWindows(UIMainWin):
 
     def onButtonProcessClicked(self):
         
+        
         self.result_whisperx_aligment = None
         self.result_faster_whisper = None
         self.result_whisperx_speaker_diarize = None
@@ -349,8 +350,11 @@ class MainWindows(UIMainWin):
             self.outputWithDateTime("Process")
             
             # 重定向输出
+            print("redirect std output")
             self.redirectOutput(self.setTextAndMoveCursorToProcessBrowser)
             self.page_process.processResultText.setText("")
+
+            # VAD 参数
             VAD_param :dict = self.getVADparam()
 
             # vad 启用标识
@@ -367,16 +371,20 @@ class MainWindows(UIMainWin):
                 VAD_param = {}
             
             print(output_str)
+            self.log.write(output_str)
 
             # 转写参数
             Transcribe_params : dict = self.getParamTranscribe()
             
             print("Transcribes options:")
+            self.log.write("Transcribes options:")
             for key, value in Transcribe_params.items():
                 print(f"    -{key} : {value}")
+                self.log.write(f"    -{key} : {value}")
 
             if self.FasterWhisperModel is None:
                 print(self.tr("模型未加载！进程退出"))
+                self.log.write("model is not loaded! over")
                 self.raiseErrorInfoBar(title=self.tr("错误") , content=self.tr("模型未加载！"))
                 self.transcribeOver(None)
                 self.stackedWidget.setCurrentWidget(self.page_model)
@@ -385,6 +393,7 @@ class MainWindows(UIMainWin):
             # print(Transcribe_params['audio'])
             if len(Transcribe_params['audio']) == 0 and self.page_process.transceibe_Files_RadioButton.isChecked():
                 print("No input files!")
+                self.log.write("No input files!")
                 self.raiseErrorInfoBar(
                                         title=self.tr("错误")
                                         , content=self.tr("没有选择有效的音视频文件作为转写对象") 
@@ -398,6 +407,8 @@ class MainWindows(UIMainWin):
             except Exception as e:
                 num_worker = 1
 
+            # 创建进程
+            self.log.write(f"create transcribe process with {num_worker} workers")
             self.transcribe_thread = TranscribeWorker(model = self.FasterWhisperModel
                                                     , parameters = Transcribe_params
                                                     , vad_filter = vad_filter
@@ -406,8 +417,13 @@ class MainWindows(UIMainWin):
                                                 )
             
             self.transcribe_thread.signal_process_over.connect(self.transcribeOver)
+
+            # 修改按钮 UI
             self.page_process.button_process.setText(self.tr("取消"))
             self.page_process.button_process.setIcon(r":/resource/Image/Cancel_red.svg")
+
+            # 启动进程
+            self.log.write(f"start transcribe process")
             # self.transcribe_thread.is_running == True
             self.transcribe_thread.start()
             self.setStateTool(self.tr("音频处理"), self.tr("正在处理中"), False)
