@@ -81,5 +81,6 @@ class ProcessPageNavigationInterface(NavigationBaseInterface):
         # ------------------------------------------------------------------------------------------
         self.processResultText = TextEdit()
         self.processResultText.setFixedHeight(400)
+        self.processResultText.setReadOnly(True)
         
         self.addWidget(self.processResultText)

@@ -1,7 +1,6 @@
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-                                QGridLayout,
                                 QHBoxLayout,
                                 QVBoxLayout,
                                 QWidget
@@ -22,7 +21,7 @@ class ParamWidget(QWidget):
         self.mainWidget = QWidget(self)
         self.mainWidget.setObjectName("mainObject")
 
-        self.mainLayout = QGridLayout()
+        self.mainLayout = QVBoxLayout()
         
         self.mainHLayout = QHBoxLayout()
         self.titleVLayout = QVBoxLayout()
@@ -35,7 +34,13 @@ class ParamWidget(QWidget):
         
         self.setupUI()
         StyleSheet.TRANSCRIBEPARAMITEMWIDGET.apply(self)
+
+    def addLayout(self, layout):
+        self.mainLayout.addLayout(layout)
     
+    def addwidget(self, widget):
+        self.mainLayout.addWidget(widget)
+
     def setupUI(self):
         
         self.setLayout(self.mainLayout)

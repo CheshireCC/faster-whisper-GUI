@@ -19,17 +19,47 @@ from .config import ENCODING_DICT
 
 class OutputPageNavigationInterface(NavigationBaseInterface):
     def __init__(self, parent=None):
-        super().__init__(title=self.tr("WhisperX And Output"),subtitle=self.tr("whisperX后处理及字幕文件输出"),parent=parent)
-
+        super().__init__(
+                            title=self.tr("WhisperX And Output"),
+                            subtitle=self.tr("whisperX后处理及字幕文件输出"),
+                            parent=parent
+                        )
         self.setupUI()
-    
+
+    def setParam(self, param:dict):
+        try:
+            self.tableTab.movableCheckBox.setChecked(param["tabMovable"])
+            self.tableTab.scrollableCheckBox.setChecked(param["tabScrollable"])
+            self.tableTab.shadowEnabledCheckBox.setChecked(param["tabShadowEnabled"])
+            self.tableTab.tabMaxWidthSpinBox.setValue(param["tabMaxWidth"])
+            self.tableTab.closeDisplayModeComboBox.setCurrentIndex(param["closeDisplayMode"])
+            self.SpinBox_min_speaker.setValue(param["whisperXMinSpeaker"] )
+            self.SpinBox_max_speaker.setValue(param["whisperXMaxSpeaker"] )
+            self.combox_output_format.setCurrentIndex(param["outputFormat"])
+            self.combox_output_code.setCurrentIndex(param["outputEncoding"] )
+
+        except Exception as e:
+            print(f"set output-whisperX param error: {str(e)}")
+
+    def getparam(self) -> dict:
+        param = {}
+        param["tabMovable"] = self.tableTab.movableCheckBox.isChecked()
+        param["tabScrollable"] = self.tableTab.scrollableCheckBox.isChecked()
+        param["tabShadowEnabled"] = self.tableTab.shadowEnabledCheckBox.isChecked()
+        param["tabMaxWidth"] = self.tableTab.tabMaxWidthSpinBox.value()
+        param["closeDisplayMode"] = self.tableTab.closeDisplayModeComboBox.currentIndex()
+        param["whisperXMinSpeaker"] = self.SpinBox_min_speaker.value()
+        param["whisperXMaxSpeaker"] = self.SpinBox_max_speaker.value()
+        param["outputFormat"] = self.combox_output_format.currentIndex()
+        param["outputEncoding"] = self.combox_output_code.currentIndex()
+
+        return param
     def setupUI(self):
         # -----------------------------------------------------------------------------------------
 
         self.outputGroupWidget = OutputGroupWidget(self)
         self.addWidget(self.outputGroupWidget)
         
-
         self.WhisperXAligmentTimeStampleButton = PushButton()
         self.WhisperXAligmentTimeStampleButton.setText(self.tr("WhisperX 时间戳对齐"))
         self.WhisperXAligmentTimeStampleButton.setToolTip(self.tr("wav2vec2 模型进行音素分析，并进行字幕时间戳对齐，该功能需要有对应的语言的模型支持。"))

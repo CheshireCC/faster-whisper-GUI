@@ -135,4 +135,17 @@ class DemucsPageNavigation(NavigationBaseInterface):
         self.process_button.setText(self.tr("提取"))
         self.process_button.setIcon(FluentIcon.IOT)
 
+    def getParam(self) -> dict:
+        param = {}
+        param["overlap"] = self.demucs_param_widget.spinBox_overlap.value()
+        param["segment"]= self.demucs_param_widget.spinBox_segment.value()
+        param["tracks"] = self.demucs_param_widget.comboBox_stems.currentIndex()
+
+        return param
+
+    def setParam(self, param: dict) -> None:
+
+        self.demucs_param_widget.spinBox_overlap.setValue(param["overlap"] )
+        self.demucs_param_widget.spinBox_segment.setValue(param["segment"])
+        self.demucs_param_widget.comboBox_stems.setCurrentIndex(param["tracks"])
 

@@ -6,11 +6,13 @@ import os
 
 from PySide6.QtCore import  ( 
                                 # Qt,
-                                QCoreApplication
+                                QCoreApplication,
+                                QTranslator
                             )
 
 from PySide6.QtWidgets import  (
                                 # QSpacerItem,
+                                QApplication,
                                 QWidget
                                 , QStackedWidget
                                 , QVBoxLayout
@@ -27,8 +29,9 @@ from qfluentwidgets import (
                             , setTheme
                             , Theme
                             , FluentIcon
+                            , NavigationItemPosition
+                            
                         )
-from qfluentwidgets.components.navigation.navigation_panel import NavigationItemPosition
 
 # from qframelesswindow import (
 #                                 FramelessMainWindow 
@@ -51,6 +54,8 @@ from .version import (
                     )
 
 from .style_sheet import StyleSheet
+from .translator import TRANSLATOR
+from resource import rc_Translater
 
 from .modelPageNavigationInterface import ModelNavigationInterface
 from .tranccribePageNavigationInterface import TranscribeNavigationInterface
@@ -60,8 +65,8 @@ from .outputPageNavigationInterface import OutputPageNavigationInterface
 from .homePageNavigationInterface import HomePageNavigationinterface
 from .demucsPageNavigationInterface import DemucsPageNavigation
 from .aboutPageNavigationInterface import AboutPageNavigationInterface
-
 from .fasterWhisperGuiIcon import FasterWhisperGUIIcon
+from .settingPageNavigation import SettingPageNavigationInterface
 
 # =======================================================================================
 # UI
@@ -71,18 +76,96 @@ class UIMainWin(QMainWindow):
 
     def tr(self, text):
         return QCoreApplication.translate(self.__class__.__name__, text)
-    
+
+    # def install_uninstall_translator(self):
+    #     if self.translator.filePath() == "":
+    #         self.translator.load(":/resource/Translater/en.qm")
+    #     else:
+    #         self.translator.load("")
+    #     app = QApplication.instance()
+    #     app.installTranslator(self.translator)
+        
+
     def readConfigJson(self):
         self.use_auth_token_speaker_diarition= ""
-        with open(r"./fasterWhisperGUIConfig.json","r") as fp:
+        with open(r"./fasterWhisperGUIConfig.json","r", encoding="utf8") as fp:
             json_data = json.load(fp)
-            self.use_auth_token_speaker_diarition = json_data["use_auth_token"]
-            self.overlap = json_data["overlap"]
-            self.segment = json_data["segment"]
 
-    def __init__(self):
+            try:
+                self.default_theme = json_data["theme"]
+            except:
+                self.default_theme = "light"
+            
+            try:
+                self.model_param = json_data["model_param"]
+            except:
+                self.model_param = {}
+
+            try:
+                self.setting = json_data["setting"]
+            except:
+                self.setting = {}
+
+            try:
+                self.demucs = json_data["demucs"]
+            except:
+                self.demucs = {}
+
+            try:
+                self.Transcription_param = json_data["Transcription_param"]
+            except:
+                self.Transcription_param = {}
+
+            try:
+                self.output_whisperX_param = json_data["output_whisperX"]
+            except:
+                self.output_whisperX_param = {}
+
+            try:
+                self.vad_param = json_data["vad_param"]
+            except:
+                self.vad_param = {}
+
+
+    def setConfig(self):
+
+        setTheme(Theme.DARK if self.default_theme == "dark" else Theme.LIGHT)
+        if self.model_param != {}:
+            self.page_model.setParam(self.model_param)
+            if not self.model_param["download_root"]:
+                # 获取默认下载目录
+                userDir = os.path.expanduser("~")
+                cache_dir = os.path.join(userDir,".cache","huggingface","hub").replace("\\", "/")
+                self.download_cache_path = cache_dir
+                self.page_model.LineEdit_download_root.setText(cache_dir)
+            else:
+                self.download_cache_path = self.model_param["download_root"]
+
+        if self.setting != {}:
+            self.page_setting.setParam(self.setting)
+        
+        if self.demucs != {}:
+            self.page_demucs.setParam(self.demucs)
+
+        if self.Transcription_param != {}:
+            self.page_transcribes.setParam(self.Transcription_param)
+
+        if self.output_whisperX_param != {}:
+            self.page_output.setParam(self.output_whisperX_param)
+        
+        if self.vad_param != {}:
+            self.page_VAD.setParam(self.vad_param)
+
+
+    def __init__(self, translator:QTranslator=None):
         super().__init__()
 
+        if translator is None:
+            self.translator = TRANSLATOR
+        else:
+            self.translator = translator
+
+        # TODO: 无边框窗口方案需要等待 pyside6>6.5.0 支持
         # self.setWindowFlags(Qt.FramelessWindowHint)
         # self.setAttribute(Qt.WA_TranslucentBackground)  
 
@@ -96,36 +179,27 @@ class UIMainWin(QMainWindow):
         # 语言支持
         self.LANGUAGES_DICT = Language_dict
 
-        userDir = os.path.expanduser("~")
-        cache_dir = os.path.join(userDir,".cache","huggingface","hub").replace("\\", "/")
-        self.download_cache_path = cache_dir
-
         self.FasterWhisperModel = None
 
         # UI设置
         self.setupUI()
-
         self.initWin()
 
         # 读配置文件
         self.readConfigJson()
-        # 设置默认配置
-        self.page_VAD.LineEdit_use_auth_token.setText(self.use_auth_token_speaker_diarition)
-        self.page_demucs.demucs_param_widget.spinBox_overlap.setValue(self.overlap)
-        self.page_demucs.demucs_param_widget.spinBox_segment.setValue(self.segment)
-
-        
+        # 设置配置
+        self.setConfig()
 
     def initWin(self):
 
         self.setObjectName("FramlessMainWin")
-        setTheme(Theme.LIGHT)
+        # setTheme(Theme.LIGHT)
         StyleSheet.MAIN_WINDOWS.apply(self)
         
         # self.resize(800, 500)
         self.setGeometry(500, 200, 1250, 825)
 
-        # 添加标题栏 
+        # TODO: 添加标题栏 
         # self.setTitleBar(StandardTitleBar(self))
         # self.titleBar.setAttribute(Qt.WA_StyledBackground)
 
@@ -156,7 +230,7 @@ class UIMainWin(QMainWindow):
         # 设置窗体中心控件
         self.setCentralWidget(self.mainWindowsWidget)
 
-        # 创建一个空对象 用于改善布局顶部
+        # TODO: 创建一个空对象 用于改善布局顶部
         # self.spacer_main = QSpacerItem(0,25)
         # self.vBoxLayout.addItem(self.spacer_main)
 
@@ -214,6 +288,8 @@ class UIMainWin(QMainWindow):
         self.page_About.setObjectName("pageAbout")
         self.stackedWidget.addWidget(self.page_About)
 
+        # =============================================================================================================================
+
         self.navigationAvatarWidget = NavigationAvatarWidget('', ':/resource/Image/killua.png')
         self.pivot.addWidget(
                             routeKey='avatar',
@@ -221,9 +297,13 @@ class UIMainWin(QMainWindow):
                             onClick=lambda: self.stackedWidget.setCurrentWidget(self.page_About),
                             position=NavigationItemPosition.BOTTOM
                         ) 
-
+        
+        self.page_setting = SettingPageNavigationInterface(self)
+        self.addSubInterface(
+            self.page_setting, "pageSetting", self.tr('设置'), FluentIcon.SETTING, NavigationItemPosition.BOTTOM)
+        self.pages.append(self.page_setting)
+        
         self.stackedWidget.currentChanged.connect(self.onCurrentIndexChanged)
-        # self.stackedWidget.setCurrentIndex(0)
         self.stackedWidget.setCurrentWidget(self.page_home)
         self.pivot.setCurrentItem(self.page_home.objectName())
 
@@ -231,9 +311,8 @@ class UIMainWin(QMainWindow):
         self.pivot.panel.history.setDefaultRouteKey(self.stackedWidget, self.page_home.objectName())
 
     
-    def addSubInterface(self, layout: QWidget, objectName, text: str, icon:QIcon=None ):
+    def addSubInterface(self, layout: QWidget, objectName, text: str, icon:QIcon=None,position=NavigationItemPosition.TOP ):
         layout.setObjectName(objectName)
-#         layout.setAlignment(Qt.AlignCenter)
         self.stackedWidget.addWidget(layout)
         item = self.pivot.addItem(
             routeKey=objectName
@@ -241,6 +320,7 @@ class UIMainWin(QMainWindow):
             # 由于修复下面的 bug ，此处需要手动重新设置 setCurrentWidget 来保证换页功能正常
             ,onClick=lambda: self.stackedWidget.setCurrentWidget(layout)
             ,icon=icon
+            ,position=position
         )
 
         # item.clicked.connect(lambda: self.pivot.panel.history.push(self.stackedWidget , objectName))
@@ -252,6 +332,3 @@ class UIMainWin(QMainWindow):
         self.pivot.setCurrentItem(widget.objectName())
         self.pivot.panel.history.push(self.stackedWidget , widget.objectName())
         
-
-    
-

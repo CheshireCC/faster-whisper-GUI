@@ -6,6 +6,8 @@ import os
 from typing import List
 import time
 
+import codecs
+
 import torch
 
 import numpy as np 
@@ -204,6 +206,8 @@ class TranscribeWorker(QThread):
         self.vad_filter = vad_filter
         self.vad_parameters = vad_parameters
         self.num_workers = num_workers
+
+        self.segments_path_info = []
         
         
     def transcribe_file(self, file) -> (TranscriptionInfo, List):
@@ -246,6 +250,7 @@ class TranscribeWorker(QThread):
                                         vad_filter=self.vad_filter,
                                         vad_parameters=self.vad_parameters
                                     )
+        
         try:
             self.detect_Audio_info(info)
         except Exception as e:
@@ -261,7 +266,8 @@ class TranscribeWorker(QThread):
         for segment in segments:
             # 退出进程标识
             # print(self.is_running)
-            if self.is_running == False:
+            if not self.is_running:
+                # self.signal_process_over.emit(self.segments_path_info)
                 return info, None
 
             print(
@@ -335,7 +341,7 @@ class TranscribeWorker(QThread):
             new_line = "\n              "
             print(f"ignore files: {new_line.join(ingnore_files)}")
 
-        segments_path_info = []
+        self.segments_path_info = []
         # 在线程池中并发执行相关任务，默认状况下使用单 GPU 该并发线程数为 1 ，
         # 提高线程数并不能明显增大吞吐量， 且可能因为线程调度的原因反而造成转写时间变长
         # 多 GPU 或多核心 CPU 可通过输入设备号列表并增大并发线程数的方式增加吞吐量，实现多任务并发处理
@@ -347,12 +353,15 @@ class TranscribeWorker(QThread):
             for path, results in zip(files, results):
                 # print(self.is_running)
                 if not self.is_running:
+                    self.signal_process_over.emit(self.segments_path_info)
                     return
+                
                 (info, segments) = results
+
                 if segments is None:
                     continue
 
-                segments_path_info.append((segments, path, info))
+                self.segments_path_info.append((segments, path, info))
                         # print(
                         #         f"\nTranscription for {path.split('/')[-1]}:\n{new_line.join('[' + str(segment.start) + 's --> ' + str(segment.end) + 's] ' + segment.text for segment in segments)}"
                         #     )
@@ -366,7 +375,7 @@ class TranscribeWorker(QThread):
             torch.cuda.empty_cache()
             
         print("\n【Over】")
-        self.signal_process_over.emit(segments_path_info)
+        self.signal_process_over.emit(self.segments_path_info)
 
         return
         
@@ -384,20 +393,22 @@ def writeSubtitles(outputFileName:str,
                     file_code = "UTF-8"
                 ):
     
+    file_code = ENCODING_DICT[file_code]
+
     if format == "SRT":
         writeSRT(outputFileName, segments, file_code = file_code)
     elif format == "TXT":
-        writeTXT(outputFileName, segments)
+        writeTXT(outputFileName, segments, file_code=file_code)
     elif format == "VTT":
-        writeVTT(outputFileName, segments,language=language)
+        writeVTT(outputFileName, segments,language=language, file_code=file_code)
     elif format == "LRC":
-        wirteLRC(outputFileName, segments,language=language)
+        wirteLRC(outputFileName, segments,language=language, file_code=file_code)
     elif format == "SMI":
-        writeSMI(outputFileName, segments, language=language, avFile=fileName)
+        writeSMI(outputFileName, segments, language=language, avFile=fileName, file_code=file_code)
     print(f"write over | {outputFileName}")
     
 
-def writeSMI(fileName:str, segments:List[segment_Transcribe], language:str, avFile = ""):
+def writeSMI(fileName:str, segments:List[segment_Transcribe], language:str, avFile = "",file_code="utf8"):
 
     subtitle_color_list = ["white", "red", "blue", "green", "yellow", "cyan", "magenta"]
 
@@ -502,15 +513,18 @@ def writeSMI(fileName:str, segments:List[segment_Transcribe], language:str, avFi
 
     # 使用 utf-8 重新编码字幕字符串
     smi:str = smi.encode("utf8").decode("utf8")
+
     # 将SMI字幕写入文件
-    with open(fileName, "w", encoding="utf-8") as f:
+    # f = codecs.open(fileName, "w",encoding=file_code)
+    with codecs.open(fileName, "w", encoding=file_code) as f:
         f.write(smi)
+    
     # return smi
 
-def wirteLRC(fileName:str, segments:List[segment_Transcribe],language:str):
+def wirteLRC(fileName:str, segments:List[segment_Transcribe],language:str,file_code="utf8"):
     _, baseName = os.path.split(fileName)
     baseName = baseName.split(".")[0]
-    with open(fileName, "w", encoding="utf8") as f:
+    with codecs.open(fileName, "w", encoding=file_code) as f:
         f.write(f"[ti:{baseName}]\n")
         f.write(f"[re:FasterWhisperGUI]\n")
         f.write(f"[offset:0]\n\n")
@@ -549,7 +563,7 @@ def wirteLRC(fileName:str, segments:List[segment_Transcribe],language:str):
 
             f.write(f"{text} \n")
 
-def writeVTT(fileName:str, segments:List[segment_Transcribe],language:str):
+def writeVTT(fileName:str, segments:List[segment_Transcribe],language:str,file_code="utf8"):
     # 创建一个空的 VTT 字幕对象
     _, baseName = os.path.split(fileName)
     vtt = webvtt.WebVTT()
@@ -593,11 +607,11 @@ def writeVTT(fileName:str, segments:List[segment_Transcribe],language:str):
         cue.text = text
         # 将字幕段添加到 VTT 字幕对象中
         vtt.captions.append(cue)
-    
-    vtt.save(fileName)
+        
+    vtt.save(fileName, file_code)
 
-def writeTXT(fileName:str, segments):
-    with open(fileName, "w", encoding="utf8") as f:
+def writeTXT(fileName:str, segments,file_code="utf8"):
+    with codecs.open(fileName, "w", encoding=file_code) as f:
         for segment in segments:
             text:str = segment.text
             try:
@@ -614,8 +628,8 @@ def writeTXT(fileName:str, segments):
 
 def writeSRT(fileName:str, segments, file_code="UTF-8"):
     index = 1
-    encoding = ENCODING_DICT[file_code]
-    with open(fileName, "w", encoding=encoding) as f:
+    # encoding = ENCODING_DICT[file_code]
+    with codecs.open(fileName, "w", encoding=file_code) as f:
         for segment in segments:
             start_time:float = segment.start
             end_time:float = segment.end

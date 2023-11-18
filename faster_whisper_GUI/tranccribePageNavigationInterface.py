@@ -54,18 +54,17 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
     def saveParams(self):
         outputWithDateTime("SaveParaments")
 
-        params = self.getParamTranscribe()
+        params = self.getParam()
         for key, value in params.items():
             print(f"{key}:{value}")
         print("")
-        
         file, _ = QFileDialog.getSaveFileName(
                                                 self, 
                                                 self.__tr("选择保存文件"),
                                                 self.paramDir,
                                                 "file(*.pa)"
                                         )
-
+        
         paraDir, _ = os.path.split(file)
 
         self.paramDir = paraDir
@@ -75,7 +74,7 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
 
             try:
                 with open(file, "w", encoding="utf8") as f:
-                    json.dump(params, f)
+                    json.dump(params, f, ensure_ascii=False, indent=4)
                 
                 InfoBar.success(self.__tr("保存参数"),
                                 self.__tr("保存成功"),
@@ -95,8 +94,6 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         else:
             return
         
-
-
     def SignalAndSlotConnect(self):
         self.saveParamButton.clicked.connect(self.saveParams)
         self.loadParamsButton.clicked.connect(self.loadParamsFromFile)
@@ -127,13 +124,10 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         self.combox_language.setToolTip(self.__tr("音频中的语言。如果选择 Auto，则自动在音频的前30秒内检测语言。"))
         self.combox_language.setClearButtonEnabled(True)
 
-        # GridBoxLayout_other_paramters.addWidget(self.strongBodyLabel_normal,0,0)
-
         self.language_param_widget = ParamWidget(self.__tr("音频语言"),
                                                 self.__tr("音频中使用的语言。如果选择 Auto，则自动在音频的前30秒内检测语言。也可使用此参数做强制翻译输出，但效果不佳"),
                                                 self.combox_language
                                             )
-        # GridBoxLayout_other_paramters.addWidget(self.language_param_widget, 1, 0)
         
         widget_list.append(self.language_param_widget)
         
@@ -141,7 +135,6 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
     
         self.switchButton_Translate_to_English = SwitchButton()
         self.switchButton_Translate_to_English.setChecked(False)
-        # self.switchButton_Translate_to_English.setToolTip(self.__tr("输出转写结果翻译为英语的翻译结果"))
 
         self.task_param_widget = ParamWidget(self.__tr("翻译为英语"),
                                                 self.__tr("输出转写结果翻译为英语的翻译结果"),
@@ -455,7 +448,7 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         print("")
 
         try:
-            self.setParamsToUI(params)
+            self.setParam(params)
             print("set paraments over")
         except Exception as e:
             print(f"set paraments error: \n{str(e)}")
@@ -475,7 +468,7 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
             parent=self.toolBar
         )
 
-    def setParamsToUI(self, Transcribe_params:dict):
+    def setParam(self, Transcribe_params:dict) -> None:
 
         self.combox_language.setCurrentIndex(Transcribe_params["language"])
         # Transcribe_params["language"] = language_index
@@ -547,7 +540,7 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         # Transcribe_params['prompt_reset_on_temperature']  = prompt_reset_on_temperature 
 
 
-    def getParamTranscribe(self) -> dict:
+    def getParam(self) -> dict:
         Transcribe_params = {}
 
         # 从数据模型获取文件列表

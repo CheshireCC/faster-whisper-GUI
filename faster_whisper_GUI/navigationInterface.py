@@ -3,7 +3,9 @@ import os
 from PySide6.QtCore import (
                             Qt
                             , QUrl
+                            , QTranslator
                         )
+
 from PySide6.QtGui import (
                             QDesktopServices
                             , QPainter
@@ -15,6 +17,7 @@ from PySide6.QtWidgets import (
                                 , QLabel
                                 , QVBoxLayout
                                 , QHBoxLayout
+                                , QApplication
                             )
 
 from qfluentwidgets import (ScrollArea
@@ -31,11 +34,10 @@ from qfluentwidgets import (ScrollArea
 
 from .style_sheet import StyleSheet
 from .version import (__version__,
-                        __FasterWhisper_version__,
-                        __WhisperX_version__, 
-                        __Demucs_version__
-                    )
-
+                    __FasterWhisper_version__,
+                    __WhisperX_version__, 
+                    __Demucs_version__
+                )
 
 class SeparatorWidget(QWidget):
     """ Seperator widget """
@@ -59,7 +61,12 @@ class SeparatorWidget(QWidget):
 class ToolBar(QWidget):
     """ Tool bar """
 
-    def __init__(self, title, subtitle, parent=None):
+    def __init__(self, title, subtitle,  parent=None):
+        # if not translator:
+        #     self.translator = translator
+        # else:
+        #     self.translator = TRANSLATOR
+
         super().__init__(parent=parent)
         self.titleLabel = TitleLabel(title, self)
         self.subtitleLabel = CaptionLabel(subtitle, self)
@@ -68,6 +75,7 @@ class ToolBar(QWidget):
         #     self.tr('Documentation'), self, FluentIcon.DOCUMENT)
         self.sourceButton = PushButton(self.tr('软件更新'), self, FluentIcon.GITHUB)
         self.themeButton = ToolButton(FluentIcon.CONSTRACT, self)
+        # self.languageButton = ToolButton(FluentIcon.LANGUAGE, self)
 
         # 分割线
         self.separator = SeparatorWidget(self)
@@ -104,6 +112,7 @@ class ToolBar(QWidget):
         self.buttonLayout.addStretch(1)
 
         self.buttonLayout.addWidget(self.themeButton, 0, Qt.AlignRight)
+        # self.buttonLayout.addWidget(self.languageButton,0,Qt.AlignmentFlag.AlignRight)
         self.buttonLayout.addWidget(self.openDirButton, 0, Qt.AlignRight)
         self.buttonLayout.addWidget(self.separator, 0, Qt.AlignRight)
 
@@ -130,14 +139,15 @@ class ToolBar(QWidget):
         self.sourceButton.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/CheshireCC/fatser-whisper-GUI/releases")))
         self.questionButton.clicked.connect(lambda: MessageBox(self.tr("关于"),self.tr(f"version: {__version__}" + "\n" + f"faster-whisper: {__FasterWhisper_version__}" + "\n" + f"whisperX: {__WhisperX_version__}" + "\n" + f"Demucs: {__Demucs_version__}"),parent=self.parent()).show())
         self.openDirButton.clicked.connect(lambda: os.startfile(os.path.abspath(r"./").replace("\\","/")))#print(os.path.abspath(r"./").replace("\\","/")))#os.startfile(os.path.abspath(r"./")))
-        
-        
+        # self.languageButton.clicked.connect(self.install_uninstall_translator)
+
         self.vBoxLayout.addSpacing(4)
 
+            
 class NavigationBaseInterface(ScrollArea):
     """ Gallery interface """
 
-    def __init__(self, title: str, subtitle: str, parent=None):
+    def __init__(self, title: str, subtitle: str,  parent=None):
         """
         Parameters
         ----------

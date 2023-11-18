@@ -22,5 +22,9 @@
         <file>qss/transcribePageInterface_dark.qss</file>
         <file>qss/aboutPageInterface_light.qss</file>
         <file>qss/aboutPageInterface_dark.qss</file>
+        <file>qss/modelLoad_light.qss</file>
+        <file>qss/modelLoad_dark.qss</file>
+        <file>qss/settingPageInterface_light.qss</file>
+        <file>qss/settingPageInterface_dark.qss</file>
     </qresource>
 </RCC>

@@ -11,5 +11,5 @@ CaptionLabel{
 
 #mainObject{
     background-color: rgb(43, 43, 43);
-    /* border-radius: 10px; */
+    border-radius: 5px;
 }

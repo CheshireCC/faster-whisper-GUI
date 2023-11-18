@@ -1,3 +1,7 @@
 TextEdit{
     font: 15px 'TimesNewRoman';
+    background-color: white;
+    color: black;
+    border: none;
+    border-radius: 5px;
 }

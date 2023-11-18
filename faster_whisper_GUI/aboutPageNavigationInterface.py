@@ -1,8 +1,19 @@
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QBrush, QFont, QPainter, QPixmap
-from PySide6.QtWidgets import  QFrame, QSizePolicy, QVBoxLayout, QWidget, QGraphicsView, QGraphicsScene
-from qfluentwidgets import DisplayLabel, ScrollArea, TitleLabel, HorizontalSeparator
+from PySide6.QtGui import (QBrush,  QPainter, QPixmap)
+from PySide6.QtWidgets import  (
+                                QFrame,  
+                                QVBoxLayout, 
+                                QWidget, 
+                                QGraphicsView, 
+                                QGraphicsScene
+                            )
+from qfluentwidgets import (
+                            DisplayLabel, 
+                            ScrollArea, 
+                            TitleLabel, 
+                            HorizontalSeparator
+                        )
 
 from .style_sheet import StyleSheet
 
@@ -100,23 +111,15 @@ class AboutPageNavigationInterface(ScrollArea):
         self.mainVLayout.addSpacing(15)
         self.mainVLayout.addWidget(HorizontalSeparator(self))
 
-
         self.strongBodyLabel = TitleLabel(self)
         self.strongBodyLabel.setText(self.tr("协议"))
         self.strongBodyLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.addWidget(self.strongBodyLabel)
 
-        # self.tblabel = DisplayLabel()
-        # self.tblabel.setText(self.tr('"向收到该信息的世界致以最美好的祝愿！"'))
-        # self.tblabel.setFont(QFont("Microsoft YaHei", 13))
-        # self.tblabel.setAlignment(Qt.AlignCenter)
-        # self.addWidget(self.tblabel)
-
-
         self.lisenceLabel = DisplayLabel()
         self.lisenceLabel.setText(self.lisence)
         self.lisenceLabel.setScaledContents(True)
-        self.lisenceLabel.setFont(QFont("Microsoft YaHei", 13))
+        # self.lisenceLabel.setFont(QFont("Microsoft YaHei", 13))
         self.addWidget(self.lisenceLabel)
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)

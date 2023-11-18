@@ -77,8 +77,14 @@ class TableModel(QAbstractTableModel):
 
     def headerData(self, section, orientation, role):
         if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
+            if orientation == Qt.Orientation.Horizontal:
                 return ["start(s)", "end(s)", "text", "words"][section]
             elif orientation == Qt.Orientation.Vertical:
-                return range(1, self.rowCount()+1)[section]
+                try:
+                    index = range(1, self.rowCount()+1)[section]
+                except:
+                    index = None
+                    
+                return index
+                
             

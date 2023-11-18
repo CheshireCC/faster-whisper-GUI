@@ -1,4 +1,6 @@
-Language_without_space = ["ja","zh"]
+default_Huggingface_user_token = "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"
+
+Language_without_space = ["ja","zh","ko","yue"]
 Language_dict = {
                 "en": "english",
                 "zh": "chinese",

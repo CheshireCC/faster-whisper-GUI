@@ -1,7 +1,9 @@
 import os
+from threading import Thread
+
 import av
 
-from PySide6.QtCore import (QStringListModel, Qt, QCoreApplication)
+from PySide6.QtCore import (QStringListModel, Qt, QCoreApplication, Signal)
 
 from PySide6.QtGui import (QDropEvent, QDragEnterEvent)
 
@@ -20,18 +22,24 @@ from qfluentwidgets import (
                             ListView
                             , ToolButton
                             , FluentIcon
-                            , InfoBar
-                            , InfoBarPosition
+                            # , InfoBar
+                            # , InfoBarPosition
                         )
 
 from .style_sheet import StyleSheet
 from .config import SUBTITLE_FORMAT
+from typing import TypedDict
 
+class ignore_files_info(TypedDict):
+    ignore_files: list[str]
+    ignore_reason: str
 
 class FileNameListView(QWidget):
     def __tr(self, text):
         return QCoreApplication.translate(self.__class__.__name__, text)
     
+    ignore_files_signal = Signal(ignore_files_info)
+
     def __init__(self, parent) -> None:
         super().__init__(parent=parent)
 
@@ -54,9 +62,9 @@ class FileNameListView(QWidget):
         # 设置接受文件拖放
         self.setAcceptDrops(True)
 
-
-    def testFileExitedAndNotSubtitle(self, fileNameList):
+    def testFileExitedAndNotSubtitle(self, fileNameList) -> list[str]:
         files_exist = [os.path.exists(file) for file in fileNameList]
+
         if not all(files_exist):
             ignore_file = [file for file in fileNameList if not os.path.exists(file)]
             print(self.__tr("存在无效文件："))
@@ -66,46 +74,55 @@ class FileNameListView(QWidget):
             print(f"  ignore files: {new_line.join(ignore_file)}")
             fileNameList = [file for file in fileNameList if os.path.exists(file)]
 
-            # TODO: self.parent().parent().parent().parent().parent() is monkey code , 
-            # it should be replaced by a signal-slot system
-            InfoBar.info(
-                title=self.__tr("剔除文件")
-                , content=self.__tr("存在无效文件，已剔除\n") + "\n".join(ignore_file)
-                , isClosable=False
-                , duration=2000
-                , position=InfoBarPosition.TOP_RIGHT
-                , parent=self.parent().parent().parent().parent().parent() # TODO: monkey code 
-            )
-        
-        # 忽略掉输入文件中可能存在的所有的字幕文件
-        files = [file for file in fileNameList if file.split(".")[-1].upper() not in SUBTITLE_FORMAT]
-        if ingnore_files := [file for file in fileNameList if file.split(".")[-1].upper() in SUBTITLE_FORMAT]:
-            new_line = "\n              "
-            print(f"ignore files: {new_line.join(ingnore_files)}")
+            ifi = ignore_files_info(ignore_files=ignore_file, ignore_reason=self.__tr("存在无效文件，已剔除"))
+            self.ignore_files_signal.emit(ifi)
 
             # TODO: self.parent().parent().parent().parent().parent() is monkey code , 
             # it should be replaced by a signal-slot system
-            InfoBar.info(
-                title=self.__tr("剔除文件")
-                , content=self.__tr("已知的字幕格式文件已忽略\n") + "\n".join(ingnore_files)
-                , isClosable=False
-                , duration=2000
-                , position=InfoBarPosition.TOP_RIGHT
-                , parent=self.parent().parent().parent().parent().parent() # TODO: monkey code 
-            )
+            # InfoBar.info(
+            #     title=self.__tr("剔除文件")
+            #     , content=self.__tr("存在无效文件，已剔除\n") + "\n".join(ignore_file)
+            #     , isClosable=False
+            #     , duration=2000
+            #     , position=InfoBarPosition.TOP_RIGHT
+            #     , parent=self.parent().parent().parent().parent().parent() # TODO: monkey code 
+            # )
+        
+        # 忽略掉输入文件中可能存在的所有的字幕文件
+        files = [file for file in fileNameList if file.split(".")[-1].upper() not in SUBTITLE_FORMAT]
+        ignore_files = [file for file in fileNameList if file.split(".")[-1].upper() in SUBTITLE_FORMAT]
+        
+        if len(ignore_files) > 0:
+            new_line = "\n              "
+            print(f"ignore files: {new_line.join(ignore_files)}")
+
+            ifi = ignore_files_info(ignore_files=ignore_files,ignore_reason=self.__tr("已知的字幕格式文件已忽略："))
+            self.ignore_files_signal.emit(ifi)
+            # TODO: self.parent().parent().parent().parent().parent() is monkey code , 
+            # it should be replaced by a signal-slot system
+            # InfoBar.info(
+            #     title=self.__tr("剔除文件")
+            #     , content=self.__tr("已知的字幕格式文件已忽略\n") + "\n".join(ignore_files)
+            #     , isClosable=False
+            #     , duration=2000
+            #     , position=InfoBarPosition.TOP_RIGHT
+            #     , parent=self.parent().parent().parent().parent().parent() # TODO: monkey code 
+            # )
             # print(self.parent().parent().parent().parent().parent())
 
         return files
 
     def addFileNamesToListWidget(self):
+
         fileNames, _ = QFileDialog.getOpenFileNames(self, self.__tr("选择音频文件"), self.avDataRootDir, "All file type(*.*);;Wave file(*.wav);;MPEG 4(*.mp4)")
         
         if fileNames is None or len(fileNames) == 0:
             return
-
-        self.setFileNameListToDataModel(fileNames)
+        thread_: Thread = Thread(target=self.setFileNameListToDataModel, args=(fileNames,),daemon=True)
+        thread_.start()
+        # self.setFileNameListToDataModel(fileNames)
     
-    def testFileWithAudioTrackOrNot(self, fileNames:list[str]):
+    def testFileWithAudioTrackOrNot(self, fileNames:list[str]) -> list[str]:
         
         fileNames_ = []
         ignoreFile = []
@@ -130,17 +147,20 @@ class FileNameListView(QWidget):
             
                 else:
                     fileNames_.append(fileName)
-            
-        # TODO: monkey code
         if len(ignoreFile) > 0:
-            InfoBar.info(
-                    title=self.__tr("忽略无效文件")
-                    , content=self.__tr("不包含音频流的文件将被忽略：\n") + "\n".join(ignoreFile)
-                    , isClosable=False
-                    , duration=2000
-                    , parent=self.parent().parent().parent().parent().parent() 
-                )    
-        
+            ifi = ignore_files_info(ignore_files=ignoreFile, ignore_reason=self.__tr("不包含音频流的文件将被忽略："))
+            self.ignore_files_signal.emit(ifi)
+
+        # TODO: monkey code
+        # if len(ignoreFile) > 0:
+        #     InfoBar.info(
+        #             title=self.__tr("忽略无效文件")
+        #             , content=self.__tr("不包含音频流的文件将被忽略：\n") + "\n".join(ignoreFile)
+        #             , isClosable=False
+        #             , duration=2000
+        #             , parent=self.parent().parent().parent().parent().parent() 
+        #         )    
+
         return fileNames_
 
 
@@ -164,17 +184,22 @@ class FileNameListView(QWidget):
             self.avFileList.append(file)
 
         self.FileNameModle.setStringList(self.avFileList)
+        
+        if len(file_ignored) > 0:
+            ifi = ignore_files_info(ignore_files=file_ignored, ignore_reason=self.__tr("重复添加的文件将被忽略："))
+            self.ignore_files_signal.emit(ifi)
 
         # TODO: monkey code
-        if len(file_ignored) > 0:
-            InfoBar.info(
-                    title=self.__tr("忽略已存在的文件")
-                    , content=self.__tr("重复添加的文件将被忽略：\n") + "\n".join(file_ignored)
-                    , isClosable=False
-                    , duration=2000
-                    , parent=self.parent().parent().parent().parent().parent() 
-                )    
+        # if len(file_ignored) > 0:
+        #     InfoBar.info(
+        #             title=self.__tr("忽略已存在的文件")
+        #             , content=self.__tr("重复添加的文件将被忽略：\n") + "\n".join(file_ignored)
+        #             , isClosable=False
+        #             , duration=2000
+        #             , parent=self.parent().parent().parent().parent().parent() 
+        #         )    
         
+
     def removeFileNameFromListWidget(self):
 
         # 获取当前选中的项目

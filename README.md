@@ -18,17 +18,23 @@
 
 - ### Links
 
-    [pyside6-fluent-widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)
+    -   [pyside6-fluent-widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)
 
-    [faster-whisper](https://github.com/guillaumekln/faster-whisper)
+    -   [faster-whisper](https://github.com/guillaumekln/faster-whisper)
 
-    [whisperX](https://github.com/m-bain/whisperX)
+    -   [whisperX](https://github.com/m-bain/whisperX)
 
-    [HuggingFace models download](https://huggingface.co/models)
+    -   [HuggingFace models download](https://huggingface.co/models)
 
-    [Demucs](https://github.com/facebookresearch/demucs)
+    -   [Demucs](https://github.com/facebookresearch/demucs)
 
-    
+    -   more and better AVE ：
+
+        -   [UVR](https://github.com/Anjok07/ultimatevocalremovergui#installation)
+
+        -   [Demucs-Gui](https://github.com/CarlGao4/Demucs-Gui)
+
+            
 
 - ## What's this
 
@@ -74,13 +80,11 @@
 
 - ### Load Model / Download Model / Convert Model
 
-![0.2.7-2](./README.assets/0.2.7-2.png)
-
-![软件使用-模型参数](./README.assets/软件使用-模型参数.png)
+![image-20231118155123131](./README.assets/image-20231118155123131.png)
 
 - ### Large-v3 模型支持
 
-  ![image-20231111131301664](./README.assets/image-20231111131301664.png)
+  ![image-20231118155209847](./README.assets/image-20231118155209847.png)
 
 - ### Demucs AVE
 
@@ -108,9 +112,9 @@
 
     ![image-20231113020407272](./README.assets/image-20231113020407272.png)
 
-- ### process a video file
+- ### setting
 
-![转写执行效果](./README.assets/转写执行效果.png)
+    ![image-20231118155300816](./README.assets/image-20231118155300816.png)
 
 - ### Show result and edit timestample
 

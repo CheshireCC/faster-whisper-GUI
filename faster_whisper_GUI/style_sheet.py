@@ -23,6 +23,8 @@ class StyleSheet(StyleSheetBase, Enum):
     TRANSCRIBEPARAMITEMWIDGET = "TranscribeParamItemWidget"
     TRANSCRIBEPAGEINTERFACE = "transcribePageInterface" 
     ABOUTPAGEINTERFACE = "aboutPageInterface"
+    MODELLOAD = "modelLoad"
+    SETTINGPAGEINTERFACE = "settingPageInterface"
 
 
     def path(self, theme=Theme.AUTO):

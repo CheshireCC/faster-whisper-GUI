@@ -1,1 +1,75 @@
-{"use_auth_token": "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", "overlap": 0.1, "segment": 7.8}
+{
+    "theme": "dark",
+    "demucs": {
+        "overlap": 0.1,
+        "segment": 7.8,
+        "tracks": 0
+    },
+    "model_param": {
+        "localModel": true,
+        "onlineModel": false,
+        "model_path": "F:/WhisperModels/faster-whisper/large-v3-float32",
+        "modelName": 0,
+        "use_v3_model": true,
+        "device": 1,
+        "deviceIndex": "0",
+        "preciese": 0,
+        "thread_num": "4",
+        "num_worker": "1",
+        "download_root": "C:/Users/12059/.cache/huggingface/hub",
+        "local_files_only": false
+    },
+    "vad_param": {
+        "use_VAD": true,
+        "threshold": 0.3,
+        "minSpeechDuration": "250",
+        "minSilenceDuration": "2000",
+        "maxSpeechDuration": "inf",
+        "windowSize": 2,
+        "speechPad": "400"
+    },
+    "setting": {
+        "saveConfig": true,
+        "autoLoadModel": false,
+        "language": 2,
+        "huggingface_user_token": "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",
+        "autoGoToOutputPage": 2,
+        "autoClearTempFiles": true
+    },
+    "Transcription_param": {
+        "language": 1,
+        "task": false,
+        "beam_size": "5",
+        "best_of": "1",
+        "patience": "1.0",
+        "length_penalty": "1.0",
+        "temperature": "0",
+        "compression_ratio_threshold": "2.4",
+        "log_prob_threshold": "-1.0",
+        "no_speech_threshold": "0.6",
+        "condition_on_previous_text": false,
+        "initial_prompt": "",
+        "prefix": "",
+        "suppress_blank": true,
+        "suppress_tokens": "-1",
+        "without_timestamps": false,
+        "max_initial_timestamp": "1.0",
+        "word_timestamps": true,
+        "prepend_punctuations": "\"'“¿([{-",
+        "append_punctuations": "\"'.。,，!！?？:：”)]}、",
+        "repetition_penalty": "1.0",
+        "no_repeat_ngram_size": "0",
+        "prompt_reset_on_temperature": "0.5"
+    },
+    "output_whisperX": {
+        "tabMovable": false,
+        "tabScrollable": true,
+        "tabShadowEnabled": false,
+        "tabMaxWidth": 326,
+        "closeDisplayMode": 0,
+        "whisperXMinSpeaker": 1,
+        "whisperXMaxSpeaker": 1,
+        "outputFormat": 4,
+        "outputEncoding": 1
+    }
+}

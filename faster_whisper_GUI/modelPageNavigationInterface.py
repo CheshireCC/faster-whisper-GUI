@@ -4,8 +4,9 @@ from PySide6.QtWidgets import (
                                 QCompleter, 
                                 QGridLayout, 
                                 QHBoxLayout, 
-                                QLabel, 
-                                QStyle
+                                QLabel,
+                                QStyle,
+                                QVBoxLayout
                             )
 
 from qfluentwidgets import (
@@ -14,10 +15,13 @@ from qfluentwidgets import (
                             PushButton, 
                             ToolButton, 
                             EditableComboBox, 
-                            LineEdit 
+                            LineEdit ,
+                            SwitchButton,
                         )
 
 from .navigationInterface import NavigationBaseInterface
+from .paramItemWidget import ParamWidget
+from .style_sheet import StyleSheet
 
 from .config import (
                     Preciese_list
@@ -43,6 +47,8 @@ class ModelNavigationInterface(NavigationBaseInterface):
         
         self.setObjectName('modelNavigationInterface')
         self.setupUI()
+
+        StyleSheet.MODELLOAD.apply(self.button_model_lodar)
 
         self.SignalAndSlotConnect()
     
@@ -81,7 +87,6 @@ class ModelNavigationInterface(NavigationBaseInterface):
         self.label_model_path.setObjectName("LabelModelPath")
         self.label_model_path.setStyleSheet("#LabelModelPath{ background : rgba(0, 128, 0, 120); }")
         self.lineEdit_model_path = LineEdit()
-        # self.lineEdit_model_path.setText()
         self.toolPushButton_get_model_path = ToolButton()
         self.toolPushButton_get_model_path.setIcon(self.style().standardPixmap(QStyle.StandardPixmap.SP_DirOpenIcon))
 
@@ -120,53 +125,45 @@ class ModelNavigationInterface(NavigationBaseInterface):
 
         GridLayout_model_param = QGridLayout()
         GridLayout_model_param.setAlignment(Qt.AlignmentFlag.AlignTop)
+        GridLayout_model_param.setContentsMargins(0, 0, 0, 0)
+        GridLayout_model_param.setSpacing(0)
         self.addLayout(GridLayout_model_param)
         GridLayout_model_param_widgets_list = []
 
+        # ===================================================================================================================================================================================================
+        # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         # 是否使用 v3 模型
-        label_use_v3 = QLabel()
-        label_use_v3.setText(self.__tr("使用 v3 模型"))
-        label_use_v3.setObjectName("LabelUseV3")
-        label_use_v3.setStyleSheet("#LabelUseV3{background : rgba(240, 113, 0, 128);}")
-        self.combox_use_v3 = ComboBox()
-        self.combox_use_v3.addItems(["False", "True"])
-        self.combox_use_v3.setCurrentIndex(0)
+        self.switchButton_use_v3 = SwitchButton()
+        self.switchButton_use_v3.setChecked(False)
+        self.switchButton_use_v3.setObjectName("SwitchButtonUseV3")
+        self.switchButton_use_v3.setOnText(self.__tr("v3 模型"))
+        self.switchButton_use_v3.setOffText(self.__tr("非 V3 模型"))
 
-        GridLayout_model_param_widgets_list.append((label_use_v3, self.combox_use_v3))
+        self.paramItemWidget_use_v3 = ParamWidget(self.__tr("使用 v3 模型"), self.__tr("如果使用 V3 模型开启该选项，以修正梅尔滤波器组的大小，不使用 V3 模型请不要开启") ,self.switchButton_use_v3)
 
-        # GridLayout_model_param.addWidget(label_use_v3, 0, 0)
-        # GridLayout_model_param.addWidget(self.combox_use_v3, 0, 1)
-
+        GridLayout_model_param_widgets_list.append(self.paramItemWidget_use_v3)
+        # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         # 设备
-        label_device = QLabel()
-        label_device.setText(self.__tr("处理设备："))
-        label_device.setObjectName("LabelDevice")
-        label_device.setStyleSheet("#LabelDevice{background : rgba(240, 113, 0, 128);}")
         device_combox  = ComboBox()
         device_combox.addItems(self.device_list)
         device_combox.setCurrentIndex(1)
         self.device_combox = device_combox
-        GridLayout_model_param_widgets_list.append((label_device, device_combox))   
-        # GridLayout_model_param.addWidget(label_device,0,0)
-        # GridLayout_model_param.addWidget(device_combox,0,1)
+        
+        self.paramItemWidget_device = ParamWidget(self.__tr("处理设备"), self.__tr("选择运行语音识别的设备。"), device_combox)
+        GridLayout_model_param_widgets_list.append(self.paramItemWidget_device)   
 
-        label_device_index = QLabel()
-        label_device_index.setText(self.__tr("设备号："))
+        # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         LineEdit_device_index = LineEdit()
         LineEdit_device_index.setText("0")
         LineEdit_device_index.setToolTip(self.__tr("要使用的设备ID。也可以通过传递ID列表(例如0,1,2,3)在多GPU上加载模型。"))
         self.LineEdit_device_index = LineEdit_device_index
-        GridLayout_model_param_widgets_list.append((label_device_index, LineEdit_device_index)) 
 
-        # GridLayout_model_param.addWidget(label_device_index,1,0)
-        # GridLayout_model_param.addWidget(LineEdit_device_index,1,1)
+        self.paramItemWidget_device_index = ParamWidget(self.__tr("设备号"), self.__tr("要使用的设备ID。也可以通过传递ID列表(例如0,1,2,3)在多GPU上加载模型。"), LineEdit_device_index)
 
+        GridLayout_model_param_widgets_list.append(self.paramItemWidget_device_index) 
+
+        # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         # 计算精度
-        VLayout_preciese = QHBoxLayout()
-        label_preciese = QLabel()
-        label_preciese.setText(self.__tr("计算精度："))
-        label_preciese.setObjectName("LabelPreciese")
-        label_preciese.setStyleSheet("#LabelPreciese{background: rgba(240, 113, 0, 128);}")
         preciese_combox  = EditableComboBox()
         preciese_combox.addItems(self.preciese_list)
         preciese_combox.setCurrentIndex(5)
@@ -174,63 +171,64 @@ class ModelNavigationInterface(NavigationBaseInterface):
         preciese_combox.setToolTip(self.__tr("要使用的计算精度，尽管某些设备不支持半精度，\n但事实上不论选择什么精度类型都可以隐式转换。\n请参阅 https://opennmt.net/CTranslate2/quantization.html。"))
         self.preciese_combox = preciese_combox
 
-        GridLayout_model_param_widgets_list.append((label_preciese, preciese_combox))   
-        # GridLayout_model_param.addWidget(label_preciese,2,0)
-        # GridLayout_model_param.addWidget(preciese_combox,2,1)
+        self.paramItemWidget_preciese = ParamWidget(self.__tr("计算精度"), self.__tr("要使用的计算精度，尽管某些设备不支持半精度，\n但事实上不论选择什么精度类型都可以隐式转换。\n请参阅 https://opennmt.net/CTranslate2/quantization.html。"), preciese_combox)
 
-        label_cpu_threads = QLabel()
-        label_cpu_threads.setText(self.__tr("线程数（CPU）"))
+        GridLayout_model_param_widgets_list.append(self.paramItemWidget_preciese)   
+
+        # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         LineEdit_cpu_threads = LineEdit()
         LineEdit_cpu_threads.setText("4")
         LineEdit_cpu_threads.setToolTip(self.__tr("在CPU上运行时使用的线程数(默认为4)。非零值会覆盖"))
         self.LineEdit_cpu_threads = LineEdit_cpu_threads
 
-        GridLayout_model_param_widgets_list.append((label_cpu_threads, LineEdit_cpu_threads))   
-        # GridLayout_model_param.addWidget(label_cpu_threads,3,0)
-        # GridLayout_model_param.addWidget(LineEdit_cpu_threads,3,1)
+        self.paramItemWidget_cpu_threads = ParamWidget(self.__tr("线程数（CPU）"), self.__tr("在CPU上运行时使用的线程数(默认为4)。非零值会覆盖"), LineEdit_cpu_threads)  
 
-        label_num_workers = QLabel()
-        label_num_workers.setText(self.__tr("并发数"))
+        GridLayout_model_param_widgets_list.append(self.paramItemWidget_cpu_threads)   
+        
+        # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         LineEdit_num_workers = LineEdit()
         LineEdit_num_workers.setText("1")
         LineEdit_num_workers.setToolTip(self.__tr("具有多个工作线程可以在运行模型时实现真正的并行性。\n这可以以增加内存使用为代价提高整体吞吐量。"))
         self.LineEdit_num_workers = LineEdit_num_workers
 
-        GridLayout_model_param_widgets_list.append((label_num_workers, LineEdit_num_workers))
-        # GridLayout_model_param.addWidget(label_num_workers,4,0)
-        # GridLayout_model_param.addWidget(LineEdit_num_workers,4,1)
+        self.paramItemWidget_num_workers = ParamWidget(self.__tr("并发数"), self.__tr("具有多个工作线程可以在运行模型时实现真正的并行性。\n这可以以增加内存使用为代价提高整体吞吐量。"), LineEdit_num_workers)
 
+        GridLayout_model_param_widgets_list.append(self.paramItemWidget_num_workers)
+        
+        # --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         button_download_root = PushButton()
         button_download_root.setText(self.__tr("下载缓存目录"))
-        # button_download_root.clicked.connect(self.getDownloadCacheDir)
+        
         self.LineEdit_download_root = LineEdit()
         self.LineEdit_download_root.setToolTip(self.__tr("模型下载保存的目录。如果未修改,\n则模型将保存在标准Hugging Face缓存目录中。"))
-        # self.LineEdit_download_root.setText(self.download_cache_path)
+        
         self.LineEdit_download_root = self.LineEdit_download_root
         self.button_download_root = button_download_root
 
-        GridLayout_model_param_widgets_list.append((button_download_root, self.LineEdit_download_root)) 
-        # GridLayout_model_param.addWidget(button_download_root,5,0)
-        # GridLayout_model_param.addWidget(self.LineEdit_download_root,5,1)
+        self.paramItemWidget_download_root = ParamWidget(self.__tr("下载缓存目录"), self.__tr("模型下载保存的目录。如果未修改,\n则模型将保存在标准Hugging Face缓存目录中。"), self.button_download_root)
+        self.paramItemWidget_download_root.addwidget(self.LineEdit_download_root)
 
-        label_local_files_only =QLabel()
-        label_local_files_only.setText(self.__tr("是否使用本地缓存"))
-        combox_local_files_only = ComboBox()
-        combox_local_files_only.addItems(["False", "True"])
-        combox_local_files_only.setCurrentIndex(1)
-        combox_local_files_only.setToolTip(self.__tr("如果为True，在本地缓存的文件存在时返回其路径，不再重新下载文件。"))
-        self.combox_local_files_only = combox_local_files_only
-
-        GridLayout_model_param_widgets_list.append((label_local_files_only, combox_local_files_only))  
-        # GridLayout_model_param.addWidget(label_local_files_only,6,0)
-        # GridLayout_model_param.addWidget(combox_local_files_only,6,1)
-    
-        for i,item in enumerate(GridLayout_model_param_widgets_list):
-            GridLayout_model_param.addWidget(item[0],i,0)
-            GridLayout_model_param.addWidget(item[1],i,1)
+        GridLayout_model_param_widgets_list.append(self.paramItemWidget_download_root) 
         
+        # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+        self.switchButton_local_files_only = SwitchButton()
+        self.switchButton_local_files_only.setChecked(False)
+        self.switchButton_local_files_only.setOnText(self.__tr("使用"))
+        self.switchButton_local_files_only.setOffText(self.__tr("不使用"))
+        self.paramItemWidget_local_files_only = ParamWidget(self.__tr("是否使用本地缓存"), self.__tr("如果为True，在本地缓存的文件存在时返回其路径，不再重新下载文件。"), self.switchButton_local_files_only)
+
+        GridLayout_model_param_widgets_list.append(self.paramItemWidget_local_files_only)  
+        
+        # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        for i,item in enumerate(GridLayout_model_param_widgets_list):
+            GridLayout_model_param.addWidget(item, i,0)
+        
+        # ==================================================================================================================================================================================================
         hBoxLayout_model_convert = QHBoxLayout()
-        self.addLayout(hBoxLayout_model_convert)
+
+        # TODO:暂时移除转换模型功能,相关接口需要维护
+        # self.addLayout(hBoxLayout_model_convert)
 
         self.button_set_model_out_dir =  PushButton()
         self.button_set_model_out_dir.setText(self.__tr("模型输出目录"))
@@ -247,13 +245,57 @@ class ModelNavigationInterface(NavigationBaseInterface):
         self.button_convert_model.setToolTip(self.__tr("转换 OpenAi 模型到本地格式，\n必须选择在线模型"))
         hBoxLayout_model_convert.addWidget(self.button_convert_model)
         self.button_convert_model.setEnabled(False)
-
+    
+        # ==========================================================================================================
+        self.layout_button_model_lodar = QVBoxLayout()
         self.button_model_lodar = PushButton()
         self.button_model_lodar.setText(self.__tr("加载模型"))
-        self.addWidget(self.button_model_lodar)
-
-        self.LineEdit_download_root.setText(self.parent().download_cache_path)
-
-        # self.page_model.setStyleSheet("#pageModelParameter{border:1px solid red; padding: 5px;}")
+        self.button_model_lodar.setFixedHeight(65)
+        self.button_model_lodar.setFixedWidth(195)
+        # self.button_model_lodar.setIcon(FluentIcon.PLAY)
+        self.button_model_lodar.setObjectName("buttonModelLodar")
         
-    
+        
+        self.layout_button_model_lodar.addWidget(self.button_model_lodar)
+        self.layout_button_model_lodar.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.addLayout(self.layout_button_model_lodar)
+
+        # self.setViewportMargins(0, self.toolBar.height(), 0, 216)
+        # self.LineEdit_download_root.setText(self.parent().download_cache_path)
+
+        
+    def setParam(self, param:dict):
+        self.model_local_RadioButton.setChecked(param["localModel"])
+        self.model_online_RadioButton.setChecked(param["onlineModel"])
+
+        self.setModelLocationLayout()
+
+        self.lineEdit_model_path.setText(param["model_path"])
+        self.combox_online_model.setCurrentIndex(param["modelName"])
+
+        self.switchButton_use_v3.setChecked(param["use_v3_model"])
+        self.device_combox.setCurrentIndex(param["device"])
+        self.LineEdit_device_index.setText(param["deviceIndex"])
+        self.preciese_combox.setCurrentIndex(param["preciese"])
+        self.LineEdit_cpu_threads.setText(param["thread_num"])
+        self.LineEdit_num_workers.setText(param["num_worker"])
+        self.LineEdit_download_root.setText(param["download_root"])
+        self.switchButton_local_files_only.setChecked(param["local_files_only"] )
+
+    def getParam(self):
+        param = {}
+        param["localModel"] = self.model_local_RadioButton.isChecked()
+        param["onlineModel"] = self.model_online_RadioButton.isChecked()
+        param["model_path"] = self.lineEdit_model_path.text()
+        param["modelName"] = self.combox_online_model.currentIndex()
+        param["use_v3_model"] = self.switchButton_use_v3.isChecked()
+        param["device"] = self.device_combox.currentIndex()
+        param["deviceIndex"] = self.LineEdit_device_index.text().strip()
+        param["preciese"] = self.preciese_combox.currentIndex()
+        param["thread_num"] = self.LineEdit_cpu_threads.text().strip()
+        param["num_worker"] = self.LineEdit_num_workers.text().strip()
+        param["download_root"] = self.LineEdit_download_root.text().strip()
+        param["local_files_only"] = self.switchButton_local_files_only.isChecked()
+
+        return param
+        

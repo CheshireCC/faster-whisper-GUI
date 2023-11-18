@@ -5,3 +5,4 @@ TitleLabel {
     font-weight: bold;
     qproperty-alignment: AlignLeft;
 }
+

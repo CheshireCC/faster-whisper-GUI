@@ -13,3 +13,13 @@ QScrollArea {
 #imageViewer{
     background-color: transparent;
 }
+
+TitleLabel{
+    font-size: 30px;
+    background-color: transparent;
+}
+
+DisplayLabel{
+    font-size: 17px;
+    background-color: transparent;
+}

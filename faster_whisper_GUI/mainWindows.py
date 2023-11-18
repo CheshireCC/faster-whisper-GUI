@@ -12,7 +12,8 @@ from PySide6.QtWidgets import QFileDialog
 
 from PySide6.QtGui import QTextCursor
 from PySide6.QtCore import (
-                            QObject
+                            QObject,
+                            QTranslator
                             , Qt
                             , Signal
                         )
@@ -25,6 +26,7 @@ from qfluentwidgets import (
                             , MessageBox
                             , TableView
                             , FluentIcon
+                            , isDarkTheme
                         )
 from faster_whisper import TranscriptionInfo
 import torch
@@ -48,12 +50,9 @@ from .UI_MainWindows import UIMainWin
 from .tableModel_segments_path_info import TableModel
 from .whisper_x import WhisperXWorker
 from .de_mucs import DemucsWorker
-
 # from .style_sheet import StyleSheet
-
 from .subtitleFileRead import readSRTFileToSegments
 from .config import ENCODING_DICT
-
 from .util import outputWithDateTime
 
 # =======================================================================================
@@ -84,14 +83,12 @@ class MainWindows(UIMainWin):
     #         self.log.write(text)
     #     t1 = Thread(target=go, args=(text))
     #     t1.start()
-
-    # @override
-    # def tr(self, text):
-    #     return QCoreApplication.translate(self.__class__.__name__, text)
     
     log = open(r"./fasterwhispergui.log" ,"a" ,encoding="utf8", buffering=1)
 
-    def __init__(self):
+    def __init__(self, translator:QTranslator= None):
+
+        self.translator = translator
     
         # 重定向输出
         self.redirectErrOutpur = RedirectOutputSignalStore()
@@ -101,7 +98,7 @@ class MainWindows(UIMainWin):
         sys.stderr = self.redirectErrOutpur
         sys.stdout = self.redirectErrOutpur
 
-        super().__init__()
+        super().__init__(translator=self.translator)
 
         self.outputWithDateTime = outputWithDateTime
 
@@ -120,11 +117,14 @@ class MainWindows(UIMainWin):
         self.result_whisperx_aligment = None
         self.result_faster_whisper = None
         self.result_whisperx_speaker_diarize = None
+        self.current_result = None
 
         self.modelRootDir = r"./"
 
         self.singleAndSlotProcess()
 
+        if self.page_setting.switchButton_autoLoadModel.isChecked():
+            self.onModelLoadClicked()
 
     def getDownloadCacheDir(self):
         """
@@ -209,7 +209,7 @@ class MainWindows(UIMainWin):
                         , setStatusSignal=self.statusToolSignalStore.LoadModelSignal
                     )
             
-            if self.page_model.combox_use_v3.currentText() == "True":
+            if self.page_model.switchButton_use_v3.isChecked():
                 # 修正 V3 模型的 mel 滤波器组参数
                 print("\n[Using V3 model, modify  number of mel-filters to 128]")
                 self.FasterWhisperModel.feature_extractor.mel_filters = self.FasterWhisperModel.feature_extractor.get_mel_filters(self.FasterWhisperModel.feature_extractor.sampling_rate, self.FasterWhisperModel.feature_extractor.n_fft, n_mels=128)
@@ -242,8 +242,8 @@ class MainWindows(UIMainWin):
         cpu_threads: int = int(self.page_model.LineEdit_cpu_threads.text().replace(" ", ""))
         num_workers: int = int(self.page_model.LineEdit_num_workers.text().replace(" ", ""))
         download_root: str = self.page_model.LineEdit_download_root.text().replace(" ", "")
-        local_files_only: str = self.page_model.combox_local_files_only.currentText()
-        local_files_only = local_files_only != "False"
+        local_files_only: bool = self.page_model.switchButton_local_files_only.isChecked()
+        # local_files_only = local_files_only != "False"
         model_dict : dict = {
                     "model_size_or_path" : model_size_or_path,
                     "device" : device,
@@ -260,11 +260,10 @@ class MainWindows(UIMainWin):
     def onButtonProcessClicked(self):
         
         
-        self.result_whisperx_aligment = None
-        self.result_faster_whisper = None
-        self.result_whisperx_speaker_diarize = None
+        # self.result_whisperx_aligment = None
+        # self.result_faster_whisper = None
+        # self.result_whisperx_speaker_diarize = None
         
-
         if self.page_process.transceibe_Files_RadioButton.isChecked():
             self.transcribeProcess()
 
@@ -323,8 +322,7 @@ class MainWindows(UIMainWin):
             
     def getParamWhisperX(self) -> dict:
         dict_WhisperXParams = {}
-
-        dict_WhisperXParams["use_auth_token"] = self.page_VAD.LineEdit_use_auth_token.text()
+        dict_WhisperXParams["use_auth_token"] = self.page_setting.LineEdit_use_auth_token.text()
 
         dict_WhisperXParams["min_speaker"] = int(self.page_output.SpinBox_min_speaker.text())
         dict_WhisperXParams["max_speaker"] = int(self.page_output.SpinBox_max_speaker.text())
@@ -336,7 +334,6 @@ class MainWindows(UIMainWin):
             dict_WhisperXParams["min_speaker"] = None
             dict_WhisperXParams["max_speaker"] = None
         else:
-            dict_WhisperXParams["use_auth_token"] = None
             dict_WhisperXParams["min_speaker"] = None
             dict_WhisperXParams["max_speaker"] = None
 
@@ -378,6 +375,7 @@ class MainWindows(UIMainWin):
             
             print("Transcribes options:")
             self.log.write("Transcribes options:")
+
             for key, value in Transcribe_params.items():
                 print(f"    -{key} : {value}")
                 self.log.write(f"    -{key} : {value}")
@@ -542,7 +540,8 @@ class MainWindows(UIMainWin):
         self.resetButton_process()
         sys.stdout = self.redirectErrOutpur
 
-        if segments_path_info is not None:
+        if segments_path_info is not None and len(segments_path_info) > 0:
+            
             self.raiseSuccessInfoBar(
                                 title=self.tr("成功")
                                 , content=self.tr("转写完成")
@@ -553,16 +552,23 @@ class MainWindows(UIMainWin):
                 segment_, path, info = segments
                 print(path, info.language)
                 print(f"len:{len(segment_)}")
-                for segment in segment_:
-                    print(f"[{segment.start}s --> {segment.end}] | {segment.text}")
-                    print(f"len_words: {len(segment.words)}")
+                # for segment in segment_:
+                #     print(f"[{segment.start}s --> {segment.end}] | {segment.text}")
+                #     print(f"len_words: {len(segment.words)}")
 
             print(f"len_segments_path_info_result: {len(segments_path_info)}")
-            self.stackedWidget.setCurrentWidget(self.page_output)
             self.showResultInTable(self.result_faster_whisper)
-            
-        
+            self.current_result = self.result_faster_whisper
 
+            if self.page_setting.combox_autoGoToOutputPage.currentIndex() == 0:
+                time.sleep(0.5)
+                self.stackedWidget.setCurrentWidget(self.page_output)
+            elif self.page_setting.combox_autoGoToOutputPage.currentIndex() == 2:
+                mess_ = MessageBox(self.tr("转写结束"),self.tr("是否跳转到输出目录？"),self)
+                if mess_.exec():
+                    time.sleep(0.5)
+                    self.stackedWidget.setCurrentWidget(self.page_output)
+            
     def getParamTranscribe(self) -> dict:
         Transcribe_params = {}
 
@@ -686,11 +692,11 @@ class MainWindows(UIMainWin):
             return VAD_param
         
         threshold = round(self.page_VAD.doubleSpin_VAD_param_threshold.value(),2)
-        min_speech_duration_ms = int(self.page_VAD.LineEdit_VAD_patam_min_speech_duration_ms.text().replace(" ", ""))
-        max_speech_duration_s = float(self.page_VAD.LineEdit_VAD_patam_max_speech_duration_s.text().replace(" ", ""))
-        min_silence_duration_ms = int(self.page_VAD.LineEdit_VAD_patam_min_silence_duration_ms.text().replace(" ", ""))
-        window_size_samples = int(self.page_VAD.combox_VAD_patam_window_size_samples.currentText())
-        speech_pad_ms = int(self.page_VAD.LineEdit_VAD_patam_speech_pad_ms.text().replace(" ", ""))
+        min_speech_duration_ms = int(self.page_VAD.LineEdit_VAD_param_min_speech_duration_ms.text().replace(" ", ""))
+        max_speech_duration_s = float(self.page_VAD.LineEdit_VAD_param_max_speech_duration_s.text().replace(" ", ""))
+        min_silence_duration_ms = int(self.page_VAD.LineEdit_VAD_param_min_silence_duration_ms.text().replace(" ", ""))
+        window_size_samples = int(self.page_VAD.combox_VAD_param_window_size_samples.currentText())
+        speech_pad_ms = int(self.page_VAD.LineEdit_VAD_param_speech_pad_ms.text().replace(" ", ""))
 
         VAD_param["param"] = {}
         VAD_param["param"]["threshold"] = threshold
@@ -802,7 +808,7 @@ class MainWindows(UIMainWin):
         output_dir = self.page_output.outputGroupWidget.LineEdit_output_dir.text()
         code_ = self.page_output.combox_output_code.currentText()
 
-        result_to_write = self.result_faster_whisper if self.result_whisperx_aligment is None else (self.result_whisperx_aligment if self.result_whisperx_speaker_diarize is None else self.result_whisperx_speaker_diarize)
+        result_to_write = self.current_result # self.result_faster_whisper if (self.result_whisperx_aligment is None and self.result_whisperx_speaker_diarize is None) else (self.result_whisperx_aligment if self.result_whisperx_speaker_diarize is None else self.result_whisperx_speaker_diarize)
 
         self.outputWorker = OutputWorker(result_to_write, output_dir, format, code_,self)
         self.outputWorker.signal_write_over.connect(self.outputOver)    
@@ -837,6 +843,7 @@ class MainWindows(UIMainWin):
                                     title=self.tr("WhisperX")
                                     , content=self.tr("时间戳对齐结束")
                                 )
+            self.current_result = self.result_whisperx_aligment
         else:
             self.raiseErrorInfoBar(self.tr("错误"),
                                     content=self.tr("对齐失败，退出软件后检查 fasterwhispergui.log 文件可能会获取更多信息")
@@ -943,6 +950,7 @@ class MainWindows(UIMainWin):
                                     title=self.tr("WhisperX")
                                     , content=self.tr("声源分离结束")
                                 )
+            self.current_result = self.result_whisperx_speaker_diarize
         
         # for segments in self.result_whisperx_speaker_diarize:
         #         segment_, path, info = segments
@@ -1128,10 +1136,8 @@ class MainWindows(UIMainWin):
         
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
+            
 
-        
-
-        
     def demucsProcess(self):
         
         if self.demucsWorker is not None and self.demucsWorker.isRunning():
@@ -1265,6 +1271,7 @@ class MainWindows(UIMainWin):
 
         self.page_model.toolPushButton_get_model_path.clicked.connect(self.getLocalModelPath)
         self.page_model.button_convert_model.clicked.connect(self.onButtonConvertModelClicked)
+
         set_model_output_dir = lambda path: path if path != "" else self.page_model.LineEdit_model_out_dir.text()
         self.page_model.button_set_model_out_dir.clicked.connect(lambda:self.page_model.LineEdit_model_out_dir.setText(set_model_output_dir(QFileDialog.getExistingDirectory(self,"选择转换模型输出目录", self.page_model.LineEdit_model_out_dir.text()))) )
         self.page_model.button_download_root.clicked.connect(self.getDownloadCacheDir)
@@ -1287,6 +1294,19 @@ class MainWindows(UIMainWin):
         self.page_output.tableTab.signal_delete_table.connect(self.deleteResultTableEvent)
         self.page_output.unloadWhisperModelPushbutton.clicked.connect(self.unloadWhisperModel)
 
+        self.page_demucs.fileListView.ignore_files_signal.connect(lambda ignore_files_info: self.raiseInfoBar(self.tr("忽略文件"), ignore_files_info["ignore_reason"]+"\n"+"\n".join(ignore_files_info["ignore_files"])))
+        self.page_process.fileNameListView.ignore_files_signal.connect(lambda ignore_files_info: self.raiseInfoBar(self.tr("忽略文件"), ignore_files_info["ignore_reason"]+"\n"+"\n".join(ignore_files_info["ignore_files"])))
+
+    def raiseInfoBar(self, title:str, content:str ):
+        InfoBar.info(
+                title=title
+                , content=content
+                , isClosable=False
+                , duration=2000
+                , position=InfoBarPosition.TOP_RIGHT
+                , parent=self
+            )
+        
     def deleteResultTableEvent(self, routeKey:str):
         
         self.outputWithDateTime("deleteTable")
@@ -1332,20 +1352,21 @@ class MainWindows(UIMainWin):
 
         messageBoxW = MessageBox(self.tr('退出'), self.tr("是否要退出程序？"), self)
         if messageBoxW.exec():
-            self.use_auth_token_speaker_diarition = self.page_VAD.LineEdit_use_auth_token.text() if (self.use_auth_token_speaker_diarition != self.page_VAD.LineEdit_use_auth_token.text() and self.page_VAD.LineEdit_use_auth_token.text() != "") else self.use_auth_token_speaker_diarition
             
-            overlap = self.page_demucs.demucs_param_widget.spinBox_overlap.value()
-            segment = self.page_demucs.demucs_param_widget.spinBox_segment.value()
-
-            with open(r'./fasterWhisperGUIConfig.json','w',encoding='utf8')as fp:
-                json.dump(
-                            {"use_auth_token":self.use_auth_token_speaker_diarition,
-                            "overlap":overlap,
-                            "segment":segment
-                        },
-                            fp,
-                            ensure_ascii=False
-                        )
+            if self.page_setting.switchButton_saveConfig.isChecked():
+                self.saveConfig()
+                print("save config files")
+            
+            if self.page_setting.switchButton_autoClearTempFiles.isChecked():
+                try:
+                    temp_list = os.listdir(r"./temp")
+                    if len(temp_list) > 0:
+                        os.system(r"del .\temp\*.srt")
+                        print("cleared temp files")
+                    else:
+                        print("no temp files to clear")
+                except Exception as e:
+                    print(str(e))
             
             # 如果关键进程仍在运行 结束进程
             if self.transcribe_thread is not None and self.transcribe_thread.is_running:
@@ -1380,7 +1401,35 @@ class MainWindows(UIMainWin):
             event.accept()
         else:
             event.ignore()
-    
+
+    def saveConfig(self):
+        outputWithDateTime("Exit")
+        
+        model_param = self.page_model.getParam()
+        setting_param = self.page_setting.getParam()    
+        demucs_param = self.page_demucs.getParam()
+        Transcription_param = self.page_transcribes.getParam()
+        output_whisperX_param = self.page_output.getparam()
+        vad_param = self.page_VAD.getParam()
+
+        config_json = {
+                        "theme":"dark" if isDarkTheme() else "light",
+                        "demucs":demucs_param,
+                        "model_param" : model_param,
+                        "vad_param": vad_param,
+                        "setting":setting_param,
+                        "Transcription_param" : Transcription_param,
+                        "output_whisperX":output_whisperX_param
+                    }
+        
+        with open(r'./fasterWhisperGUIConfig.json','w',encoding='utf8')as fp:
+            json.dump(
+                        config_json,
+                        fp,
+                        ensure_ascii=False,
+                        indent=4
+                    )
+
     def resizeEvent(self, e):
         super().resizeEvent(e)
         if self.stateTool is not None:

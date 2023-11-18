@@ -1,0 +1,19 @@
+#buttonModelLodar{
+    font : 'Segoe UI';
+    font-size: 22px;
+    font-weight: bold;
+    background-color:rgb(165, 80, 80);
+    color: black;
+    border-radius : 15px;
+    text-align: center;
+}
+
+#buttonModelLodar:hover{
+    background-color:rgb(162, 77, 77);
+}
+
+#buttonModelLodar:pressed{
+    background-color:rgb(95, 45, 45);
+    padding-left:2px;
+    padding-top:2px;
+}
