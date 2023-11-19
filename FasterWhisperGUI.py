@@ -1,15 +1,16 @@
 # coding:utf-8
 
 import sys
+# print输出重定向到文件
+log_f = open('fasterwhispergui.log', 'w', buffering=1)
+sys.stdout = log_f
+sys.stderr = log_f
+
 from faster_whisper_GUI.version import __version__
 from faster_whisper_GUI.util import outputWithDateTime
 
-# print输出重定向到文件
-log_f = open('fasterwhispergui.log', 'w', buffering=1)
-log_f.write(f"\nfaster_whisper_GUI: {__version__}")
 
-sys.stdout = log_f
-sys.stderr = log_f
+log_f.write(f"\nfaster_whisper_GUI: {__version__}")
 
 outputWithDateTime("Start")
 

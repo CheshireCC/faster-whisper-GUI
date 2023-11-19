@@ -374,11 +374,11 @@ class MainWindows(UIMainWin):
             Transcribe_params : dict = self.getParamTranscribe()
             
             print("Transcribes options:")
-            self.log.write("Transcribes options:")
+            self.log.write("Transcribes options:\n")
 
             for key, value in Transcribe_params.items():
                 print(f"    -{key} : {value}")
-                self.log.write(f"    -{key} : {value}")
+                self.log.write(f"    -{key} : {value}\n")
 
             if self.FasterWhisperModel is None:
                 print(self.tr("模型未加载！进程退出"))

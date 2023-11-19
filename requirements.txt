@@ -4,9 +4,10 @@ pyAV
 ffmpeg-python
 pyAudio
 nltk
-CTranslate2
+CTranslate2>=3.21.0
 joblib==1.2.0
 pyside6 > 6.5.0
 torch==1.13.1+cu117
 torchaudio==0.13.1+cu117
 webvtt
+
