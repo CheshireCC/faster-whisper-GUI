@@ -1,5 +1,5 @@
 {
-    "theme": "dark",
+    "theme": "light",
     "demucs": {
         "overlap": 0.1,
         "segment": 7.8,
@@ -37,7 +37,7 @@
         "autoClearTempFiles": true
     },
     "Transcription_param": {
-        "language": 1,
+        "language": 8,
         "task": false,
         "beam_size": "5",
         "best_of": "1",
@@ -69,7 +69,7 @@
         "closeDisplayMode": 0,
         "whisperXMinSpeaker": 1,
         "whisperXMaxSpeaker": 1,
-        "outputFormat": 4,
+        "outputFormat": 0,
         "outputEncoding": 1
     }
 }

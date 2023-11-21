@@ -36,7 +36,7 @@ from .config import (
                     , CAPTURE_PARA
                 )
 
-from .modelLoad import loadModel
+from .modelLoad import LoadModelWorker
 from .convertModel import ConvertModel
 from .transcribe import (
                         TranscribeWorker
@@ -109,6 +109,7 @@ class MainWindows(UIMainWin):
         self.whisperXWorker = None
         self.outputWorker = None
         self.demucsWorker = None
+        self.loadModelWorker = None
 
         self.stateTool = None
         
@@ -139,14 +140,14 @@ class MainWindows(UIMainWin):
             self.download_cache_path = path
 
     # ==============================================================================================================
-    # 将于下一版本废弃
+    # 重定向输出到文本框
     # ==============================================================================================================
     def setTextAndMoveCursorToProcessBrowser(self, text:str):
         self.page_process.processResultText.moveCursor(QTextCursor.MoveOperation.End, QTextCursor.MoveMode.MoveAnchor)
         self.page_process.processResultText.insertPlainText(text)
 
     # ==============================================================================================================
-    # 将于下一版本废弃
+    # 输出重定向，但目前不再进行错误信息重定向，错误信息始终输出到 log 文件
     # ==============================================================================================================
     def redirectOutput(self, target : callable):
         # 重定向输出
@@ -167,7 +168,7 @@ class MainWindows(UIMainWin):
         
         model_param = self.getParam_model()
         for key, value in model_param.items():
-            print(f"{key}: {value}")
+            print(f"    -{key}: {value}")
 
         model_size_or_path = model_param["model_size_or_path"]
 
@@ -184,42 +185,58 @@ class MainWindows(UIMainWin):
             content = self.tr("在线下载模型")
 
         infoBar = InfoBar(
-                    icon=InfoBarIcon.INFORMATION,
-                    title='',
-                    content=content,
-                    isClosable=False,
-                    orient=Qt.Orientation.Vertical,    # vertical layout
-                    position=InfoBarPosition.TOP,
-                    duration=2000,
-                    parent=self
-                )
-        
+                            icon=InfoBarIcon.INFORMATION,
+                            title='',
+                            content=content,
+                            isClosable=False,
+                            orient=Qt.Orientation.Vertical,    # vertical layout
+                            position=InfoBarPosition.TOP,
+                            duration=2000,
+                            parent=self
+                        )
+                
         infoBar.show()
 
-        def go():
-            self.FasterWhisperModel = loadModel(
-                        model_size_or_path=model_param["model_size_or_path"]
-                        , device=model_param["device"]
-                        , device_index=model_param["device_index"]
-                        , compute_type=model_param["compute_type"]
-                        , cpu_threads=model_param["cpu_threads"]
-                        , num_workers=model_param["num_workers"]
-                        , download_root=model_param["download_root"]
-                        , local_files_only=model_param["local_files_only"]
-                        , setStatusSignal=self.statusToolSignalStore.LoadModelSignal
-                    )
-            
-            if self.page_model.switchButton_use_v3.isChecked():
-                # 修正 V3 模型的 mel 滤波器组参数
-                print("\n[Using V3 model, modify  number of mel-filters to 128]")
-                self.FasterWhisperModel.feature_extractor.mel_filters = self.FasterWhisperModel.feature_extractor.get_mel_filters(self.FasterWhisperModel.feature_extractor.sampling_rate, self.FasterWhisperModel.feature_extractor.n_fft, n_mels=128)
-                # del self.FasterWhisperModel.model.is_multilingual
-                # self.FasterWhisperModel.model.is_multilingual = True
-
-
-        thread_go = Thread(target= go, daemon=True)
-        thread_go.start()
+        param_for_model_load = {
+                                "model_size_or_path":model_param["model_size_or_path"],
+                                "device":model_param["device"]                   ,
+                                "device_index":model_param["device_index"],
+                                "compute_type":model_param["compute_type"],
+                                "cpu_threads":model_param["cpu_threads"],
+                                "num_workers":model_param["num_workers"],
+                                "download_root":model_param["download_root"],
+                                "local_files_only":model_param["local_files_only"]
+                            }
+        
+        self.loadModelWorker = LoadModelWorker(param_for_model_load, use_v3_model=model_param["use_v3_model"] ,parent = self)
+        self.loadModelWorker.setStatusSignal.connect(self.loadModelResult)
+        self.loadModelWorker.setStatusSignal.connect(self.setModelStatusLabelTextForAll)
         self.setStateTool(self.tr("加载模型"), self.tr("模型加载中，请稍候"), False)
+        # self.FasterWhisperModel = self.loadModelWorker.model
+        # self.FasterWhisperModel = self.loadModelWorker.run()
+        self.loadModelWorker.start()
+
+        # def go():
+        #     self.FasterWhisperModel = loadModel(
+        #                 model_size_or_path=model_param["model_size_or_path"]
+        #                 , device          =model_param["device"]
+        #                 , device_index    =model_param["device_index"]
+        #                 , compute_type    =model_param["compute_type"]
+        #                 , cpu_threads     =model_param["cpu_threads"]
+        #                 , num_workers     =model_param["num_workers"]
+        #                 , download_root   =model_param["download_root"]
+        #                 , local_files_only=model_param["local_files_only"]
+        #                 , setStatusSignal =self.statusToolSignalStore.LoadModelSignal
+        #             )
+
+        #     if self.model_param["use_v3_model"]:
+        #         # 修正 V3 模型的 mel 滤波器组参数
+        #         print("\n[Using V3 model, modify  number of mel-filters to 128]")
+        #         self.FasterWhisperModel.feature_extractor.mel_filters = self.FasterWhisperModel.feature_extractor.get_mel_filters(self.FasterWhisperModel.feature_extractor.sampling_rate, self.FasterWhisperModel.feature_extractor.n_fft, n_mels=128)
+        #         # del self.FasterWhisperModel.model.is_multilingual
+        #         # self.FasterWhisperModel.model.is_multilingual = True
+        # thread_go = Thread(target= go, daemon=True)
+        # thread_go.start()
 
         # sys.stdout = self.oubak
         # sys.stderr = self.errbak
@@ -243,7 +260,8 @@ class MainWindows(UIMainWin):
         num_workers: int = int(self.page_model.LineEdit_num_workers.text().replace(" ", ""))
         download_root: str = self.page_model.LineEdit_download_root.text().replace(" ", "")
         local_files_only: bool = self.page_model.switchButton_local_files_only.isChecked()
-        # local_files_only = local_files_only != "False"
+        use_v3_model: bool = self.page_model.switchButton_use_v3.isChecked()
+
         model_dict : dict = {
                     "model_size_or_path" : model_size_or_path,
                     "device" : device,
@@ -252,7 +270,8 @@ class MainWindows(UIMainWin):
                     "cpu_threads" : cpu_threads,
                     "num_workers" : num_workers,
                     "download_root" : download_root,
-                    "local_files_only" : local_files_only
+                    "local_files_only" : local_files_only,
+                    "use_v3_model" : use_v3_model
         }
 
         return model_dict
@@ -552,9 +571,9 @@ class MainWindows(UIMainWin):
                 segment_, path, info = segments
                 print(path, info.language)
                 print(f"len:{len(segment_)}")
-                # for segment in segment_:
-                #     print(f"[{segment.start}s --> {segment.end}] | {segment.text}")
-                #     print(f"len_words: {len(segment.words)}")
+                for segment in segment_:
+                    print(f"[{segment.start}s --> {segment.end}] | {segment.text}")
+                    print(f"len_words: {len(segment.words)}")
 
             print(f"len_segments_path_info_result: {len(segments_path_info)}")
             self.showResultInTable(self.result_faster_whisper)
@@ -763,6 +782,7 @@ class MainWindows(UIMainWin):
                                         title=self.tr('加载结束'),
                                         content=self.tr("模型加载成功")
                                     )
+            self.FasterWhisperModel = self.loadModelWorker.model
             
         elif not state:
             self.setStateTool(text=self.tr("结束"), status=True)
