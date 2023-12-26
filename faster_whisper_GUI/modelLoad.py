@@ -67,8 +67,11 @@ class LoadModelWorker(QThread):
         
         model = None
         try:
+            if model_size_or_path is None:
+                model_size_or_path = self.model_size_or_path
+
             model = WhisperModel(
-                                    self.model_size_or_path, 
+                                    model_size_or_path, 
                                     device=self.device, 
                                     device_index=self.device_index,
                                     compute_type=self.compute_type,
@@ -100,3 +103,4 @@ class LoadModelWorker(QThread):
         self.setStatusSignal.emit(True)
 
         return model
+

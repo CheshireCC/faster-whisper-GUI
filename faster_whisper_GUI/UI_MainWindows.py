@@ -5,20 +5,20 @@ import os
 # from pathlib import Path
 
 from PySide6.QtCore import  ( 
-                                # Qt,
                                 QCoreApplication,
-                                QTranslator
+                                QTranslator,
+                                Qt
                             )
 
 from PySide6.QtWidgets import  (
                                 # QSpacerItem,
-                                QApplication,
+                                # QApplication,
                                 QWidget
                                 , QStackedWidget
                                 , QVBoxLayout
                                 , QHBoxLayout
                                 , QGridLayout
-                                , QMainWindow
+                                # , QMainWindow
                             )
 
 from PySide6.QtGui import QIcon
@@ -33,10 +33,10 @@ from qfluentwidgets import (
                             
                         )
 
-# from qframelesswindow import (
-#                                 FramelessMainWindow 
-#                                 , StandardTitleBar
-#                             )
+from qframelesswindow import (
+                                FramelessMainWindow 
+                                , StandardTitleBar
+                            )
 
 from .config import (Language_dict
                     , Preciese_list
@@ -71,7 +71,7 @@ from .settingPageNavigation import SettingPageNavigationInterface
 # =======================================================================================
 # UI
 # =======================================================================================
-class UIMainWin(QMainWindow):
+class UIMainWin(FramelessMainWindow):
     """V"""
 
     def tr(self, text):
@@ -197,11 +197,11 @@ class UIMainWin(QMainWindow):
         StyleSheet.MAIN_WINDOWS.apply(self)
         
         # self.resize(800, 500)
-        self.setGeometry(500, 200, 1250, 825)
+        self.setGeometry(100, 100, 1250, 825)
 
         # TODO: 添加标题栏 
-        # self.setTitleBar(StandardTitleBar(self))
-        # self.titleBar.setAttribute(Qt.WA_StyledBackground)
+        self.setTitleBar(StandardTitleBar(self))
+        self.titleBar.setAttribute(Qt.WA_StyledBackground)
 
         self.setWindowTitle(f"FasterWhisperGUI-{__version__}--fw-{__FasterWhisper_version__}--WhisperX-{__WhisperX_version__}")
         
