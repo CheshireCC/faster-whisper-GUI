@@ -16,6 +16,7 @@ class segment_Transcribe():
                     self.words = []
             except Exception:
                 self.words = []
+            self.speaker = None
 
         else:
             self.start = float(start)

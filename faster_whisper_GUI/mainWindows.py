@@ -54,6 +54,7 @@ from .de_mucs import DemucsWorker
 from .subtitleFileRead import readSRTFileToSegments
 from .config import ENCODING_DICT
 from .util import outputWithDateTime
+from .split_audio import SplitAudioFileWithSpeakersWorker
 
 # =======================================================================================
 # SignalStore
@@ -1285,19 +1286,17 @@ class MainWindows(UIMainWin):
         output audio part with speaker
         """
         outputWithDateTime("SegmentAudioFileWithSpeaker")
-        for segments, file_path, info in self.current_result:
-            with av.open(file_path) as av_file:
-                
-                stream_ = next(s for s in av_file.streams if s.codec_context.type == 'audio')
-                # stream_.
-                audio_channel_num = stream_.channels
-                if audio_channel_num < 2:
-                    print("单声道音频")
-                    split_setore = False
-                else:
-                    print("双声道音频")
-                
-                
+
+        self.page_output.outputAudioPartWithSpeakerButton.setEnabled(False)
+        output_path = self.page_output.outputGroupWidget.LineEdit_output_dir.text()
+        self.splitAudioFileWithSpeakerWorker = SplitAudioFileWithSpeakersWorker(self.current_result,output_path, self)
+        self.splitAudioFileWithSpeakerWorker.result_signal.connect(self.splitAudioFileWithSpeakerWorkerFinished)
+        self.splitAudioFileWithSpeakerWorker.start()
+        
+    def splitAudioFileWithSpeakerWorkerFinished(self):
+        mes = MessageBox("over","ok", self)
+        mes.show()
+        self.page_output.outputAudioPartWithSpeakerButton.setEnabled(True)
 
     def singleAndSlotProcess(self):
         """
