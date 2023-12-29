@@ -211,15 +211,15 @@ class TranscribeWorker(QThread):
         
         
     def transcribe_file(self, file) -> (TranscriptionInfo, List):
-        try:
-            is_av_file = self.try_decode_avFile(file)
-            if not is_av_file:
-                return (None,None)
-        except Exception as e: # 捕获异常
-            print(f'    {file.split("/")[-1]} 不是一个有效的音视频文件\n')
-            print(f"    error:{str(e)}")
-            print(f"    ignore File : {file} \n")
-            return (None, None)
+        # try:
+        #     is_av_file = self.try_decode_avFile(file)
+        #     if not is_av_file:
+        #         return (None,None)
+        # except Exception as e: # 捕获异常
+        #     print(f'    {file.split("/")[-1]} 不是一个有效的音视频文件\n')
+        #     print(f"    error:{str(e)}")
+        #     print(f"    ignore File : {file} \n")
+        #     return (None, None)
 
         print("开始处理音频...")
         segments, info = self.model.transcribe(
@@ -303,7 +303,7 @@ class TranscribeWorker(QThread):
         print("\n")
         print(f"current task: {file}")
         print("  尝试解析文件")
-        container = av.open(file) # 尝试打开文件      
+        container = av.open(file, metadata_errors="ignore") # 尝试打开文件      
         av_cont = container.streams
         for stream in av_cont:
             if stream.codec_context.type == "audio":

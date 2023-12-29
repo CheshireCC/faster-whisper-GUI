@@ -129,7 +129,7 @@ class FileNameListView(QWidget):
         for fileName in fileNames:
             cont = None
             try:
-                cont = av.open(fileName)
+                cont = av.open(fileName, metadata_errors="ignore")
             except Exception as e:
                 print(f"InvalidDataError : {fileName} \nerror:{str(e)}")
                 ignoreFile.append(fileName)
@@ -147,6 +147,9 @@ class FileNameListView(QWidget):
             
                 else:
                     fileNames_.append(fileName)
+                
+                cont.close()
+                
         if len(ignoreFile) > 0:
             ifi = ignore_files_info(ignore_files=ignoreFile, ignore_reason=self.__tr("不包含音频流的文件将被忽略："))
             self.ignore_files_signal.emit(ifi)

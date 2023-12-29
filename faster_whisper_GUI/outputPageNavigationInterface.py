@@ -54,6 +54,7 @@ class OutputPageNavigationInterface(NavigationBaseInterface):
         param["outputEncoding"] = self.combox_output_code.currentIndex()
 
         return param
+    
     def setupUI(self):
         # -----------------------------------------------------------------------------------------
 
@@ -68,9 +69,14 @@ class OutputPageNavigationInterface(NavigationBaseInterface):
         self.WhisperXSpeakerDiarizeButton.setText(self.tr("WhisperX 说话人分离"))
         self.WhisperXSpeakerDiarizeButton.setToolTip(self.tr("speachBrain 模型声纹聚类分析，将不同语音段的不同说话人进行分离"))
 
+        self.outputAudioPartWithSpeakerButton = PushButton()
+        self.outputAudioPartWithSpeakerButton.setText(self.tr("输出音频分段"))
+        self.outputAudioPartWithSpeakerButton.setToolTip(self.tr("将音频按照说话人进行分段，并输出"))
+        
         self.WhisperXHBoxLayout = QHBoxLayout()
         self.WhisperXHBoxLayout.addWidget(self.WhisperXAligmentTimeStampleButton, 0, Qt.AlignmentFlag.AlignLeft)
         self.WhisperXHBoxLayout.addWidget(self.WhisperXSpeakerDiarizeButton, 0, Qt.AlignmentFlag.AlignLeft)
+        self.WhisperXHBoxLayout.addWidget(self.outputAudioPartWithSpeakerButton, 0, Qt.AlignmentFlag.AlignLeft)
         self.WhisperXHBoxLayout.addSpacing(10)
 
         self.outputSubtitleFileButton = PushButton()

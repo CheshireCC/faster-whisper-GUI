@@ -136,6 +136,7 @@ class MainWindows(UIMainWin):
                                                     , self.tr("选择缓存文件夹")
                                                     , self.page_model.LineEdit_download_root.text()
                                                 ):
+            
             self.page_model.LineEdit_download_root.setText(path)
             self.download_cache_path = path
 
@@ -425,7 +426,7 @@ class MainWindows(UIMainWin):
                 num_worker = 1
 
             # 创建进程
-            self.log.write(f"create transcribe process with {num_worker} workers")
+            self.log.write(f"create transcribe process with {num_worker} workers\n")
             self.transcribe_thread = TranscribeWorker(model = self.FasterWhisperModel
                                                     , parameters = Transcribe_params
                                                     , vad_filter = vad_filter
@@ -440,7 +441,7 @@ class MainWindows(UIMainWin):
             self.page_process.button_process.setIcon(r":/resource/Image/Cancel_red.svg")
 
             # 启动进程
-            self.log.write(f"start transcribe process")
+            self.log.write(f"start transcribe process\n")
             # self.transcribe_thread.is_running == True
             self.transcribe_thread.start()
             self.setStateTool(self.tr("音频处理"), self.tr("正在处理中"), False)
@@ -1278,7 +1279,26 @@ class MainWindows(UIMainWin):
             print("unload model failed")
             print(str(e))
             self.raiseErrorInfoBar(self.tr("卸载模型失败"), self.tr("卸载模型失败，请在转写之前禁用温度回退配置"))
-        
+    
+    def outputAudioPartWithSpeaker(self):
+        """
+        output audio part with speaker
+        """
+        outputWithDateTime("SegmentAudioFileWithSpeaker")
+        for segments, file_path, info in self.current_result:
+            with av.open(file_path) as av_file:
+                
+                stream_ = next(s for s in av_file.streams if s.codec_context.type == 'audio')
+                # stream_.
+                audio_channel_num = stream_.channels
+                if audio_channel_num < 2:
+                    print("单声道音频")
+                    split_setore = False
+                else:
+                    print("双声道音频")
+                
+                
+
     def singleAndSlotProcess(self):
         """
         process single connect and others
@@ -1313,6 +1333,7 @@ class MainWindows(UIMainWin):
 
         self.page_output.tableTab.signal_delete_table.connect(self.deleteResultTableEvent)
         self.page_output.unloadWhisperModelPushbutton.clicked.connect(self.unloadWhisperModel)
+        self.page_output.outputAudioPartWithSpeakerButton.clicked.connect(self.outputAudioPartWithSpeaker)
 
         self.page_demucs.fileListView.ignore_files_signal.connect(lambda ignore_files_info: self.raiseInfoBar(self.tr("忽略文件"), ignore_files_info["ignore_reason"]+"\n"+"\n".join(ignore_files_info["ignore_files"])))
         self.page_process.fileNameListView.ignore_files_signal.connect(lambda ignore_files_info: self.raiseInfoBar(self.tr("忽略文件"), ignore_files_info["ignore_reason"]+"\n"+"\n".join(ignore_files_info["ignore_files"])))

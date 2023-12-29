@@ -4,7 +4,7 @@
 from typing import (List, Optional, TypedDict, Union)
 from PySide6.QtCore import QThread, Signal
 from faster_whisper import WhisperModel
-from concurrent import futures 
+
 
 class modelParamDict(TypedDict):
     model_size_or_path: str

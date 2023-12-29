@@ -11,8 +11,8 @@ from PySide6.QtCore import  (
                             )
 
 from PySide6.QtWidgets import  (
-                                # QSpacerItem,
                                 # QApplication,
+                                QSpacerItem,
                                 QWidget
                                 , QStackedWidget
                                 , QVBoxLayout
@@ -231,8 +231,8 @@ class UIMainWin(FramelessMainWindow):
         self.setCentralWidget(self.mainWindowsWidget)
 
         # TODO: 创建一个空对象 用于改善布局顶部
-        # self.spacer_main = QSpacerItem(0,25)
-        # self.vBoxLayout.addItem(self.spacer_main)
+        self.spacer_main = QSpacerItem(0,25)
+        self.vBoxLayout.addItem(self.spacer_main)
 
         # 设置显示图层到最后避免遮挡窗体按钮
         self.mainWindowsWidget.lower()
