@@ -8,7 +8,7 @@
     "model_param": {
         "localModel": true,
         "onlineModel": false,
-        "model_path": "",
+        "model_path": "F:/WhisperModels/faster-whisper/large-v3-float32",
         "modelName": 0,
         "use_v3_model": true,
         "device": 1,
@@ -16,7 +16,7 @@
         "preciese": 0,
         "thread_num": "4",
         "num_worker": "1",
-        "download_root": "",
+        "download_root": "C:/Users/12059/.cache/huggingface/hub",
         "local_files_only": false
     },
     "vad_param": {
@@ -30,7 +30,7 @@
     },
     "setting": {
         "saveConfig": true,
-        "autoLoadModel": true,
+        "autoLoadModel": false,
         "language": 2,
         "huggingface_user_token": "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",
         "autoGoToOutputPage": 2,
