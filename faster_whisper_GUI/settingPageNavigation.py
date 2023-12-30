@@ -13,7 +13,8 @@ from qfluentwidgets import (
                             ComboBox, 
                             LineEdit,
                             MessageBox,
-                            PushButton
+                            PushButton,
+                            TitleLabel
                         )
 
 from .paramItemWidget import ParamWidget
@@ -52,6 +53,12 @@ class SettingPageNavigationInterface(QWidget):
         self.mainLayout.addLayout(layout)
 
     def setupUI(self):
+
+        self.mainLayout.addSpacing(10)
+
+        self.titleLabel_title = TitleLabel(self.__tr("软件设置"))
+        self.addWidget(self.titleLabel_title)
+
         # --------------------------------------------------------------------------------------------------------------------------------------------------------------
         self.switchButton_saveConfig = SwitchButton()
         self.switchButton_saveConfig.setChecked(True)

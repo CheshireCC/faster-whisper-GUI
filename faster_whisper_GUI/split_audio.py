@@ -6,6 +6,7 @@ from .transcribe import secondsToHMS
 class SplitAudioFileWithSpeakersWorker(QThread):
     # 定义一个信号，用于在处理完成后发送结果
     result_signal = Signal(str)
+    current_task_signal = Signal(str)
 
     def __init__(self, segments_path_info_list:list, output_path, parent=None):
         super().__init__(parent)
@@ -32,7 +33,13 @@ class SplitAudioFileWithSpeakersWorker(QThread):
         return commandLine
     
     def getOutPutFileName(self, output_path:str, start_time:str, end_time:str, speaker:str):
-        return os.path.join(output_path, f"{speaker}_{start_time.replace(':','_')}_{end_time.replace(':','_')}.wav")
+        fileName = ""
+        if not(speaker is None) and speaker != "":
+            fileName = os.path.join(output_path, f"{speaker}_{start_time.replace(':','_')}_{end_time.replace(':','_')}.wav")
+        else:
+            fileName = os.path.join(output_path, f"UnClassedSpeaker_{start_time.replace(':','_')}_{end_time.replace(':','_')}.wav")
+        return fileName
+    
 
     def run(self):
         self.is_running = True
@@ -41,6 +48,8 @@ class SplitAudioFileWithSpeakersWorker(QThread):
             segments,path,info = result
             base_path,file = os.path.split(path)
             print(f"    current task: {file}")
+
+            self.current_task_signal.emit(file)
 
             if not self.output_path:
                 output_path = base_path
@@ -54,7 +63,8 @@ class SplitAudioFileWithSpeakersWorker(QThread):
                 os.makedirs(output_path)
             
             for segment in segments:
-                if not segment.speaker: continue
+                # if not segment.speaker : continue
+                
                 start_time = secondsToHMS(segment.start)
                 end_time = secondsToHMS(segment.end)
                 speaker = segment.speaker

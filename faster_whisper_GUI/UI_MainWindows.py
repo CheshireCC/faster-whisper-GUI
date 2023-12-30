@@ -190,6 +190,13 @@ class UIMainWin(FramelessMainWindow):
         # 设置配置
         self.setConfig()
 
+        # 根据读取的配置设置完控件状态之后，根据控件状态设置相关属性
+        self.page_output.tableTab.onDisplayModeChanged(self.page_output.tableTab.closeDisplayModeComboBox.currentIndex())
+        self.page_output.tableTab.tabBar.setMovable(self.page_output.tableTab.movableCheckBox.isChecked())
+        self.page_output.tableTab.tabBar.setScrollable(self.page_output.tableTab.scrollableCheckBox.isChecked())
+        self.page_output.tableTab.tabBar.setTabShadowEnabled(self.page_output.tableTab.shadowEnabledCheckBox.isChecked())
+        self.page_output.tableTab.tabBar.setTabMaximumWidth(self.page_output.tableTab.tabMaxWidthSpinBox.value())
+
     def initWin(self):
 
         self.setObjectName("FramlessMainWin")

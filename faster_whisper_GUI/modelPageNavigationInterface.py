@@ -87,6 +87,7 @@ class ModelNavigationInterface(NavigationBaseInterface):
         self.label_model_path.setObjectName("LabelModelPath")
         self.label_model_path.setStyleSheet("#LabelModelPath{ background : rgba(0, 128, 0, 120); }")
         self.lineEdit_model_path = LineEdit()
+        self.lineEdit_model_path.setClearButtonEnabled(True)
         self.toolPushButton_get_model_path = ToolButton()
         self.toolPushButton_get_model_path.setIcon(self.style().standardPixmap(QStyle.StandardPixmap.SP_DirOpenIcon))
 

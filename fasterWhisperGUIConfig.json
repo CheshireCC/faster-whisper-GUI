@@ -3,12 +3,12 @@
     "demucs": {
         "overlap": 0.1,
         "segment": 7.8,
-        "tracks": 0
+        "tracks": 1
     },
     "model_param": {
         "localModel": true,
         "onlineModel": false,
-        "model_path": "",
+        "model_path": "F:/WhisperModels/faster-whisper/large-v3-float32",
         "modelName": 0,
         "use_v3_model": true,
         "device": 1,
@@ -16,16 +16,16 @@
         "preciese": 0,
         "thread_num": "4",
         "num_worker": "1",
-        "download_root": "",
+        "download_root": "C:/Users/12059/.cache/huggingface/hub",
         "local_files_only": false
     },
     "vad_param": {
         "use_VAD": true,
-        "threshold": 0.3,
+        "threshold": 0.5,
         "minSpeechDuration": "250",
         "minSilenceDuration": "2000",
         "maxSpeechDuration": "inf",
-        "windowSize": 2,
+        "windowSize": 1,
         "speechPad": "400"
     },
     "setting": {
@@ -37,9 +37,9 @@
         "autoClearTempFiles": true
     },
     "Transcription_param": {
-        "language": 8,
+        "language": 2,
         "task": false,
-        "beam_size": "5",
+        "beam_size": "2",
         "best_of": "1",
         "patience": "1.0",
         "length_penalty": "1.0",
@@ -65,10 +65,10 @@
         "tabMovable": false,
         "tabScrollable": true,
         "tabShadowEnabled": false,
-        "tabMaxWidth": 326,
+        "tabMaxWidth": 300,
         "closeDisplayMode": 0,
-        "whisperXMinSpeaker": 3,
-        "whisperXMaxSpeaker": 3,
+        "whisperXMinSpeaker": 2,
+        "whisperXMaxSpeaker": 2,
         "outputFormat": 0,
         "outputEncoding": 1
     }

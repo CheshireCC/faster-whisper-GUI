@@ -71,7 +71,7 @@ class OutputPageNavigationInterface(NavigationBaseInterface):
 
         self.outputAudioPartWithSpeakerButton = PushButton()
         self.outputAudioPartWithSpeakerButton.setText(self.tr("输出音频分段"))
-        self.outputAudioPartWithSpeakerButton.setToolTip(self.tr("将音频按照说话人进行分段，并输出"))
+        self.outputAudioPartWithSpeakerButton.setToolTip(self.tr("将音频按照说话人和时间戳进行分段处理，并输出"))
         
         self.WhisperXHBoxLayout = QHBoxLayout()
         self.WhisperXHBoxLayout.addWidget(self.WhisperXAligmentTimeStampleButton, 0, Qt.AlignmentFlag.AlignLeft)

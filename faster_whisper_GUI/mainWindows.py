@@ -882,12 +882,15 @@ class MainWindows(UIMainWin):
         self.whisperXWorker = None
 
     def whisperXAligmentTimeStample(self):
-        if self.result_faster_whisper is None :
+        if self.result_faster_whisper is None and self.current_result is None:
             self.raiseErrorInfoBar(
                                     self.tr("错误"),
                                     self.tr("没有有效的 音频-字幕 转写结果，无法进行对齐")
             )
             return
+
+        elif self.current_result is None :
+            self.current_result = self.result_faster_whisper
         
         self.setPageOutButtonStatus()
         self.outputWithDateTime("TimeStample_Alignment")
@@ -895,7 +898,7 @@ class MainWindows(UIMainWin):
         self.setStateTool(title=self.tr("WhisperX"), text=self.tr("时间戳对齐"), status=False)
 
         if self.whisperXWorker is None:
-            self.whisperXWorker = WhisperXWorker(self.result_faster_whisper, alignment=True,speaker_diarize=False, parent=self)
+            self.whisperXWorker = WhisperXWorker(self.current_result, alignment=True,speaker_diarize=False, parent=self)
         else:
             self.whisperXWorker.result_segments_path_info = self.result_faster_whisper
             self.whisperXWorker.alignment = True
@@ -909,7 +912,7 @@ class MainWindows(UIMainWin):
         
         whisperParams = self.getParamWhisperX()
 
-        result_needed = self.result_whisperx_aligment or self.result_faster_whisper
+        result_needed = self.current_result or self.result_whisperx_aligment or self.result_faster_whisper
         # print(f"result_useing: {result_needed}")
         # try:
         #     print(len(result_needed))
@@ -956,6 +959,7 @@ class MainWindows(UIMainWin):
         self.page_output.WhisperXAligmentTimeStampleButton.setEnabled(not self.page_output.WhisperXAligmentTimeStampleButton.isEnabled())
         self.page_output.outputSubtitleFileButton.setEnabled(not self.page_output.outputSubtitleFileButton.isEnabled())
         self.page_output.WhisperXSpeakerDiarizeButton.setEnabled(not self.page_output.WhisperXSpeakerDiarizeButton.isEnabled())
+        self.page_output.outputAudioPartWithSpeakerButton.setEnabled(not self.page_output.outputAudioPartWithSpeakerButton.isEnabled()) 
 
     def speakerDiarizeOver(self, segments_path_info:list):
         self.setPageOutButtonStatus()
@@ -1004,7 +1008,7 @@ class MainWindows(UIMainWin):
 
         # 判定打开的文件是否音视频文件
         try:
-            av_cont = av.open(file_path)
+            av_cont = av.open(file_path, metadata_errors = "ignore")
             
             # 获取文件的全部 流数据
             av_streams = av_cont.streams
@@ -1105,12 +1109,13 @@ class MainWindows(UIMainWin):
             self.result_whisperx_aligment = None
             self.result_whisperx_speaker_diarize = None
 
-            if self.result_faster_whisper is not None:
-                self.result_faster_whisper.append((segments, file, info))
+            if self.current_result is not None:
+                self.current_result.append((segments, file, info))
             else:
-                self.result_faster_whisper = [(segments, file, info)]
+                self.current_result = [(segments, file, info)]
             # self.tableModel_list[file] = file_subtitle_fileName
-            self.showResultInTable(self.result_faster_whisper)
+                
+            self.showResultInTable(self.current_result)
 
     def reSetButton_demucs_process(self):
         self.page_demucs.process_button.setText(self.tr("提取"))
@@ -1287,16 +1292,26 @@ class MainWindows(UIMainWin):
         """
         outputWithDateTime("SegmentAudioFileWithSpeaker")
 
-        self.page_output.outputAudioPartWithSpeakerButton.setEnabled(False)
+        # self.page_output.outputAudioPartWithSpeakerButton.setEnabled(False)
+        self.setPageOutButtonStatus()
+
         output_path = self.page_output.outputGroupWidget.LineEdit_output_dir.text()
         self.splitAudioFileWithSpeakerWorker = SplitAudioFileWithSpeakersWorker(self.current_result,output_path, self)
         self.splitAudioFileWithSpeakerWorker.result_signal.connect(self.splitAudioFileWithSpeakerWorkerFinished)
+        self.splitAudioFileWithSpeakerWorker.current_task_signal.connect(lambda file: self.setStateTool(self.tr("分割音频"), self.tr("处理文件：") + file, False))
         self.splitAudioFileWithSpeakerWorker.start()
+
+        self.setStateTool(self.tr("分割音频"), self.tr("按说话人分割音频文件"), False)
         
     def splitAudioFileWithSpeakerWorkerFinished(self):
-        mes = MessageBox("over","ok", self)
-        mes.show()
-        self.page_output.outputAudioPartWithSpeakerButton.setEnabled(True)
+        
+        self.setStateTool(self.tr("分割音频"), self.tr("按说话人分割音频文件完成"), True)
+        self.raiseSuccessInfoBar(self.tr("分割音频完成"),self.tr("按说话人分割音频文件完成"))
+
+        # mes = MessageBox("over","ok", self)
+        # mes.show()
+        # self.page_output.outputAudioPartWithSpeakerButton.setEnabled(True)
+        self.setPageOutButtonStatus()
 
     def singleAndSlotProcess(self):
         """

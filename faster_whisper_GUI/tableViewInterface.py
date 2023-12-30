@@ -190,8 +190,8 @@ class TabInterface(QWidget):
         widget.resizeColumnToContents(2)
 
         # 设置列宽
-        widget.setColumnWidth(0,100)
-        widget.setColumnWidth(1,100)
+        widget.setColumnWidth(0,110)
+        widget.setColumnWidth(1,110)
         # widget.setColumnWidth(3,500)
         # widget.setColumnWidth(4,50)
         
