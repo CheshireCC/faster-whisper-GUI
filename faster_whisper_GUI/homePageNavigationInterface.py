@@ -33,12 +33,9 @@ class HomePageNavigationinterface(NavigationBaseInterface):
         
         self.hBoxLayout.addWidget(self.itemLabel_demucs)#, 3, alignment=Qt.AlignmentFlag.AlignLeft)
         self.itemLabel_demucs.setMainButton(self.tr("进入"))
-
-
+        
         # image = QImage(FasterWhisperGUIIcon.DEMUCS.png())
         # self.itemLabel_demucs.imageLabel.setImage(image)
-        
-
         # self.itemLabel_demucs.setFixedHeight(440)
 
         self.itemLabel_faster_whisper = ItemLabel(

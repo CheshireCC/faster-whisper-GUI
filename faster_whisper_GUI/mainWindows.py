@@ -1290,6 +1290,10 @@ class MainWindows(UIMainWin):
         """
         output audio part with speaker
         """
+        if self.current_result is None or len(self.current_result) == 0:
+            self.raiseErrorInfoBar(self.tr("转写结果为空"), self.tr("没有有效的转写结果"))       
+            return
+        
         outputWithDateTime("SegmentAudioFileWithSpeaker")
 
         # self.page_output.outputAudioPartWithSpeakerButton.setEnabled(False)

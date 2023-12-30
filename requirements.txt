@@ -1,5 +1,6 @@
-pyside6-fluent-widgets
+pyside6-fluent-widgets==1.3.2
 faster-whisper==0.9.0
+nuitka<=1.8.6
 pyAV
 ffmpeg-python
 pyAudio

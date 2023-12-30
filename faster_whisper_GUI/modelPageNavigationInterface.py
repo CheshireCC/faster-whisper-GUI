@@ -110,11 +110,10 @@ class ModelNavigationInterface(NavigationBaseInterface):
         self.label_online_model_name.setText(self.__tr("模型名称"))
         self.label_online_model_name.setObjectName("LabelOnlineModelName")
         self.label_online_model_name.setStyleSheet("#LabelOnlineModelName{ background : rgba(0, 128, 0, 120); }")
-        self.combox_online_model = EditableComboBox()
 
+        self.combox_online_model = EditableComboBox()
         # 下拉框设置项目
         self.combox_online_model.addItems(self.model_names)
-
         # 下拉框设置自动完成
         completer = QCompleter(self.model_names, self)
         self.combox_online_model.setCompleter(completer)
