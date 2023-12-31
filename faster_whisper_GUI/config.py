@@ -1,3 +1,4 @@
+# coding:utf-8
 default_Huggingface_user_token = "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"
 
 Language_without_space = ["ja","zh","ko","yue"]

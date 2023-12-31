@@ -1,4 +1,4 @@
-
+# coding:utf-8
 import os
 from PySide6.QtCore import QThread, Signal
 from torchaudio.pipelines import HDEMUCS_HIGH_MUSDB_PLUS
