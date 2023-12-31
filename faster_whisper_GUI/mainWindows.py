@@ -1277,6 +1277,12 @@ class MainWindows(UIMainWin):
         try:
             del self.FasterWhisperModel
             self.FasterWhisperModel = None
+
+            del self.loadModelWorker.model
+            self.loadModelWorker.model = None
+            
+            self.loadModelWorker = None
+
             self.setModelStatusLabelTextForAll(False)
             self.raiseSuccessInfoBar(self.tr("卸载模型成功"), self.tr("卸载模型成功"))
             print("unload model succeed")
@@ -1285,7 +1291,10 @@ class MainWindows(UIMainWin):
             print("unload model failed")
             print(str(e))
             self.raiseErrorInfoBar(self.tr("卸载模型失败"), self.tr("卸载模型失败，请在转写之前禁用温度回退配置"))
-    
+
+        # 清理缓存
+        torch.cuda.empty_cache()
+
     def outputAudioPartWithSpeaker(self):
         """
         output audio part with speaker

@@ -9,7 +9,6 @@ from PySide6.QtWidgets import (
 
 from qfluentwidgets import (DoubleSpinBox, PushButton, ComboBox, FluentIcon)
 
-
 from .navigationInterface import NavigationBaseInterface
 from .fileNameListViewInterface import FileNameListView
 from .outputLabelLineEditButtonWidget import OutputGroupWidget
