@@ -410,7 +410,7 @@ class MainWindows(UIMainWin):
                 return
             
             # print(Transcribe_params['audio'])
-            if len(Transcribe_params['audio']) == 0 and self.page_process.transceibe_Files_RadioButton.isChecked():
+            if (len(Transcribe_params['audio']) == 0 and self.page_process.transceibe_Files_RadioButton.isChecked()) or (len(Transcribe_params["audio"]) == 1 and Transcribe_params["audio"][0] == ""):
                 print("No input files!")
                 self.log.write("No input files!")
                 self.raiseErrorInfoBar(
@@ -1194,8 +1194,10 @@ class MainWindows(UIMainWin):
     
         param = self.getDemucsParams()
 
-        if len(param["audio"]) < 1:
+        if len(param["audio"]) < 1 or(len(param["audio"]) == 1 and param["audio"][0] == ""):
+            
             self.raiseErrorInfoBar(self.tr("文件错误"), self.tr("没有选择有效的音视频文件"))
+            return
 
         for key,value in param.items():
             print(f"{key}: {value}")

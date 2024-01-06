@@ -50,6 +50,7 @@ class FileNameListView(QWidget):
         self.setupUI()
 
         self.FileNameModle = QStringListModel()
+        self.FileNameModle.setStringList([""])
         self.fileNameList.setModel(self.FileNameModle)
 
         self.avDataRootDir = r"./"
@@ -185,7 +186,7 @@ class FileNameListView(QWidget):
                 continue
             
             self.avFileList.append(file)
-
+        self.avFileList = [file for file in self.avFileList if file != ""]
         self.FileNameModle.setStringList(self.avFileList)
         
         if len(file_ignored) > 0:
@@ -213,25 +214,24 @@ class FileNameListView(QWidget):
             self.removeSingleFileNameFromListWidget(selected_indexes[0])
             selected_indexes = fileNameListWidget.selectedIndexes()
 
-        # 从数据模型中移除项目
-        # for index in selected_indexes:
-        #     self.FileNameModle.removeRow(index.row())
-
+        # 同步数据到列表项
+        self.avFileList = self.FileNameModle.stringList()
+        if self.avFileList == []:
+            self.avFileList.append("")
+            
     def removeSingleFileNameFromListWidget(self, index):
 
         self.FileNameModle.removeRow(index.row())
 
         # 重新设置当前的显示数据 由于之前已经进行过数据项目绑定 所以这里应该可以省略 
         # self.fileNameList.setModel(self.FileNameModle)
-        # 同步数据到列表项
-        self.avFileList = self.FileNameModle.stringList()
+        
 
     def clearFileNameListWidget(self):
-        string_list = self.FileNameModle.stringList()
-        string_list.clear()
-        self.FileNameModle.setStringList(string_list)
+        self.avFileList = [""]
+        self.FileNameModle.setStringList(self.avFileList)
         # self.fileNameList.setModel(self.FileNameModle)
-        self.avFileList = []
+        
 
     def addWidget(self, widget:QWidget):
         self.vBoxLayout.addWidget(widget)
