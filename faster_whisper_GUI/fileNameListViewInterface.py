@@ -5,7 +5,7 @@ import av
 
 from PySide6.QtCore import (QStringListModel, Qt, QCoreApplication, Signal)
 
-from PySide6.QtGui import (QDropEvent, QDragEnterEvent)
+from PySide6.QtGui import (QClipboard, QDropEvent, QDragEnterEvent)
 
 from PySide6.QtWidgets import (
                                 QWidget
@@ -209,16 +209,29 @@ class FileNameListView(QWidget):
         fileNameListWidget = self.fileNameList
         selected_indexes = fileNameListWidget.selectedIndexes()
 
+        while(len(selected_indexes) != 0):
+            self.removeSingleFileNameFromListWidget(selected_indexes[0])
+            selected_indexes = fileNameListWidget.selectedIndexes()
+
         # 从数据模型中移除项目
-        for index in selected_indexes:
-            self.FileNameModle.removeRow(index.row())
-        
-        # fileNameListWidget._setSelectedRows(0)
+        # for index in selected_indexes:
+        #     self.FileNameModle.removeRow(index.row())
+
+    def removeSingleFileNameFromListWidget(self, index):
+
+        self.FileNameModle.removeRow(index.row())
 
         # 重新设置当前的显示数据 由于之前已经进行过数据项目绑定 所以这里应该可以省略 
-        fileNameListWidget.setModel(self.FileNameModle)
+        # self.fileNameList.setModel(self.FileNameModle)
         # 同步数据到列表项
         self.avFileList = self.FileNameModle.stringList()
+
+    def clearFileNameListWidget(self):
+        string_list = self.FileNameModle.stringList()
+        string_list.clear()
+        self.FileNameModle.setStringList(string_list)
+        # self.fileNameList.setModel(self.FileNameModle)
+        self.avFileList = []
 
     def addWidget(self, widget:QWidget):
         self.vBoxLayout.addWidget(widget)
@@ -247,7 +260,6 @@ class FileNameListView(QWidget):
         self.fileNameList.setFixedHeight(275)
         self.fileNameList.setSelectionMode(QListView.ExtendedSelection)
         self.fileNameListContainLayout.addWidget(self.fileNameList)
-
         
         self.fileButtonLayout = QVBoxLayout()
         self.fileButtonLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -260,10 +272,15 @@ class FileNameListView(QWidget):
         self.removeFileButton = ToolButton()
         self.removeFileButton.setIcon(FluentIcon.REMOVE)
         self.fileButtonLayout.addWidget(self.removeFileButton)
+
+        self.clearFilesButton = ToolButton()
+        self.clearFilesButton.setIcon(FluentIcon.DELETE)
+        self.fileButtonLayout.addWidget(self.clearFilesButton)
     
     def SignalAndSlotConnect(self):
         self.addFileButton.clicked.connect(self.addFileNamesToListWidget)
         self.removeFileButton.clicked.connect(self.removeFileNameFromListWidget)
+        self.clearFilesButton.clicked.connect( self.clearFileNameListWidget)
     
     # ===========================================================================================================
     def dragEnterEvent(self, event: QDragEnterEvent):
@@ -273,7 +290,22 @@ class FileNameListView(QWidget):
             event.accept()
         else:
             event.ignore()
+
+    def urlsToFileNames(self, urls):
+        """
+        从 QUrl 列表获取文件名 并递归获取子文件夹内的文件名的函数
+        :param urls:QUrl 对象列表 List[QUrl]
+        """
+        fileNames_ = [url.toLocalFile() for url in urls]
+        fileNames = [url for url in fileNames_ if os.path.isfile(url)]
+
+        folderPaths = [url for url in fileNames_ if os.path.isdir(url)]
+        if len(folderPaths):
+            for folderPath in folderPaths:
+                fileNames.extend(self.searchFilesFromFolder(folderPath))
         
+        return fileNames
+    
     def dropEvent(self, a0: QDropEvent) -> None:
         """
         重写鼠标放开事件
@@ -282,12 +314,48 @@ class FileNameListView(QWidget):
         """
         # 获取拖拽进来的所有文件的路径
         urls = a0.mimeData().urls()
-        
-        fileNames = [url.toLocalFile() for url in urls]
-        fileNames = [url for url in fileNames if os.path.isfile(url)]
 
-        if len(fileNames) > 0:
+        fileNames = self.urlsToFileNames(urls)
+
+        if len(fileNames):
             self.setFileNameListToDataModel(fileNames)
         else:
             pass
+
+    def searchFilesFromFolder(self, folderPath: str):
+        """
+        从文件夹中获取文件名，并递归获取子文件夹内文件名的函数
+        :param folderPath: 文件路径 str
+        """
+        fileNames = []
+        if not os.path.isdir(folderPath):
+            return fileNames
+        fileList = os.listdir(folderPath)
+
+        fileNames = [os.path.join(folderPath, file) for file in fileList if os.path.isfile(os.path.join(folderPath, file))]
+
+        folderPaths = [os.path.join(folderPath, file) for file in fileList if os.path.isdir(os.path.join(folderPath, file))]
+
+        for folderPath in folderPaths:
+            fileNames.extend(self.searchFilesFromFolder(folderPath))
+
+        return fileNames
+
+    def keyPressEvent(self, event):
+        # Ctrl+V键被按下 查找文件名 并尝试添加到文件名列表
+        # print("Ctrl+V键被按下")
+        if event.key() == Qt.Key.Key_V and event.modifiers() & Qt.KeyboardModifiers.ControlModifier:
+            self.pasteFileNamesToFileNameList()
+        else:
+            super().keyPressEvent(event)
         
+    def pasteFileNamesToFileNameList(self):
+        
+        # 获取剪贴板中的文本
+        if QClipboard().mimeData().hasUrls():
+            # 如果有文本，获取文本并显示文件选择器
+            urls = QClipboard().mimeData().urls()
+            fileNameList = self.urlsToFileNames(urls)
+            
+            self.setFileNameListToDataModel(fileNameList)
+    

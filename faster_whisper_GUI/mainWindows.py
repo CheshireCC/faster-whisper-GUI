@@ -1386,14 +1386,20 @@ class MainWindows(UIMainWin):
         self.tableModel_list.pop(file_key)
         print(f"len_DataModel_after_pop:{len(self.tableModel_list)}")
 
-        for result in [se for se in [self.result_faster_whisper, self.result_whisperx_aligment, self.result_whisperx_speaker_diarize] if se is not None]:
-            print(f"len_result: {len(self.result_faster_whisper)}")
+        for result in [se for se in [self.current_result ,self.result_faster_whisper, self.result_whisperx_aligment, self.result_whisperx_speaker_diarize] if se is not None]:
+            print(f"len_result: {result}")
             for segmengs in result:
                 if segmengs[1] == file_key:
                     result.remove(segmengs)
-
+                    
         try:
-            print(f"len_result_faster_wisper_after_pop: {len(self.result_faster_whisper)}")
+            print(f"len_current_result_after_pop: {len(self.current_result)}")
+            if self.current_result is not None and len(self.current_result) == 0:
+                self.current_result = None
+        except Exception:
+            pass
+        try:
+            print(f"len_result_faster_whisper_after_pop: {len(self.result_faster_whisper)}")
             if self.result_faster_whisper is not None and len(self.result_faster_whisper) == 0:
                 self.result_faster_whisper = None
         except Exception:

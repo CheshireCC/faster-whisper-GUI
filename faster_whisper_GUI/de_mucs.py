@@ -50,7 +50,7 @@ class DemucsWorker(QThread):
         print(f"device: {device}")
 
         if not self.is_running:
-                return
+            return
         
         self.file_process_status.emit({"file":"", "status":False, "task": "load model"})
         if self.model is None:
@@ -64,6 +64,11 @@ class DemucsWorker(QThread):
         for audio in self.audio:
             
             if not self.is_running:
+                del samples
+                del sources
+                del audio
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
                 print("exit")
                 return
             
@@ -80,6 +85,10 @@ class DemucsWorker(QThread):
                 self.stop()
 
             if not self.is_running:
+                del samples
+                del audio
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
                 print("exit")
                 return
             
@@ -101,6 +110,11 @@ class DemucsWorker(QThread):
 
             if (sources is None) or (not self.is_running):
                 print("exit")
+                del samples
+                del sources
+                del audio
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
                 return
             
             self.file_process_status.emit({"file":audio, "status":False, "task": "save files"})
@@ -122,6 +136,11 @@ class DemucsWorker(QThread):
 
             if not self.is_running:
                 print("exit")
+                del samples
+                del sources
+                del audio
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
                 return
 
             self.file_process_status.emit({"file":audio, "status":False, "task": "file over"})

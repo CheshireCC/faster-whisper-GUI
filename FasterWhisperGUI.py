@@ -116,6 +116,9 @@ if __name__ == "__main__":
     sys.path.append(os.path.join(BASE_DIR, 'ffmpeg'))
     sys.path.append(os.path.join(BASE_DIR, 'cache'))
 
+
+    # os.environ["CUDA_LAUNCH_BLOCKING"] = "0"
+
     # cudn 环境现随 PyTorch 提供
     # 修复环境变量 - cudnn
     # cudnn_dir = ";" + os.path.join(BASE_DIR, 'cuDNN')
