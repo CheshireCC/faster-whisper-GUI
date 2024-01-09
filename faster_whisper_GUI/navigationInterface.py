@@ -3,7 +3,7 @@ import os
 from PySide6.QtCore import (
                             Qt
                             , QUrl
-                            , QTranslator
+                            # , QTranslator
                         )
 
 from PySide6.QtGui import (
@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
                                 , QLabel
                                 , QVBoxLayout
                                 , QHBoxLayout
-                                , QApplication
+                                # , QApplication
                             )
 
 from qfluentwidgets import (ScrollArea
@@ -30,6 +30,7 @@ from qfluentwidgets import (ScrollArea
                             , TitleLabel
                             , CaptionLabel
                             , MessageBox
+                            , PrimaryToolButton
                         )
 
 from .style_sheet import StyleSheet
@@ -75,6 +76,7 @@ class ToolBar(QWidget):
         #     self.tr('Documentation'), self, FluentIcon.DOCUMENT)
         self.sourceButton = PushButton(self.tr('软件更新'), self, FluentIcon.GITHUB)
         self.themeButton = ToolButton(FluentIcon.CONSTRACT, self)
+        # self.themeButton = PrimaryToolButton(FluentIcon.CONSTRACT, self)
         # self.languageButton = ToolButton(FluentIcon.LANGUAGE, self)
 
         # 分割线
@@ -167,7 +169,7 @@ class NavigationBaseInterface(ScrollArea):
         self.vBoxLayout = QVBoxLayout(self.view)
         self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setViewportMargins(0, self.toolBar.height(), 0, 0)
         self.setWidget(self.view)
         self.setWidgetResizable(True)

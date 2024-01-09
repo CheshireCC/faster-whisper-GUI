@@ -41,7 +41,7 @@ class OutputPageNavigationInterface(NavigationBaseInterface):
         except Exception as e:
             print(f"set output-whisperX param error: {str(e)}")
 
-    def getparam(self) -> dict:
+    def getParam(self) -> dict:
         param = {}
         param["tabMovable"] = self.tableTab.movableCheckBox.isChecked()
         param["tabScrollable"] = self.tableTab.scrollableCheckBox.isChecked()

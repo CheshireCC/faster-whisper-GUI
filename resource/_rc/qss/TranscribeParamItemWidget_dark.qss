@@ -6,7 +6,7 @@ StrongBodyLabel{
 CaptionLabel{
     font-size: 12px;
     background-color: transparent;
-    color: rgb(225, 225, 225);
+    color: rgb(200, 200, 200);
 }
 
 #mainObject{

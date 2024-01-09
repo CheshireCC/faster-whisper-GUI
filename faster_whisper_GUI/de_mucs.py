@@ -55,7 +55,7 @@ class DemucsWorker(QThread):
         self.file_process_status.emit({"file":"", "status":False, "task": "load model"})
         if self.model is None:
             try:
-                self.loadModel(self.model_path,device=device)
+                self.loadModel(self.model_path, device=device)
             except Exception as e:
                 print(f"load model error: \n{str(e)}")
                 self.signal_vr_over.emit(False)
@@ -78,7 +78,9 @@ class DemucsWorker(QThread):
 
             try:
                 samples = self.reSampleAudio(audio, 44100, device=device)
-                samples = torch.tensor(samples,dtype=torch.float32).to(device)
+                samples = np.asarray(samples)
+                print("samples shape: ", samples.shape)
+                # samples = torch.tensor(samples,dtype=torch.float32).to(device)
             except Exception as e:
                 print(f"resample audio error:\n{str(e)}")
                 self.signal_vr_over.emit(False)
@@ -96,7 +98,8 @@ class DemucsWorker(QThread):
             self.file_process_status.emit({"file":audio, "status":False, "task": "separate sources"})
 
             try:
-                sources = self.separate_sources(self.model, 
+                sources = self.separate_sources(
+                                                self.model, 
                                                 samples[None], 
                                                 self.segment, 
                                                 self.overlap, 
@@ -104,7 +107,7 @@ class DemucsWorker(QThread):
                                                 self.sampleRate
                                             )
             except Exception as e:
-                print(f"separate audio sources error:\n{str(e)}")
+                print(f"\nseparate audio sources error:\n    {str(e)}")
                 self.signal_vr_over.emit(False)
                 self.stop()
 
@@ -192,7 +195,8 @@ class DemucsWorker(QThread):
                 be on `device`, while the entire tracks will be stored on `mix.device`.
         """
         if device is None:
-            device = mix.device
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            model.to(device)
         else:
             device = device
 
@@ -211,6 +215,7 @@ class DemucsWorker(QThread):
                 return None
             
             chunk = mix[:, :, start:end]
+            chunk = torch.tensor(chunk, dtype=torch.float32).to(device)
             with torch.no_grad():
                 out = model.forward(chunk)
 

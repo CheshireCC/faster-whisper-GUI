@@ -8,7 +8,7 @@
     "model_param": {
         "localModel": true,
         "onlineModel": false,
-        "model_path": "F:/WhisperModels/faster-whisper/large-v3-float32",
+        "model_path": "",
         "modelName": 0,
         "use_v3_model": true,
         "device": 1,
@@ -16,7 +16,7 @@
         "preciese": 5,
         "thread_num": "4",
         "num_worker": "1",
-        "download_root": "C:/Users/12059/.cache/huggingface/hub",
+        "download_root": "",
         "local_files_only": false
     },
     "vad_param": {
@@ -34,16 +34,17 @@
         "language": 2,
         "huggingface_user_token": "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",
         "autoGoToOutputPage": 2,
-        "autoClearTempFiles": true
+        "autoClearTempFiles": true,
+        "themeColor": "#009faa"
     },
     "Transcription_param": {
-        "language": 0,
+        "language": 1,
         "task": false,
         "beam_size": "5",
         "best_of": "1",
         "patience": "1.0",
         "length_penalty": "1.0",
-        "temperature": "0.5",
+        "temperature": "0.3",
         "compression_ratio_threshold": "2.4",
         "log_prob_threshold": "-1.0",
         "no_speech_threshold": "0.6",
@@ -65,7 +66,7 @@
         "tabMovable": false,
         "tabScrollable": true,
         "tabShadowEnabled": false,
-        "tabMaxWidth": 300,
+        "tabMaxWidth": 403,
         "closeDisplayMode": 0,
         "whisperXMinSpeaker": 2,
         "whisperXMaxSpeaker": 2,

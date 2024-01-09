@@ -28,8 +28,10 @@ from qfluentwidgets import (
                             , FluentIcon
                             , isDarkTheme
                         )
-from faster_whisper import TranscriptionInfo
+
+from faster_whisper.transcribe import TranscriptionInfo
 import torch
+
 from .config import (
                     Task_list
                     , STR_BOOL
@@ -201,7 +203,7 @@ class MainWindows(UIMainWin):
 
         param_for_model_load = {
                                 "model_size_or_path":model_param["model_size_or_path"],
-                                "device":model_param["device"]                   ,
+                                "device":model_param["device"],
                                 "device_index":model_param["device_index"],
                                 "compute_type":model_param["compute_type"],
                                 "cpu_threads":model_param["cpu_threads"],
@@ -247,6 +249,7 @@ class MainWindows(UIMainWin):
         """
         获取模型参数
         """
+        
         if self.page_model.model_local_RadioButton.isChecked():
             model_size_or_path = self.page_model.lineEdit_model_path.text()
         else:
@@ -279,7 +282,6 @@ class MainWindows(UIMainWin):
         return model_dict
 
     def onButtonProcessClicked(self):
-        
         
         # self.result_whisperx_aligment = None
         # self.result_faster_whisper = None
@@ -328,7 +330,8 @@ class MainWindows(UIMainWin):
             channels = rate_channel_dType["channel"]
             dType = rate_channel_dType["dType"]
 
-            self.audio_capture_thread = CaptureAudioWorker(rate=rate
+            self.audio_capture_thread = CaptureAudioWorker(
+                                                            rate=rate
                                                             , channels=channels
                                                             , dType=dType
                                                         )
@@ -428,12 +431,13 @@ class MainWindows(UIMainWin):
 
             # 创建进程
             self.log.write(f"create transcribe process with {num_worker} workers\n")
-            self.transcribe_thread = TranscribeWorker(model = self.FasterWhisperModel
-                                                    , parameters = Transcribe_params
-                                                    , vad_filter = vad_filter
-                                                    , vad_parameters = VAD_param
-                                                    , num_workers = num_worker
-                                                )
+            self.transcribe_thread = TranscribeWorker(
+                                                        model = self.FasterWhisperModel
+                                                        , parameters = Transcribe_params
+                                                        , vad_filter = vad_filter
+                                                        , vad_parameters = VAD_param
+                                                        , num_workers = num_worker
+                                                    )
             
             self.transcribe_thread.signal_process_over.connect(self.transcribeOver)
 
@@ -493,25 +497,33 @@ class MainWindows(UIMainWin):
         # 获取文件名列表
         text_list = [os.path.split(result[1])[1] for result in results]
         # 获取文件目录列表
-        file_list = [result[1] for result in results]
+        file_list = [result[1].replace("\\", "/") for result in results]
         # 获取表格标签列表
         tabBarItems = self.page_output.tableTab.tabBar.items
 
         # 遍历表格标签 删除已经不存在的转写结果 并改写存在的转写结果
         for tabBarItem in tabBarItems:
+            
+            #　清理掉已经过时的结果, 标签名不存在于结果文件名列表中的时候就直接清理掉项目
             if not(tabBarItem.text() in text_list):
                 index = tabBarItems.index(tabBarItem)
                 self.page_output.tableTab.tabBar.removeTab(index)
-            else:
-                for file in file_list:
-                    if tabBarItem.text() == os.path.split(file)[1]:
-                        self.tableModel_list[file]._data = results[file_list.index(file)][0]
+                continue
+
+            # 从 objectName 获取文件名
+            print(tabBarItem.objectName())
+            tabBarItem_objectName_fileName = "_".join(tabBarItem.objectName().split("_")[1:]).replace("\\", "/")
+
+            # 标签名存在文件名列表中且文件路径在目录列表中的时候 更新相关表格的数据
+            if tabBarItem_objectName_fileName in file_list:
+                # 转写结果已经存在的情况下更新数据
+                self.tableModel_list[tabBarItem_objectName_fileName]._data = results[file_list.index(tabBarItem_objectName_fileName)][0]
 
         # 遍历转写结果列表，查找当前不存在的表格
-        tabBarItems_text = [tabBarItem.text() for tabBarItem in self.page_output.tableTab.tabBar.items]
-        for text in text_list:
-            if not (text in tabBarItems_text):
-                self.createResultInTable([results[text_list.index(text)]])
+        tabBarItems_objectName_fileName = ["_".join(tabBarItem.objectName().split("_")[1:]).replace("\\", "/") for tabBarItem in self.page_output.tableTab.tabBar.items]
+        for file in file_list:
+            if not (file_list in tabBarItems_objectName_fileName):
+                self.createResultInTable([results[file_list.index(file)]])
 
     def showResultInTable(self, results):
         if len(self.tableModel_list) == 0:
@@ -525,6 +537,7 @@ class MainWindows(UIMainWin):
         i = len(self.page_output.tableTab.tabBar.items)
         for result in results:
             segments, file, _ = result
+            file = file.replace("\\", "/")
             table_view_widget = TableView()
             table_model = TableModel(segments)
 
@@ -535,11 +548,11 @@ class MainWindows(UIMainWin):
             table_view_widget.setModel(self.tableModel_list[file])
 
             self.page_output.tableTab.addSubInterface(
-                                                    table_view_widget
-                                                    , f"tab_{file}" 
-                                                    , text
-                                                    , None
-                                                )
+                                                        table_view_widget
+                                                        , f"tab_{file}" 
+                                                        , text
+                                                        , None
+                                                    )
             
             i += 1
         
@@ -569,13 +582,13 @@ class MainWindows(UIMainWin):
                             )
             
             self.result_faster_whisper = segments_path_info
-            for segments in self.result_faster_whisper:
-                segment_, path, info = segments
-                print(path, info.language)
-                print(f"len:{len(segment_)}")
-                for segment in segment_:
-                    print(f"[{segment.start}s --> {segment.end}] | {segment.text}")
-                    print(f"len_words: {len(segment.words)}")
+            # for segments in self.result_faster_whisper:
+            #     segment_, path, info = segments
+            #     print(path, info.language)
+            #     print(f"len:{len(segment_)}")
+            #     for segment in segment_:
+            #         print(f"[{segment.start}s --> {segment.end}] | {segment.text}")
+            #         print(f"len_words: {len(segment.words)}")
 
             print(f"len_segments_path_info_result: {len(segments_path_info)}")
             self.showResultInTable(self.result_faster_whisper)
@@ -789,8 +802,8 @@ class MainWindows(UIMainWin):
         elif not state:
             self.setStateTool(text=self.tr("结束"), status=True)
             self.raiseErrorInfoBar(
-                                    title=self.tr("错误")
-                                    , content=self.tr("加载失败，退出并检查 fasterWhispergui.log 文件可能会获取错误信息。")
+                                    title=self.tr("错误"),
+                                    content=self.tr("加载失败，退出并检查 fasterWhispergui.log 文件可能会获取错误信息。")
                                 )
 
     def setModelStatusLabelTextForAll(self, status:bool):
@@ -855,7 +868,7 @@ class MainWindows(UIMainWin):
         
         self.setStateTool(title=self.tr("WhisperX"), text=self.tr("结束"), status=True)
         # if segments_path_info is None:
-        #     self.raiseErrorInfoBar(self.tr("错误"),content=self.tr("对齐失败，退出软件后检查 fasterwhispergui.log 文件可能会获取错误信息"))
+        #     self.raiseErrorInfoBar(self.tr("错误"), content=self.tr("对齐失败，退出软件后检查 fasterwhispergui.log 文件可能会获取错误信息"))
         #     return
 
         self.result_whisperx_aligment = segments_path_info
@@ -866,9 +879,11 @@ class MainWindows(UIMainWin):
                                     , content=self.tr("时间戳对齐结束")
                                 )
             self.current_result = self.result_whisperx_aligment
+
         else:
-            self.raiseErrorInfoBar(self.tr("错误"),
-                                    content=self.tr("对齐失败，退出软件后检查 fasterwhispergui.log 文件可能会获取更多信息")
+            self.raiseErrorInfoBar(
+                                    self.tr("错误"),
+                                    content=self.tr("对齐失败，检查 fasterwhispergui.log 文件可能会获取更多信息")
                                 )
         try:
             del self.whisperXWorker.model_alignment
@@ -960,6 +975,7 @@ class MainWindows(UIMainWin):
         self.page_output.outputSubtitleFileButton.setEnabled(not self.page_output.outputSubtitleFileButton.isEnabled())
         self.page_output.WhisperXSpeakerDiarizeButton.setEnabled(not self.page_output.WhisperXSpeakerDiarizeButton.isEnabled())
         self.page_output.outputAudioPartWithSpeakerButton.setEnabled(not self.page_output.outputAudioPartWithSpeakerButton.isEnabled()) 
+        self.page_output.unloadWhisperModelPushbutton.setEnabled(not self.page_output.unloadWhisperModelPushbutton.isEnabled())
 
     def speakerDiarizeOver(self, segments_path_info:list):
         self.setPageOutButtonStatus()
@@ -1265,7 +1281,7 @@ class MainWindows(UIMainWin):
             self.raiseErrorInfoBar(self.tr("模型正在使用"), self.tr("语音识别正在运行"))
             return
         
-        if self.result_faster_whisper is not None and len(self.page_transcribes.LineEdit_temperature.text().strip().split(",")) > 1 :
+        if self.result_faster_whisper is not None and self.page_transcribes.LineEdit_temperature.text().strip() == "0" :
 
             print(f"Temperature: {self.page_transcribes.LineEdit_temperature.text().strip()} and transcript has already been run")
             print("Temperature fallback configuration may take effect, that may take crash when unload model from memory!")
@@ -1277,6 +1293,7 @@ class MainWindows(UIMainWin):
                 return
             
         try:
+            # self.FasterWhisperModel.model.to(torch.device("cpu"))
             del self.FasterWhisperModel
             self.FasterWhisperModel = None
 
@@ -1347,25 +1364,71 @@ class MainWindows(UIMainWin):
         self.page_model.button_model_lodar.clicked.connect(self.onModelLoadClicked)
         self.page_process.button_process.clicked.connect(self.onButtonProcessClicked)
         self.page_process.processResultText.textChanged.connect(lambda: self.page_process.processResultText.moveCursor(QTextCursor.MoveOperation.End, mode=QTextCursor.MoveMode.MoveAnchor))
-
-        self.page_output.outputSubtitleFileButton.clicked.connect(self.outputSubtitleFile)
-        self.page_output.WhisperXAligmentTimeStampleButton.clicked.connect(self.whisperXAligmentTimeStample)
-        self.page_output.WhisperXSpeakerDiarizeButton.clicked.connect(self.whisperXDiarizeSpeakers)
-        self.page_output.tableTab.tabBar.tabAddRequested.connect(self.openExcitedFiles)
+        self.page_process.fileNameListView.ignore_files_signal.connect(lambda ignore_files_info: self.raiseInfoBar(self.tr("忽略文件"), ignore_files_info["ignore_reason"]+"\n"+"\n".join(ignore_files_info["ignore_files"])))
 
         self.page_home.itemLabel_demucs.mainButton.clicked.connect(lambda:self.stackedWidget.setCurrentWidget(self.page_demucs))
         self.page_home.itemLabel_faster_whisper.mainButton.clicked.connect(lambda:self.stackedWidget.setCurrentWidget(self.page_process))
         self.page_home.itemLabel_whisperx.mainButton.clicked.connect(lambda:self.stackedWidget.setCurrentWidget(self.page_output))
         self.page_home.itemLabel_faster_whisper.subButton.clicked.connect(lambda:self.stackedWidget.setCurrentWidget(self.page_transcribes))
 
-        self.page_demucs.process_button.clicked.connect(self.demucsProcess)
-
+        self.page_output.outputSubtitleFileButton.clicked.connect(self.outputSubtitleFile)
+        self.page_output.WhisperXAligmentTimeStampleButton.clicked.connect(self.whisperXAligmentTimeStample)
+        self.page_output.WhisperXSpeakerDiarizeButton.clicked.connect(self.whisperXDiarizeSpeakers)
+        self.page_output.tableTab.tabBar.tabAddRequested.connect(self.openExcitedFiles)
         self.page_output.tableTab.signal_delete_table.connect(self.deleteResultTableEvent)
         self.page_output.unloadWhisperModelPushbutton.clicked.connect(self.unloadWhisperModel)
         self.page_output.outputAudioPartWithSpeakerButton.clicked.connect(self.outputAudioPartWithSpeaker)
 
+        self.page_demucs.process_button.clicked.connect(self.demucsProcess)
         self.page_demucs.fileListView.ignore_files_signal.connect(lambda ignore_files_info: self.raiseInfoBar(self.tr("忽略文件"), ignore_files_info["ignore_reason"]+"\n"+"\n".join(ignore_files_info["ignore_files"])))
-        self.page_process.fileNameListView.ignore_files_signal.connect(lambda ignore_files_info: self.raiseInfoBar(self.tr("忽略文件"), ignore_files_info["ignore_reason"]+"\n"+"\n".join(ignore_files_info["ignore_files"])))
+        
+        self.page_setting.pushButton_backupConfigFile.clicked.connect(self.backupConfigFile)
+        self.page_setting.pushButton_loadConfigFile.clicked.connect(self.loadBackupConfigFile)
+
+    def backupConfigFile(self):
+        config_file_path,_ = QFileDialog.getSaveFileName(
+                                                            self,
+                                                            self.tr("选择保存位置"), 
+                                                            r"./", 
+                                                            "json file(*.json)"
+                                                        )
+        if not config_file_path:
+            return
+        
+        self.saveConfig(config_file_path)
+
+        # shutil.copy(config_file_path, config_file_path+".bak")
+        self.raiseInfoBar(self.tr("备份配置文件成功"), self.tr("配置文件已备份到:\n") + config_file_path)
+
+    def loadBackupConfigFile(self):
+
+        config_file_name, _ = QFileDialog.getOpenFileName(
+                                                            self,
+                                                            self.tr("选择配置文件"),
+                                                            r"./",
+                                                            "json file(*.json)"
+                                                        )
+
+        if not config_file_name:
+            return
+
+        try:    
+            self.readConfigJson(config_file_path=config_file_name)
+            self.setConfig()
+            self.setWidgetsStatusFromConfig()
+            self.raiseInfoBar(self.tr("加载配置文件成功"), self.tr("配置文件已加载:\n") + config_file_name)
+
+        except Exception as e:
+            self.raiseErrorBar(self.tr("加载配置文件失败"), self.tr("配置文件加载失败:\n") + str(e))
+            print(str(e))
+
+        # 根据读取的配置设置完控件状态之后，根据控件状态设置相关属性
+        # self.page_output.tableTab.onDisplayModeChanged(self.page_output.tableTab.closeDisplayModeComboBox.currentIndex())
+        # self.page_output.tableTab.tabBar.setMovable(self.page_output.tableTab.movableCheckBox.isChecked())
+        # self.page_output.tableTab.tabBar.setScrollable(self.page_output.tableTab.scrollableCheckBox.isChecked())
+        # self.page_output.tableTab.tabBar.setTabShadowEnabled(self.page_output.tableTab.shadowEnabledCheckBox.isChecked())
+        # self.page_output.tableTab.tabBar.setTabMaximumWidth(self.page_output.tableTab.tabMaxWidthSpinBox.value())
+
 
     def raiseInfoBar(self, title:str, content:str ):
         InfoBar.info(
@@ -1428,10 +1491,11 @@ class MainWindows(UIMainWin):
 
         messageBoxW = MessageBox(self.tr('退出'), self.tr("是否要退出程序？"), self)
         if messageBoxW.exec():
+
+            outputWithDateTime("Exit")
             
             if self.page_setting.switchButton_saveConfig.isChecked():
-                self.saveConfig()
-                print("save config files")
+                self.saveConfig(config_file_name=r'./fasterWhisperGUIConfig.json')
             
             if self.page_setting.switchButton_autoClearTempFiles.isChecked():
                 try:
@@ -1477,15 +1541,18 @@ class MainWindows(UIMainWin):
             event.accept()
         else:
             event.ignore()
-
-    def saveConfig(self):
-        outputWithDateTime("Exit")
         
+    def saveConfig(self, config_file_name: str = ""):
+        
+        if config_file_name == "":
+            return
+        
+        outputWithDateTime("SaveConfigFile")
         model_param = self.page_model.getParam()
         setting_param = self.page_setting.getParam()    
         demucs_param = self.page_demucs.getParam()
         Transcription_param = self.page_transcribes.getParam()
-        output_whisperX_param = self.page_output.getparam()
+        output_whisperX_param = self.page_output.getParam()
         vad_param = self.page_VAD.getParam()
 
         config_json = {
@@ -1498,7 +1565,7 @@ class MainWindows(UIMainWin):
                         "output_whisperX":output_whisperX_param
                     }
         
-        with open(r'./fasterWhisperGUIConfig.json','w',encoding='utf8')as fp:
+        with open(os.path.abspath(config_file_name),'w',encoding='utf8')as fp:
             json.dump(
                         config_json,
                         fp,

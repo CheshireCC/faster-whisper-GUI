@@ -5,8 +5,7 @@ from typing import List
 from faster_whisper import  Word
 
 from .seg_ment import segment_Transcribe
-from .transcribe import secondsToHMS
-from .util import HMSToSeconds
+from .util import HMSToSeconds, secondsToHMS
 
 # 自定义数据模型，用于在表格中显示数据
 class TableModel(QAbstractTableModel):

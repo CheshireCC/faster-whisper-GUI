@@ -40,6 +40,7 @@ def secondsToHMS(t) -> str:
     
     return H + ":" + M + ":" + S
 
+# ---------------------------------------------------------------------------------------------------------------------------
 def HMSToSeconds(t:str) -> float:
 
     hh,mm,ss = t.split(":")
@@ -47,4 +48,36 @@ def HMSToSeconds(t:str) -> float:
 
     return float(hh) * 3600 + float(mm) * 60 + float(ss)
 
+
+def secondsToMS(t) -> str:
+    try:
+        t_f:float = float(t)
+    except:
+        print("time transform error")
+        return
     
+    M = t_f // 60
+    S = t_f - M * 60
+
+    M = str(int(M))
+    if len(M)<2:
+        M = "0" + M
+
+    S = str(round(S,4))
+    S = S.split(".")
+
+    if len(S) < 2:
+        S.append("00")
+    
+    if len(S[0]) < 2:
+        S[0] = "0" + S[0]
+    if len(S[1] ) < 2:
+        S[1] = "0" + S[1]
+    if len(S[1]) >= 3:
+        S[1] = S[1][:2]
+
+    S:str = ".".join(S)
+
+    return M + ":" + S
+
+

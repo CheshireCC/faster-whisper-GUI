@@ -1,4 +1,5 @@
 from PySide6.QtCore import (QCoreApplication, Qt)
+from PySide6.QtGui import QFont
 
 from PySide6.QtWidgets import (
                                 QCompleter, 
@@ -6,7 +7,8 @@ from PySide6.QtWidgets import (
                                 QHBoxLayout, 
                                 QLabel,
                                 QStyle,
-                                QVBoxLayout
+                                QVBoxLayout,
+                                QSplitter
                             )
 
 from qfluentwidgets import (
@@ -17,6 +19,9 @@ from qfluentwidgets import (
                             EditableComboBox, 
                             LineEdit ,
                             SwitchButton,
+                            FluentIcon,
+                            PrimaryPushButton,
+                            
                         )
 
 from .navigationInterface import NavigationBaseInterface
@@ -48,7 +53,7 @@ class ModelNavigationInterface(NavigationBaseInterface):
         self.setObjectName('modelNavigationInterface')
         self.setupUI()
 
-        StyleSheet.MODELLOAD.apply(self.button_model_lodar)
+        # StyleSheet.MODELLOAD.apply(self.button_model_lodar)
 
         self.SignalAndSlotConnect()
     
@@ -70,6 +75,28 @@ class ModelNavigationInterface(NavigationBaseInterface):
             widget.setEnabled(self.model_online_RadioButton.isChecked())
 
     def setupUI(self):
+        self.layout_button_model_lodar = QVBoxLayout()
+        # self.button_model_lodar = PushButton()
+        self.button_model_lodar = PrimaryPushButton(self)
+        
+        self.button_model_lodar.setText(self.__tr("加载模型"))
+        self.button_model_lodar.setFixedHeight(65)
+        self.button_model_lodar.setFixedWidth(195)
+        font = QFont("Segoe UI", 15)
+        font.setBold(True)
+
+        self.button_model_lodar.setFont(font)
+        
+        self.button_model_lodar.setIcon(FluentIcon.PLAY)
+        self.button_model_lodar.setObjectName("buttonModelLodar")
+        
+        
+        self.layout_button_model_lodar.addWidget(self.button_model_lodar)
+        self.layout_button_model_lodar.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.addLayout(self.layout_button_model_lodar)
+
+
+        # ==========================================================================================================
 
         model_local_RadioButton = RadioButton()
         model_local_RadioButton.setChecked(True)
@@ -77,6 +104,8 @@ class ModelNavigationInterface(NavigationBaseInterface):
         model_local_RadioButton.setToolTip(self.__tr("本地模型需使用经过 CTranslate2 转换工具，从 OpenAI 模型格式转换而来的模型"))
         self.model_local_RadioButton = model_local_RadioButton
         self.addWidget(self.model_local_RadioButton)
+
+        # ==========================================================================================================
 
         self.hBoxLayout_local_model = QHBoxLayout()
         self.addLayout(self.hBoxLayout_local_model)
@@ -106,6 +135,8 @@ class ModelNavigationInterface(NavigationBaseInterface):
         self.addLayout(self.hBoxLayout_online_model)
 
         # 添加一些控件到布局中
+
+        # ==========================================================================================================
         self.label_online_model_name = QLabel()    
         self.label_online_model_name.setText(self.__tr("模型名称"))
         self.label_online_model_name.setObjectName("LabelOnlineModelName")
@@ -245,20 +276,6 @@ class ModelNavigationInterface(NavigationBaseInterface):
         self.button_convert_model.setToolTip(self.__tr("转换 OpenAi 模型到本地格式，\n必须选择在线模型"))
         hBoxLayout_model_convert.addWidget(self.button_convert_model)
         self.button_convert_model.setEnabled(False)
-    
-        # ==========================================================================================================
-        self.layout_button_model_lodar = QVBoxLayout()
-        self.button_model_lodar = PushButton()
-        self.button_model_lodar.setText(self.__tr("加载模型"))
-        self.button_model_lodar.setFixedHeight(65)
-        self.button_model_lodar.setFixedWidth(195)
-        # self.button_model_lodar.setIcon(FluentIcon.PLAY)
-        self.button_model_lodar.setObjectName("buttonModelLodar")
-        
-        
-        self.layout_button_model_lodar.addWidget(self.button_model_lodar)
-        self.layout_button_model_lodar.setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.addLayout(self.layout_button_model_lodar)
 
         # self.setViewportMargins(0, self.toolBar.height(), 0, 216)
         # self.LineEdit_download_root.setText(self.parent().download_cache_path)

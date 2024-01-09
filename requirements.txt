@@ -1,5 +1,5 @@
 pyside6-fluent-widgets==1.3.2
-faster-whisper==0.9.0
+faster-whisper==0.10.0
 nuitka<=1.8.6
 pyAV
 ffmpeg-python

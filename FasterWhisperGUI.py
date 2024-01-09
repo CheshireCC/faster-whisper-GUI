@@ -25,15 +25,6 @@ formatter1 = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messa
 faster_whisper_logger_handler.setFormatter(formatter1)
 logger_faster_whisper.addHandler(faster_whisper_logger_handler)
 
-# pyside6 日志
-# logger_pyside = logging.getLogger("faster_whisper_GUI")
-# logger_pyside.setLevel(logging.DEBUG)
-# pyside_logger_handler = logging.FileHandler(r"./pyside.log", mode="w")
-# pyside_logger_handler.setLevel(logging.DEBUG)
-# formatter2 = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s",datefmt='%Y-%m-%d_%H:%M:%S')
-# pyside_logger_handler.setFormatter(formatter2)
-# logger_pyside.addHandler(pyside_logger_handler)
-
 # # 将默认的递归深度修改为3000
 # sys.setrecursionlimit(7000)  
 
@@ -43,7 +34,6 @@ from PySide6.QtWidgets import (QApplication, QSplashScreen, QVBoxLayout)
 
 from qfluentwidgets import ProgressBar
 
-
 class MySplashScreen(QSplashScreen):
     # 鼠标点击事件
     def mousePressEvent(self, event):
@@ -51,11 +41,9 @@ class MySplashScreen(QSplashScreen):
 
 from resource import rc_Image
 
-
 # 启动一个Qt程序，并使用传入的系统参数
 app = QApplication(sys.argv)
 app.setObjectName("FasterWhisperGUIAPP")
-
 
 #设置启动界面
 splash = MySplashScreen()
@@ -83,8 +71,6 @@ ly.addSpacing(20)
 
 # 显示启动界面
 splash.show()
-
-
 
 # app.processEvents()  # 处理主进程事件
 

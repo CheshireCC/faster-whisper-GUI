@@ -27,6 +27,7 @@ from qfluentwidgets import (
                             NavigationAvatarWidget,
                             NavigationInterface
                             , setTheme
+                            , setThemeColor
                             , Theme
                             , FluentIcon
                             , NavigationItemPosition
@@ -86,9 +87,20 @@ class UIMainWin(FramelessMainWindow):
     #     app.installTranslator(self.translator)
         
 
-    def readConfigJson(self):
+    def readConfigJson(self, config_file_path: str = ""):
+        self.default_theme = "light"
+        self.model_param = {}
+        self.setting = {}
+        self.demucs = {}
+        self.Transcription_param = {}
+        self.output_whisperX_param = {}
+        self.vad_param = {}
+
+        if not config_file_path:
+            return
+        
         self.use_auth_token_speaker_diarition= ""
-        with open(r"./fasterWhisperGUIConfig.json","r", encoding="utf8") as fp:
+        with open(os.path.abspath(config_file_path),"r", encoding="utf8") as fp:
             json_data = json.load(fp)
 
             try:
@@ -130,6 +142,7 @@ class UIMainWin(FramelessMainWindow):
     def setConfig(self):
 
         setTheme(Theme.DARK if self.default_theme == "dark" else Theme.LIGHT)
+        # setThemeColor("#aaff009f")
         if self.model_param != {}:
             self.page_model.setParam(self.model_param)
             if not self.model_param["download_root"]:
@@ -165,7 +178,6 @@ class UIMainWin(FramelessMainWindow):
         else:
             self.translator = translator
 
-        # TODO: 无边框窗口方案需要等待 pyside6>6.5.0 支持
         # self.setWindowFlags(Qt.FramelessWindowHint)
         # self.setAttribute(Qt.WA_TranslucentBackground)  
 
@@ -186,16 +198,23 @@ class UIMainWin(FramelessMainWindow):
         self.initWin()
 
         # 读配置文件
-        self.readConfigJson()
+        self.readConfigJson(r"./fasterWhisperGUIConfig.json")
         # 设置配置
         self.setConfig()
 
+        try:
+            self.setWidgetsStatusFromConfig()
+        except Exception as e:
+            print(str(e))
+
+    def setWidgetsStatusFromConfig(self):
         # 根据读取的配置设置完控件状态之后，根据控件状态设置相关属性
         self.page_output.tableTab.onDisplayModeChanged(self.page_output.tableTab.closeDisplayModeComboBox.currentIndex())
         self.page_output.tableTab.tabBar.setMovable(self.page_output.tableTab.movableCheckBox.isChecked())
         self.page_output.tableTab.tabBar.setScrollable(self.page_output.tableTab.scrollableCheckBox.isChecked())
         self.page_output.tableTab.tabBar.setTabShadowEnabled(self.page_output.tableTab.shadowEnabledCheckBox.isChecked())
         self.page_output.tableTab.tabBar.setTabMaximumWidth(self.page_output.tableTab.tabMaxWidthSpinBox.value())
+
 
     def initWin(self):
 

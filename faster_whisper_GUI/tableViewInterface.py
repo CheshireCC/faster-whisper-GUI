@@ -180,20 +180,24 @@ class TabInterface(QWidget):
 
         if widget is None:
             widget = TableView()
+            
         widget.setObjectName(objectName)
 
         # 设置缩放策略
         widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
+        # 设置列宽
+        widget.setColumnWidth(0,115)
+        widget.setColumnWidth(1,115)
+        widget.setColumnWidth(2,400)
+        # widget.setColumnWidth(4,50)
+
         # 设置列宽适应内容
         # widget.resizeColumnsToContents()
-        widget.resizeColumnToContents(2)
-
-        # 设置列宽
-        widget.setColumnWidth(0,110)
-        widget.setColumnWidth(1,110)
-        # widget.setColumnWidth(3,500)
-        # widget.setColumnWidth(4,50)
+        # widget.resizeColumnToContents(0)
+        # widget.resizeColumnToContents(1)
+        widget.resizeColumnToContents(3)
+        # widget.resizeColumnToContents(2)
         
         # 设置填充可用空间
         widget.horizontalHeader().setStretchLastSection(True)

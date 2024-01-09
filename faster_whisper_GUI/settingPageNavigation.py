@@ -1,9 +1,14 @@
 
 import os
-from PySide6.QtCore import (QCoreApplication, Qt)
+import random
+import time
+from PySide6.QtCore import (QAbstractListModel, QCoreApplication, Qt)
+from PySide6.QtGui import QColor, QColorSpace
 
 from PySide6.QtWidgets import (
-                                QGridLayout, 
+                                QComboBox,
+                                QGridLayout,
+                                QHBoxLayout, 
                                 QVBoxLayout, 
                                 QWidget
                             )
@@ -14,16 +19,29 @@ from qfluentwidgets import (
                             LineEdit,
                             MessageBox,
                             PushButton,
-                            TitleLabel
+                            TitleLabel,
+                            ScrollArea,
+                            themeColor,
+                            setThemeColor,
+                            ColorPickerButton,
+                            ToolButton,
+                            FluentIcon,
+                            PrimaryToolButton
                         )
 
 from .paramItemWidget import ParamWidget
 from .style_sheet import StyleSheet
-from .config import default_Huggingface_user_token
+from .config import default_Huggingface_user_token, THEME_COLORS
 
 from .util import outputWithDateTime
 
-class SettingPageNavigationInterface(QWidget):
+class ThemeColorModel(QAbstractListModel):
+    def data(self, index, role):
+        if role == Qt.DisplayRole:
+            color = THEME_COLORS[index.row()] 
+            return f'<div style="background-color:{color}; width:20px; height:20px"/>'
+
+class SettingPageNavigationInterface(ScrollArea):
     def __tr(self, text):
         return QCoreApplication.translate(self.__class__.__name__, text)
     """
@@ -32,21 +50,33 @@ class SettingPageNavigationInterface(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        
+        self.themeColor_str = themeColor().name()
 
-        self.layout = QGridLayout(self)
-        self.setLayout(self.layout)
+        # self.layout = QGridLayout(self)
+        # self.setLayout(self.layout)
 
         self.mainWidget = QWidget(self)
         self.mainWidget.setObjectName("mainObject")
-        self.layout.addWidget(self.mainWidget, 0,0)
-
+        # self.layout.addWidget(self.mainWidget, 0,0)
         self.mainLayout = QVBoxLayout(self.mainWidget)
         self.mainLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setViewportMargins(0, 0, 0, 0)
+        self.setWidget(self.mainWidget)
+        self.setWidgetResizable(True)
+
+        self.mainLayout.setSpacing(10)
+        self.mainLayout.setContentsMargins(36, 10, 36, 10)
 
         self.setupUI()
         self.signalAndSlotProcess()
         StyleSheet.SETTINGPAGEINTERFACE.apply(self)
+
         
+
     def addWidget(self, widget):
         self.mainLayout.addWidget(widget)
     def addLayout(self, layout):
@@ -72,6 +102,16 @@ class SettingPageNavigationInterface(QWidget):
         self.addWidget(self.paramItemWidget_autoLoadModel)
 
         # --------------------------------------------------------------------------------------------------------------------------------------------------------------
+        self.pushButton_backupConfigFile = PushButton()
+        self.pushButton_backupConfigFile.setText(self.__tr("备份当前配置"))
+        self.pushButton_loadConfigFile = PushButton()
+        self.pushButton_loadConfigFile.setText(self.__tr("加载配置文件"))
+
+        self.paramItemWidget_ConfigFile = ParamWidget(self.__tr("配置文件"), self.__tr("备份、加载当前配置文件，重装、升级软件时可用来备份软件配置"), self.pushButton_backupConfigFile)
+        self.paramItemWidget_ConfigFile.widgetVLayout.addWidget(self.pushButton_loadConfigFile)
+        self.addWidget(self.paramItemWidget_ConfigFile)
+
+        # --------------------------------------------------------------------------------------------------------------------------------------------------------------
         self.combox_language = ComboBox()
         self.combox_language.addItems(["中文","English",self.__tr("自动")])
         self.combox_language.setCurrentIndex(2)
@@ -80,6 +120,32 @@ class SettingPageNavigationInterface(QWidget):
         
         # --------------------------------------------------------------------------------------------------------------------------------------------------------------
         
+        self.colorPickerButton = ColorPickerButton(self.themeColor_str, "ThemeColor", parent=self)
+        # self.colorPickerButton.clicked.disconnect()
+        self.colorPickerButton.colorChanged.connect(self.setThemeColorAndText)
+
+        self.randomPickThemeColorToolButton = PrimaryToolButton()
+        # self.randomPickThemeColorToolButton = ToolButton()
+        self.randomPickThemeColorToolButton.setIcon(FluentIcon.BASKETBALL)
+        self.randomPickThemeColorToolButton.setToolTip(self.__tr("切换预置主题色"))
+        self.randomPickThemeColorToolButton.clicked.connect(self.setColorAndThemeColorRandom)
+
+        self.themeColorLineEdit = LineEdit()
+        self.themeColorLineEdit.setText(self.themeColor_str)
+        self.themeColorLineEdit.textChanged.connect(self.setThemeColorWithLineEditText)
+
+        self.paramItemWidget_themeColor = ParamWidget(self.__tr("主题色"), self.__tr("主题配色"), self.themeColorLineEdit, self)
+
+        hb = QHBoxLayout()
+        hb.addWidget(self.randomPickThemeColorToolButton)
+        hb.addWidget(self.colorPickerButton)
+        hb.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        # self.paramItemWidget_themeColor.widgetVLayout.addWidget(self.themeColorLineEdit)
+        self.paramItemWidget_themeColor.widgetVLayout.addLayout(hb)
+
+        self.addWidget(self.paramItemWidget_themeColor)
+
+        # --------------------------------------------------------------------------------------------------------------------------------------------------------------
         self.LineEdit_use_auth_token = LineEdit()
         self.LineEdit_use_auth_token.setFixedWidth(330)
         self.use_auth_token_param_widget = ParamWidget(self.__tr("HuggingFace用户令牌"),
@@ -138,7 +204,6 @@ class SettingPageNavigationInterface(QWidget):
         self.pushButton_openTempDir.clicked.connect(lambda: os.startfile(os.path.abspath(r"./temp/").replace("\\","/")))
         self.pushButton_openLogFile.clicked.connect(lambda: os.startfile(os.path.abspath(r"./fasterwhispergui.log").replace("\\","/")))
         self.pushButton_openFWLogFile.clicked.connect(lambda: os.startfile(os.path.abspath(r"./faster_whisper.log").replace("\\","/")))  
-        
         self.pushButton_clearTempFiles.clicked.connect(self.deletTempFiles)
         
 
@@ -165,6 +230,9 @@ class SettingPageNavigationInterface(QWidget):
             self.LineEdit_use_auth_token.setText(param["huggingface_user_token"])
             self.combox_autoGoToOutputPage.setCurrentIndex(param["autoGoToOutputPage"])
             self.switchButton_autoClearTempFiles.setChecked(param["autoClearTempFiles"])
+            self.colorPickerButton.setColor(param["themeColor"])
+            self.setThemeColorAndText()
+            # setThemeColor(param["themeColor"])
         except:
             pass
     
@@ -176,4 +244,34 @@ class SettingPageNavigationInterface(QWidget):
         param["huggingface_user_token"] = self.LineEdit_use_auth_token.text().strip() or default_Huggingface_user_token 
         param["autoGoToOutputPage"] =  self.combox_autoGoToOutputPage.currentIndex()
         param["autoClearTempFiles"] = self.switchButton_autoClearTempFiles.isChecked()
+        param["themeColor"] = self.themeColor_str
         return param
+
+    def setColorAndThemeColorRandom(self):
+        
+        if self.themeColor_str in THEME_COLORS:
+            index = THEME_COLORS.index(self.themeColor_str)
+            if index != len(THEME_COLORS)-1 :
+                index += 1
+            else:
+                index = 0
+        else:
+            index = 0
+
+        
+        self.themeColor_str = THEME_COLORS[index]
+        self.colorPickerButton.setColor(self.themeColor_str)
+        setThemeColor(self.themeColor_str)
+        self.themeColorLineEdit.setText(self.themeColor_str)
+
+    def setThemeColorAndText(self):
+        self.themeColor_str = self.colorPickerButton.color.name()
+        self.themeColorLineEdit.setText(self.themeColor_str)
+        setThemeColor(self.themeColor_str)
+
+    def setThemeColorWithLineEditText(self,text):
+        if len(text) == 7:
+            self.colorPickerButton.setColor(text)
+            setThemeColor(text)
+            self.themeColor_str = text
+        
