@@ -3,14 +3,14 @@
     "demucs": {
         "overlap": 0.1,
         "segment": 7.8,
-        "tracks": 2
+        "tracks": 1
     },
     "model_param": {
         "localModel": true,
         "onlineModel": false,
         "model_path": "",
         "modelName": 0,
-        "use_v3_model": true,
+        "use_v3_model": false,
         "device": 1,
         "deviceIndex": "0",
         "preciese": 5,
@@ -31,20 +31,20 @@
     "setting": {
         "saveConfig": true,
         "autoLoadModel": false,
-        "language": 2,
+        "language": 0,
         "huggingface_user_token": "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",
         "autoGoToOutputPage": 2,
         "autoClearTempFiles": true,
         "themeColor": "#009faa"
     },
     "Transcription_param": {
-        "language": 1,
+        "language": 0,
         "task": false,
         "beam_size": "5",
         "best_of": "1",
         "patience": "1.0",
         "length_penalty": "1.0",
-        "temperature": "0.3",
+        "temperature": "0",
         "compression_ratio_threshold": "2.4",
         "log_prob_threshold": "-1.0",
         "no_speech_threshold": "0.6",
@@ -55,7 +55,7 @@
         "suppress_tokens": "-1",
         "without_timestamps": false,
         "max_initial_timestamp": "1.0",
-        "word_timestamps": true,
+        "word_timestamps": false,
         "prepend_punctuations": "\"'“¿([{-",
         "append_punctuations": "\"'.。,，!！?？:：”)]}、",
         "repetition_penalty": "1.0",
@@ -64,12 +64,12 @@
     },
     "output_whisperX": {
         "tabMovable": false,
-        "tabScrollable": true,
+        "tabScrollable": false,
         "tabShadowEnabled": false,
-        "tabMaxWidth": 403,
+        "tabMaxWidth": 200,
         "closeDisplayMode": 0,
-        "whisperXMinSpeaker": 2,
-        "whisperXMaxSpeaker": 2,
+        "whisperXMinSpeaker": 0,
+        "whisperXMaxSpeaker": 0,
         "outputFormat": 0,
         "outputEncoding": 1
     }

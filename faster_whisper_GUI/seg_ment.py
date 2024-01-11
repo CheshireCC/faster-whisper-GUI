@@ -1,3 +1,4 @@
+# coding:utf-8
 
 from faster_whisper import  (Segment, Word)
 from typing import List

@@ -1,3 +1,5 @@
+# coding:utf-8
+
 from PySide6.QtCore import QEasingCurve, Qt
 from .navigationInterface import NavigationBaseInterface
 

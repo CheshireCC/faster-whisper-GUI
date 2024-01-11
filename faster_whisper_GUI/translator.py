@@ -1,3 +1,5 @@
+# coding:utf-8
+
 from PySide6.QtCore import QTranslator
 from resource import rc_Translater
 import locale

@@ -1,3 +1,4 @@
+# coding:utf-8
 
 from PySide6.QtCore import QAbstractTableModel, Qt
 # from PySide6.QtWidgets import QStyledItemDelegate, QLineEdit

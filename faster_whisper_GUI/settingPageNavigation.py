@@ -1,3 +1,4 @@
+# coding:utf-8
 
 import os
 import random
@@ -6,8 +7,6 @@ from PySide6.QtCore import (QAbstractListModel, QCoreApplication, Qt)
 from PySide6.QtGui import QColor, QColorSpace
 
 from PySide6.QtWidgets import (
-                                QComboBox,
-                                QGridLayout,
                                 QHBoxLayout, 
                                 QVBoxLayout, 
                                 QWidget
@@ -24,7 +23,6 @@ from qfluentwidgets import (
                             themeColor,
                             setThemeColor,
                             ColorPickerButton,
-                            ToolButton,
                             FluentIcon,
                             PrimaryToolButton
                         )

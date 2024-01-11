@@ -1,3 +1,5 @@
+# coding:utf-8
+
 from typing import List
 from .seg_ment import segment_Transcribe
 

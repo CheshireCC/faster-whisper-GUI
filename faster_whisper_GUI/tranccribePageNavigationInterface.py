@@ -1,3 +1,5 @@
+# coding:utf-8
+
 import os
 from PySide6.QtCore import QCoreApplication, Qt
 from PySide6.QtWidgets import (

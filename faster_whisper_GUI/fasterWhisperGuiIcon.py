@@ -1,3 +1,5 @@
+# coding:utf-8
+
 from resource import rc_Image
 
 from qfluentwidgets import (FluentIconBase, Theme, getIconColor)

@@ -1,3 +1,5 @@
+# coding:utf-8
+
 import os
 from PySide6.QtCore import (QThread, Signal)
 import subprocess
