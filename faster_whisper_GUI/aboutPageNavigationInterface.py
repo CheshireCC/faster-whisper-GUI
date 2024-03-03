@@ -112,7 +112,7 @@ class AboutPageNavigationInterface(ScrollArea):
         self.mainVLayout.addWidget(HorizontalSeparator(self))
 
         self.strongBodyLabel = TitleLabel(self)
-        self.strongBodyLabel.setText(self.tr("协议"))
+        self.strongBodyLabel.setText(self.tr("生成式人工智能程序用户协议"))
         self.strongBodyLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.addWidget(self.strongBodyLabel)
 

@@ -19,7 +19,7 @@ from nltk.tokenize.punkt import PunktSentenceTokenizer, PunktParameters
 
 PUNKT_ABBREVIATIONS = ['dr', 'vs', 'mr', 'mrs', 'prof']
 
-LANGUAGES_WITHOUT_SPACES = ["ja", "zh"]
+LANGUAGES_WITHOUT_SPACES = ["ja", "zh", "yue"]
 
 DEFAULT_ALIGN_MODELS_TORCH = {
     "en": "WAV2VEC2_ASR_BASE_960H",
@@ -50,7 +50,8 @@ DEFAULT_ALIGN_MODELS_HF = {
     "ko": "kresnik/wav2vec2-large-xlsr-korean",
     "ur": "kingabzpro/wav2vec2-large-xls-r-300m-Urdu",
     "te": "anuragshas/wav2vec2-large-xlsr-53-telugu",
-    "hi": "theainerd/Wav2Vec2-large-xlsr-hindi"
+    "hi": "theainerd/Wav2Vec2-large-xlsr-hindi",
+    "yue":"ctl/wav2vec2-large-xlsr-cantonese"
 }
 
 

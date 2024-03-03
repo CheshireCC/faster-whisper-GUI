@@ -1015,7 +1015,7 @@ class MainWindows(UIMainWin):
                         title=title
                         , content=content
                         , isClosable=True
-                        , duration=-1
+                        , duration=5000
                         , position=InfoBarPosition.TOP
                         , parent=self
                     )
@@ -1447,14 +1447,14 @@ class MainWindows(UIMainWin):
         self.outputWithDateTime("deleteTable")
 
         print(f"len_DataModel:{len(self.tableModel_list)}")
-        print(routeKey)
+        # print(routeKey)
         file_key ="_".join(routeKey.split("_")[1:]) 
         print(file_key)
         self.tableModel_list.pop(file_key)
         print(f"len_DataModel_after_pop:{len(self.tableModel_list)}")
 
         for result in [se for se in [self.current_result ,self.result_faster_whisper, self.result_whisperx_aligment, self.result_whisperx_speaker_diarize] if se is not None]:
-            print(f"len_result: {result}")
+            print(f"len_result: {len(result)}")
             for segmengs in result:
                 if segmengs[1] == file_key:
                     result.remove(segmengs)

@@ -114,8 +114,22 @@ Preciese_list = ['int8',
                 'bfloat16'
             ]
 
-Model_names = ["tiny", "tiny.en", "base", "base.en", "small", 
-                "small.en", "medium", "medium.en", "large-v1", "large-v2","large-v3"]
+Model_names = [
+                "tiny", 
+                "tiny.en", 
+                "base", 
+                "base.en", 
+                "small", 
+                "small.en", 
+                "medium", 
+                "medium.en", 
+                "large-v1", 
+                "large-v2",
+                "large-v3",
+                "distil-large-v2",
+                "distil-medium.en",
+                "distil-small.en"
+            ]
 
 Device_list = ["cpu", "cuda", "auto"]
 Task_list = ["transcribe" , "translate"]
@@ -157,6 +171,7 @@ ENCODING_DICT = {"UTF-8":"utf8",
 
 THEME_COLORS = [
     "#009faa",
+    "#81D8CF",
     "#ff009f",
     "#84BE84",
     "#aaff00",
