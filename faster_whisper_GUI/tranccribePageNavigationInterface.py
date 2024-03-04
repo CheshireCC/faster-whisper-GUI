@@ -166,6 +166,15 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
 
         widget_list.append(self.word_level_timestampels_param_widget)
 
+        # --------------------------------------------------------------------------------------------
+        self.switchButton_aggregate_contents_according_to_the_speaker = SwitchButton()
+        self.switchButton_aggregate_contents_according_to_the_speaker.setChecked(False)
+        self.aggregate_contents_param_widget = ParamWidget(self.__tr("根据说话人聚合内容"),
+                                                                self.__tr("按顺序讲相同说话人的内容聚合到一起，仅支持 txt 格式输出"),
+                                                                self.switchButton_aggregate_contents_according_to_the_speaker
+                                                            )
+        widget_list.append(self.aggregate_contents_param_widget)
+
         # =======================================================================================================
         self.titleLabel_auditory_hallucination = TitleLabel(self.__tr("幻听参数"))
         widget_list.append(self.titleLabel_auditory_hallucination)
@@ -472,6 +481,8 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
 
     def setParam(self, Transcribe_params:dict) -> None:
 
+        self.switchButton_aggregate_contents_according_to_the_speaker.setChecked(Transcribe_params["aggregate_contents"])
+
         self.combox_language.setCurrentIndex(Transcribe_params["language"])
         # Transcribe_params["language"] = language_index
 
@@ -546,6 +557,8 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         Transcribe_params = {}
 
         # 从数据模型获取文件列表
+
+        Transcribe_params["aggregate_contents"] = self.switchButton_aggregate_contents_according_to_the_speaker.isChecked()
         
         language = self.combox_language.currentIndex()
         Transcribe_params["language"] = language

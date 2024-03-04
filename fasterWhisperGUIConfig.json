@@ -16,7 +16,7 @@
         "preciese": 0,
         "thread_num": "4",
         "num_worker": "1",
-        "download_root": "",
+        "download_root": "G:/Program Files (x86)/FasterWhisperGUI/cache",
         "local_files_only": false
     },
     "vad_param": {
@@ -38,10 +38,11 @@
         "themeColor": "#009faa"
     },
     "Transcription_param": {
-        "language": 0,
+        "aggregate_contents": true,
+        "language": 1,
         "task": false,
         "beam_size": "5",
-        "best_of": "6",
+        "best_of": "5",
         "patience": "1.0",
         "length_penalty": "1.0",
         "temperature": "0.0,0.2,0.4,0.6,0.8,1.0",
@@ -66,11 +67,11 @@
         "tabMovable": false,
         "tabScrollable": false,
         "tabShadowEnabled": false,
-        "tabMaxWidth": 220,
+        "tabMaxWidth": 367,
         "closeDisplayMode": 0,
-        "whisperXMinSpeaker": 2,
-        "whisperXMaxSpeaker": 2,
-        "outputFormat": 0,
+        "whisperXMinSpeaker": 3,
+        "whisperXMaxSpeaker": 3,
+        "outputFormat": 2,
         "outputEncoding": 1
     }
 }

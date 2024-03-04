@@ -63,12 +63,19 @@ class LoadModelWorker(QThread):
     def stop(self):
         self.isRunning = False
     
-    def loadModel(self,model_size_or_path:str=None):
+    def loadModel(self, model_size_or_path:str=None):
         
         model = None
         try:
             if model_size_or_path is None:
                 model_size_or_path = self.model_size_or_path
+
+            # 尝试替换空格，以处理带有空格的路径
+            # model_size_or_path = model_size_or_path.replace("\\", "/")
+            # model_size_or_path = model_size_or_path.replace(" ", "\ ")
+
+            # self.download_root = self.download_root.replace("\\", "/")
+            # self.download_root = self.download_root.replace(" ", "\ ")
 
             model = WhisperModel(
                                     model_size_or_path, 

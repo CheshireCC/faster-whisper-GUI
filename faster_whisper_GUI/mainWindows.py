@@ -265,7 +265,7 @@ class MainWindows(UIMainWin):
         compute_type: str = self.page_model.preciese_combox.currentText()
         cpu_threads: int = int(self.page_model.LineEdit_cpu_threads.text().replace(" ", ""))
         num_workers: int = int(self.page_model.LineEdit_num_workers.text().replace(" ", ""))
-        download_root: str = self.page_model.LineEdit_download_root.text().replace(" ", "")
+        download_root: str = self.page_model.LineEdit_download_root.text().strip()
         local_files_only: bool = self.page_model.switchButton_local_files_only.isChecked()
         use_v3_model: bool = self.page_model.switchButton_use_v3.isChecked()
 
@@ -359,9 +359,7 @@ class MainWindows(UIMainWin):
         if dict_WhisperXParams["min_speaker"] == 0 and dict_WhisperXParams["max_speaker"] == 0:
             dict_WhisperXParams["min_speaker"] = None
             dict_WhisperXParams["max_speaker"] = None
-        else:
-            dict_WhisperXParams["min_speaker"] = None
-            dict_WhisperXParams["max_speaker"] = None
+
 
         return dict_WhisperXParams
 
@@ -845,9 +843,10 @@ class MainWindows(UIMainWin):
         output_dir = self.page_output.outputGroupWidget.LineEdit_output_dir.text()
         code_ = self.page_output.combox_output_code.currentText()
 
+        aggregate_contents_according_to_the_speaker = self.page_transcribes.switchButton_aggregate_contents_according_to_the_speaker.isChecked()
         result_to_write = self.current_result # self.result_faster_whisper if (self.result_whisperx_aligment is None and self.result_whisperx_speaker_diarize is None) else (self.result_whisperx_aligment if self.result_whisperx_speaker_diarize is None else self.result_whisperx_speaker_diarize)
 
-        self.outputWorker = OutputWorker(result_to_write, output_dir, format, code_,self)
+        self.outputWorker = OutputWorker(result_to_write, output_dir, format, code_, aggregate_contents_according_to_the_speaker , self)
         self.outputWorker.signal_write_over.connect(self.outputOver)    
         self.outputWorker.start()
         self.setStateTool(self.tr("保存文件"), self.tr("输出字幕文件"), False)
@@ -946,6 +945,9 @@ class MainWindows(UIMainWin):
         self.setPageOutButtonStatus()
 
         if self.whisperXWorker is None:
+
+            print(f"min_speaker: {whisperParams['min_speaker']}")
+            print(f"max_speaker: {whisperParams['max_speaker']}")
 
             self.whisperXWorker = WhisperXWorker(result_needed
                                                 , alignment=False

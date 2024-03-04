@@ -127,6 +127,7 @@ class OutputWorker(QThread):
                     output_dir:str, 
                     format:str, 
                     output_code = "UTF-8",
+                    aggregate_contents = False,
                     parent=None
                 ) -> None:
         
@@ -136,6 +137,7 @@ class OutputWorker(QThread):
         self.format = format
         self.output_dir = output_dir
         self.output_code = output_code
+        self.aggregate_contents = aggregate_contents
 
     def stop(self):
         self.is_running = False
@@ -178,6 +180,7 @@ class OutputWorker(QThread):
                             , language=info.language
                             , fileName=path
                             , file_code = self.output_code
+                            , aggregate_contents = self.aggregate_contents
                         )
 
         print("\n【Over】")
@@ -208,7 +211,7 @@ class TranscribeWorker(QThread):
         self.segments_path_info = []
         
         
-    def transcribe_file(self, file) -> (TranscriptionInfo, List):
+    def transcribe_file(self, file) -> (TranscriptionInfo, List): # type: ignore
         # try:
         #     is_av_file = self.try_decode_avFile(file)
         #     if not is_av_file:
@@ -388,7 +391,8 @@ def writeSubtitles(outputFileName:str,
                     format:str, 
                     language:str="",
                     fileName = "",
-                    file_code = "UTF-8"
+                    file_code = "UTF-8",
+                    aggregate_contents = False
                 ):
     
     file_code = ENCODING_DICT[file_code]
@@ -396,7 +400,7 @@ def writeSubtitles(outputFileName:str,
     if format == "SRT":
         writeSRT(outputFileName, segments, file_code = file_code)
     elif format == "TXT":
-        writeTXT(outputFileName, segments, file_code=file_code)
+        writeTXT(outputFileName, segments, file_code=file_code, aggregate_contents = aggregate_contents)
     elif format == "VTT":
         writeVTT(outputFileName, segments,language=language, file_code=file_code)
     elif format == "LRC":
@@ -608,21 +612,31 @@ def writeVTT(fileName:str, segments:List[segment_Transcribe],language:str,file_c
         
     vtt.save(fileName, file_code)
 
-def writeTXT(fileName:str, segments,file_code="utf8"):
+def writeTXT(fileName:str, segments, file_code="utf8", aggregate_contents=False):
     with codecs.open(fileName, "w", encoding=file_code) as f:
+        speaker_temp = ""
+
         for segment in segments:
+            
             text:str = segment.text
             try:
                 speaker = segment.speaker + ": "
             except:
                 speaker = ""
-
-            text = speaker + text
+            
+            if speaker_temp != speaker and aggregate_contents:
+                f.write(f"\n{speaker.encode('utf8').decode('utf8')} \n")
+                speaker_temp = speaker
+            elif not aggregate_contents:
+                text = speaker + text
 
             # 重编码为 utf-8 
             text:str = text.encode("utf8").decode("utf8")
+            f.write(f"{text} \n")
 
-            f.write(f"{text} \n\n")
+            # text = speaker + text
+
+            
 
 def writeSRT(fileName:str, segments, file_code="UTF-8"):
     index = 1
