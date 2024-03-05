@@ -281,9 +281,12 @@ class TranscribeWorker(QThread):
         return info, segmentsTranscribe
 
     def detect_Audio_info(self, info):
-        language = Language_dict[info.language]
-        if language:
-            language = language.capitalize()
+        if info.language != "zh":
+            language = Language_dict[info.language]
+            if language:
+                language = language.capitalize()
+        else:
+            language = "Chinese" 
         language_probability = info.language_probability
         duration = info.duration
         duration = secondsToHMS(duration).replace(",", ".")
@@ -460,7 +463,10 @@ def writeSMI(fileName:str, segments:List[segment_Transcribe], language:str, avFi
             i += 1
     else:
         smi += "  #SUB{color: white; background-color: black; font-family: Arial; font-size: 12pt; font-weight: normal; text-align: left;}"
-    smi += f"  .{language_type_CC} {'{'} name: {Language_dict[language].capitalize()}; lang: {language}; SAMIType: CC; {'}'}\n"
+    if language != "zh":
+        smi += f"  .{language_type_CC} {'{'} name: {Language_dict[language].capitalize()}; lang: {language}; SAMIType: CC; {'}'}\n"
+    else:
+        smi += f"  .{language_type_CC} {'{'} name: {'Chinese'}; lang: {language}; SAMIType: CC; {'}'}\n"
     smi += "-->\n"
     smi += "</STYLE>\n"
     smi += "</HEAD>\n"

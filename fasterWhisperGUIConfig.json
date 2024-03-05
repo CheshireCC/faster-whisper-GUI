@@ -8,9 +8,9 @@
     "model_param": {
         "localModel": true,
         "onlineModel": false,
-        "model_path": "",
+        "model_path": "F:/WhisperModels/faster-whisper/large-v3-float32",
         "modelName": 0,
-        "use_v3_model": false,
+        "use_v3_model": true,
         "device": 1,
         "deviceIndex": "0",
         "preciese": 0,
@@ -31,7 +31,7 @@
     "setting": {
         "saveConfig": true,
         "autoLoadModel": false,
-        "language": 0,
+        "language": 2,
         "huggingface_user_token": "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",
         "autoGoToOutputPage": 2,
         "autoClearTempFiles": true,
@@ -39,7 +39,7 @@
     },
     "Transcription_param": {
         "aggregate_contents": true,
-        "language": 3,
+        "language": 2,
         "task": false,
         "beam_size": "5",
         "best_of": "5",
@@ -67,7 +67,7 @@
         "tabMovable": false,
         "tabScrollable": false,
         "tabShadowEnabled": false,
-        "tabMaxWidth": 253,
+        "tabMaxWidth": 205,
         "closeDisplayMode": 0,
         "whisperXMinSpeaker": 3,
         "whisperXMaxSpeaker": 3,

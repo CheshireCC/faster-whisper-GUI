@@ -69,7 +69,7 @@ class SplitAudioFileWithSpeakersWorker(QThread):
             # 数据标注文件
             list_file = open(f"{output_path + '/' + '00_list.csv'}","w",encoding="utf8")
             # 格式：vocal_path|speaker_name|language|text
-            list_file.write("vocal_path,speaker_name,language,text\n")
+            list_file.write("vocal_path,    speaker_name,    language,    text\n")
 
             for segment in segments:
                 # if not segment.speaker : continue
@@ -93,7 +93,7 @@ class SplitAudioFileWithSpeakersWorker(QThread):
                 output_fileName = output_fileName.replace('\\','/')
 
                 # 输出标注信息
-                list_file.write(f"{output_fileName},{speaker},{self.language},{segment.text}\n")
+                list_file.write(f"{output_fileName},{speaker},{self.language},{segment.text.strip().replace(',',' ')}\n")
 
         list_file.close()
         # 完成后发送结果信号

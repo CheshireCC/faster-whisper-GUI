@@ -32,6 +32,8 @@ from qfluentwidgets import (
                         )
 
 from faster_whisper.transcribe import TranscriptionInfo
+from faster_whisper import Word
+
 import torch
 
 from .config import (
@@ -59,6 +61,9 @@ from .subtitleFileRead import readSRTFileToSegments
 from .config import ENCODING_DICT
 from .util import outputWithDateTime
 from .split_audio import SplitAudioFileWithSpeakersWorker
+
+import opencc
+
 
 # =======================================================================================
 # SignalStore
@@ -397,6 +402,7 @@ class MainWindows(UIMainWin):
             # 转写参数
             Transcribe_params : dict = self.getParamTranscribe()
             
+            print(f"language:{Transcribe_params['language']}")
             print("Transcribes options:")
             self.log.write("Transcribes options:\n")
 
@@ -558,6 +564,44 @@ class MainWindows(UIMainWin):
         
         print(f"len_model: {len(self.tableModel_list)}")
 
+    def simplifiedAndTraditionalChineseConvert(self, segments, language):
+        # 設置轉換器
+                    if language == "Auto" or language == "zhs":
+                        print(f"convert to Simplified Chinese")
+                        print(f"len:{len(segments)}")
+                        cc = opencc.OpenCC('t2s')
+
+                        # for segment in segment_:
+                            # new_text = cc.convert(segment.text)
+                            # print(f"[{segment.text} --> {new_text}]")
+                            # segment.text = new_text
+                            # print(f"len_words: {len(segment.words)}")
+                            # if len(segment.words) > 0:
+                            #     for word in segment.words:
+                            #         new_word = cc.convert(word.word)
+                            #         print(f"    {word.word} --> {new_word}")
+                            #         word.word = new_word
+                    elif language == "zht":
+                        print(f"convert to Traditional Chinese")
+                        print(f"len:{len(segments)}")
+                        cc = opencc.OpenCC('s2t')
+
+                    # 轉換簡繁
+                    for segment in segments:
+                        
+                        new_text = cc.convert(segment.text)
+                        # print(f"[{segment.text} --> {new_text}]")
+                        segment.text = new_text
+                        # print(f"len_words: {len(segment.words)}")
+                        if len(segment.words) > 0:
+                            
+                            for word in segment.words:
+                                new_word = cc.convert(word.word)
+                                # print(f"    {word.word} --> {new_word}")
+                                
+                                word = Word(word.start,word.end,new_word,word.probability)
+                                # word.word = new_word
+
     def transcribeOver(self, segments_path_info:list):
         # self.button_process.clicked.disconnect(self.cancelTrancribe)
         # self.button_process.clicked.connect(self.onButtonProcessClicked)
@@ -582,13 +626,15 @@ class MainWindows(UIMainWin):
                             )
             
             self.result_faster_whisper = segments_path_info
-            # for segments in self.result_faster_whisper:
-            #     segment_, path, info = segments
-            #     print(path, info.language)
-            #     print(f"len:{len(segment_)}")
-            #     for segment in segment_:
-            #         print(f"[{segment.start}s --> {segment.end}] | {segment.text}")
-            #         print(f"len_words: {len(segment.words)}")
+            
+            for segments in self.result_faster_whisper:
+                segment_, path, info = segments
+                if info.language == "zh":
+                    print(path, info.language)
+                    language_param = self.page_transcribes.combox_language.currentText().split("-")[0]
+
+                    self.simplifiedAndTraditionalChineseConvert(segment_,language_param)
+                    
 
             print(f"len_segments_path_info_result: {len(segments_path_info)}")
             self.showResultInTable(self.result_faster_whisper)
@@ -622,7 +668,7 @@ class MainWindows(UIMainWin):
             language = None
         if language in ["zht","zhs"]:
             language = "zh"
-            
+
         Transcribe_params["language"] = language
 
         task = self.page_transcribes.switchButton_Translate_to_English.isChecked()
@@ -1115,11 +1161,13 @@ class MainWindows(UIMainWin):
             self.raiseErrorInfoBar(self.tr("读取字幕文件失败"), self.tr("读取失败 文件可能使用了不同的编码\n检查 fasterwhispergui.log 文件可能会获取更多信息"))
             return
         # 输出字幕文件内容
-        for segment in segments:
-            print(f"[{segment.start}s --> {segment.end}s] | {segment.speaker+':'+segment.text if segment.speaker else segment.text}")
+        # for segment in segments:
+        #     print(f"[{segment.start}s --> {segment.end}s] | {segment.speaker+':'+segment.text if segment.speaker else segment.text}")
 
+        language = self.page_transcribes.combox_language.currentText().split("-")[0]
+        
         info = TranscriptionInfo(
-                                    language=self.page_transcribes.combox_language.currentText().split("-")[0],
+                                    language="zh" if language in ["zhs","zht"] else language,
                                     language_probability=1,
                                     duration=None, 
                                     duration_after_vad=None,
@@ -1127,6 +1175,9 @@ class MainWindows(UIMainWin):
                                     transcription_options={},
                                     vad_options={}
                                 )
+
+        if language in ["zhs", "zht"]:
+            self.simplifiedAndTraditionalChineseConvert(segments, language)
 
         if file_subtitle_fileName and file:
             self.result_whisperx_aligment = None
@@ -1334,7 +1385,7 @@ class MainWindows(UIMainWin):
         # self.page_output.outputAudioPartWithSpeakerButton.setEnabled(False)
         self.setPageOutButtonStatus()
 
-        language = self.page_transcribes.combox_language.currentText().split("-")[0]
+        language = self.page_transcribes.combox_language.currentText().split("-")[-1]
 
         output_path = self.page_output.outputGroupWidget.LineEdit_output_dir.text()
         self.splitAudioFileWithSpeakerWorker = SplitAudioFileWithSpeakersWorker(self.current_result,output_path,language ,self)
