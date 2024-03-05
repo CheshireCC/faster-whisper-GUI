@@ -620,6 +620,9 @@ class MainWindows(UIMainWin):
         language = self.page_transcribes.combox_language.currentText().split("-")[0]
         if language == "Auto":
             language = None
+        if language in ["zht","zhs"]:
+            language = "zh"
+            
         Transcribe_params["language"] = language
 
         task = self.page_transcribes.switchButton_Translate_to_English.isChecked()
@@ -1331,8 +1334,10 @@ class MainWindows(UIMainWin):
         # self.page_output.outputAudioPartWithSpeakerButton.setEnabled(False)
         self.setPageOutButtonStatus()
 
+        language = self.page_transcribes.combox_language.currentText().split("-")[0]
+
         output_path = self.page_output.outputGroupWidget.LineEdit_output_dir.text()
-        self.splitAudioFileWithSpeakerWorker = SplitAudioFileWithSpeakersWorker(self.current_result,output_path, self)
+        self.splitAudioFileWithSpeakerWorker = SplitAudioFileWithSpeakersWorker(self.current_result,output_path,language ,self)
         self.splitAudioFileWithSpeakerWorker.result_signal.connect(self.splitAudioFileWithSpeakerWorkerFinished)
         self.splitAudioFileWithSpeakerWorker.current_task_signal.connect(lambda file: self.setStateTool(self.tr("分割音频"), self.tr("处理文件：") + file, False))
         self.splitAudioFileWithSpeakerWorker.start()

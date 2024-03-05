@@ -6,8 +6,8 @@
         "tracks": 1
     },
     "model_param": {
-        "localModel": false,
-        "onlineModel": true,
+        "localModel": true,
+        "onlineModel": false,
         "model_path": "",
         "modelName": 0,
         "use_v3_model": false,
@@ -39,7 +39,7 @@
     },
     "Transcription_param": {
         "aggregate_contents": true,
-        "language": 1,
+        "language": 3,
         "task": false,
         "beam_size": "5",
         "best_of": "5",
@@ -67,11 +67,11 @@
         "tabMovable": false,
         "tabScrollable": false,
         "tabShadowEnabled": false,
-        "tabMaxWidth": 367,
+        "tabMaxWidth": 253,
         "closeDisplayMode": 0,
         "whisperXMinSpeaker": 3,
         "whisperXMaxSpeaker": 3,
-        "outputFormat": 2,
+        "outputFormat": 0,
         "outputEncoding": 1
     }
 }

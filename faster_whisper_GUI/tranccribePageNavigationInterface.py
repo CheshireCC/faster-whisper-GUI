@@ -117,7 +117,7 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         self.combox_language = EditableComboBox()
         self.combox_language.addItem("Auto")
         for key, value in self.LANGUAGES_DICT.items():
-            self.combox_language.addItem(f"{key}-{value.capitalize()}")
+            self.combox_language.addItem(f"{key}-{value.title()}")
         
         self.combox_language.setCurrentIndex(0)
         completer_language = QCompleter([item.text for item in self.combox_language.items])

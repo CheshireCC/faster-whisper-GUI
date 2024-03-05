@@ -4,7 +4,9 @@ default_Huggingface_user_token = "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"
 Language_without_space = ["ja","zh","ko","yue"]
 Language_dict = {
                 "en": "english",
-                "zh": "chinese",
+                "zht": "Traditional Chinese",
+                "zhs": "Simplified Chinese ",
+                "yue": "cantonese",
                 "de": "german",
                 "es": "spanish",
                 "ru": "russian",
@@ -102,7 +104,6 @@ Language_dict = {
                 "ba": "bashkir",
                 "jw": "javanese",
                 "su": "sundanese",
-                "yue": "cantonese"
             }
 
 Preciese_list = ['int8',
