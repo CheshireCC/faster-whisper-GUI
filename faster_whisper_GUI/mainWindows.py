@@ -54,6 +54,7 @@ from .transcribe import (
 from .fasterWhisperGuiIcon import FasterWhisperGUIIcon
 from .UI_MainWindows import UIMainWin
 from .tableModel_segments_path_info import TableModel
+from .tableViewInterface import CustomTableView
 from .whisper_x import WhisperXWorker
 from .de_mucs import DemucsWorker
 # from .style_sheet import StyleSheet
@@ -463,9 +464,11 @@ class MainWindows(UIMainWin):
             self.log.write(f"\n=========={dateTime_}==========\n")
             self.log.write(f"==========Cancel==========\n")
 
-            messageBoxW = MessageBox(self.tr("取消")
-                                    , self.tr("是否取消操作？")
-                                    , self)
+            messageBoxW = MessageBox(   
+                                        self.tr("取消")
+                                        , self.tr("是否取消操作？")
+                                        , self
+                                    )
             
             if messageBoxW.exec():
                 self.page_process.button_process.setEnabled(False)
@@ -544,7 +547,8 @@ class MainWindows(UIMainWin):
         for result in results:
             segments, file, _ = result
             file = file.replace("\\", "/")
-            table_view_widget = TableView()
+            
+            table_view_widget = CustomTableView()
             table_model = TableModel(segments)
 
             self.tableModel_list[file] = table_model

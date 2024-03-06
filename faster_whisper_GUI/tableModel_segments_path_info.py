@@ -1,9 +1,11 @@
 # coding:utf-8
 
-from PySide6.QtCore import QAbstractTableModel, Qt
+from PySide6.QtCore import QAbstractTableModel, QCoreApplication, Qt
 # from PySide6.QtWidgets import QStyledItemDelegate, QLineEdit
 from typing import List
+from PySide6.QtWidgets import QApplication
 from faster_whisper import  Word
+from qfluentwidgets.components.dialog_box.dialog import MessageBox
 
 from .seg_ment import segment_Transcribe
 from .util import HMSToSeconds, secondsToHMS
@@ -13,7 +15,10 @@ class TableModel(QAbstractTableModel):
     def __init__(self, data:List[tuple]):
         super(TableModel, self).__init__()
         self._data = data
-        
+    
+    def __tr(self, text):
+        return QCoreApplication.translate(self.__class__.__name__, text)
+    
 
     def resetData(self, data):
         self._data = data
@@ -56,10 +61,16 @@ class TableModel(QAbstractTableModel):
                         retxt = value.split(":")
                         if len(retxt) > 1:
                             if self._data[row].speaker != retxt[0]:
-                                temp_data_speaker = self._data[row].speaker 
-                                for data in self._data:
-                                    if data.speaker is not None and data.speaker != "" and data.speaker == temp_data_speaker:
-                                        data.speaker = retxt[0]
+                                temp_data_speaker = self._data[row].speaker
+                                self._data[row].speaker = retxt[0]
+                                # 批量修改所有相同说话人
+                                msgb = MessageBox(self.__tr("提示"), self.__tr("是否修改所有相同说话人？"),QApplication.activeWindow())
+                                # msgb.show()
+                                if msgb.exec():
+                                    for data in self._data:
+                                        if data.speaker is not None and data.speaker != "" and data.speaker == temp_data_speaker:
+                                            data.speaker = retxt[0]
+
                             self._data[row].speaker = retxt[0]
                             self._data[row].text = ":".join(retxt[1:])
                         else:
