@@ -52,10 +52,19 @@
 
 ---
 
-
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=CheshireCC/faster-whisper-GUI&type=Timeline)](https://star-history.com/#CheshireCC/faster-whisper-GUI&Timeline)
+
+- ### UI Language ###
+
+    ![屏幕截图 2024-03-11 183130](./README.assets/屏幕截图 2024-03-11 183130.png)
+
+- ### Theme Color ###
+
+    ![屏幕截图 2024-03-11 184459](./README.assets/屏幕截图 2024-03-11 184459.png)
+
+    ![image-20240311184818398](./README.assets/image-20240311184818398.png)
 
 - ### Load Model / Download Model / Convert Model
 
