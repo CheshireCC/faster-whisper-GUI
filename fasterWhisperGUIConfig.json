@@ -16,7 +16,7 @@
         "preciese": 0,
         "thread_num": "4",
         "num_worker": "1",
-        "download_root": "G:/Program Files (x86)/FasterWhisperGUI/cache",
+        "download_root": "C:/Users/12059/.cache/huggingface/hub",
         "local_files_only": false
     },
     "vad_param": {
@@ -39,7 +39,7 @@
     },
     "Transcription_param": {
         "aggregate_contents": true,
-        "language": 1,
+        "language": 3,
         "task": false,
         "beam_size": "5",
         "best_of": "5",
@@ -67,11 +67,11 @@
         "tabMovable": false,
         "tabScrollable": false,
         "tabShadowEnabled": false,
-        "tabMaxWidth": 366,
+        "tabMaxWidth": 257,
         "closeDisplayMode": 0,
         "whisperXMinSpeaker": 2,
         "whisperXMaxSpeaker": 3,
-        "outputFormat": 4,
+        "outputFormat": 0,
         "outputEncoding": 1
     }
 }

@@ -1,7 +1,25 @@
 # coding:utf-8
 
+import os
 from typing import List
 from .seg_ment import segment_Transcribe
+import json
+from faster_whisper import Word
+
+def readJSONFileToSegments(file:str, file_code = "utf8") -> List[segment_Transcribe]:
+    
+    with open(os.path.abspath(file),"r", encoding= file_code) as fp:
+        subtitles_str = json.load(fp=fp)["body"]
+    segments = [ segment_Transcribe(
+                                start=subtitle["from"], 
+                                end=subtitle["to"], 
+                                text=subtitle["content"],
+                                words=[ Word(word["start"],word["end"],word["word"],word["probability"]) for word in subtitle["words"]],
+                                speaker=subtitle["speaker"] or None
+                            ) for subtitle in subtitles_str
+                ]
+    return segments
+
 
 def readSRTFileToSegments(file:str, file_code = "utf8") -> List[segment_Transcribe]:
 

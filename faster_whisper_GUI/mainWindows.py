@@ -58,7 +58,7 @@ from .tableViewInterface import CustomTableView
 from .whisper_x import WhisperXWorker
 from .de_mucs import DemucsWorker
 # from .style_sheet import StyleSheet
-from .subtitleFileRead import readSRTFileToSegments
+from .subtitleFileRead import readSRTFileToSegments, readJSONFileToSegments
 from .config import ENCODING_DICT
 from .util import outputWithDateTime
 from .split_audio import SplitAudioFileWithSpeakersWorker
@@ -1133,36 +1133,52 @@ class MainWindows(UIMainWin):
         dataDir,_ = os.path.split(file)
         self.page_process.fileNameListView.avDataRootDir = dataDir
         # filesList = os.listdir(dataDir)
-        
-        file_subtitle_fileName = ".".join(file.split(".")[:-1]+["srt"])
-        fileName_subtitle_without_Ext = '.'.join(os.path.split(file_subtitle_fileName)[-1].split('.')[:-1])
 
+        # json 格式字幕文件为首选
+        file_subtitle_fileName = ".".join(file.split(".")[:-1]+["json"])
+        ext_ = "json"
+        # 检测 json 格式字幕文件存在性
+        if not os.path.exists(file_subtitle_fileName):
+            # 没有 json 格式字幕文件的时候将会尝试获取 srt 格式字幕
+            file_subtitle_fileName = ".".join(file.split(".")[:-1]+["srt"])
+            ext_ = "srt"
+        
+        # fileName_subtitle_without_Ext = '.'.join(os.path.split(file_subtitle_fileName)[-1].split('.')[:-1])
+
+        # 当字幕文件目录所指向的文件存在时
         if os.path.exists(file_subtitle_fileName):
             print(f"find existed srt file: {file_subtitle_fileName}")
+            # 获取文件的后缀名
+            # ext_ = file_subtitle_fileName.split(".")[-1]
+
         else:
-            file_subtitle_fileName,_ = QFileDialog.getOpenFileName(
+            file_subtitle_fileName,ext_ = QFileDialog.getOpenFileName(
                                                                     self, 
                                                                     self.tr("选择字幕文件"), 
                                                                     file_subtitle_fileName, 
                                                                     # self.page_process.fileNameListView.avDataRootDir, 
-                                                                    "SRT file(*.srt)",
-                                                                    
+                                                                    "JSON file(*.json);;SRT file(*.srt)",
                                                                 )
+            # print(ext_)
+            
             if file_subtitle_fileName and os.path.isfile(file_subtitle_fileName):
                 print(f"get srt file: {file_subtitle_fileName}")
             else:
-                messageBoxDia_ = MessageBox(self.tr("无效文件"),self.tr("必须要有有效的字幕文件"),self)
+                messageBoxDia_ = MessageBox(self.tr("没有字幕文件"),self.tr("必须要有有效的字幕文件"),self)
                 messageBoxDia_.show()
                 return
         
         code_ = self.page_output.combox_output_code.currentText()
 
         try:
-            segments = readSRTFileToSegments(file_subtitle_fileName, file_code=ENCODING_DICT[code_])
-        except UnicodeDecodeError as e:
-            print("read subtitle file failed")
-            print(str(e))
-            self.raiseErrorInfoBar(self.tr("读取字幕文件失败"), self.tr("读取失败 文件可能使用了不同的编码\n检查 fasterwhispergui.log 文件可能会获取更多信息"))
+            if ext_ in ["JSON file(*.json)" ,"json"]:
+                segments = readJSONFileToSegments(file_subtitle_fileName, file_code=ENCODING_DICT[code_])
+            else:
+                segments = readSRTFileToSegments(file_subtitle_fileName, file_code=ENCODING_DICT[code_])
+        except Exception as e:
+            print("read subtitle file failed:")
+            print(f"    {str(e)}")
+            self.raiseErrorInfoBar(self.tr("读取失败"), self.tr("读取字幕文件失败 \n检查日志文件可能会获取更多信息"))
             return
         # 输出字幕文件内容
         # for segment in segments:
@@ -1509,9 +1525,11 @@ class MainWindows(UIMainWin):
         self.outputWithDateTime("deleteTable")
 
         print(f"len_DataModel:{len(self.tableModel_list)}")
-        # print(routeKey)
+        for tb in self.tableModel_list.items():
+            print(f"    {tb[0]}")
+        print(f"data to delete: {routeKey}")
         file_key ="_".join(routeKey.split("_")[1:]) 
-        print(file_key)
+        print(f"key: {file_key}")
         self.tableModel_list.pop(file_key)
         print(f"len_DataModel_after_pop:{len(self.tableModel_list)}")
 

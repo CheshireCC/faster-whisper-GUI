@@ -248,13 +248,15 @@ class TabInterface(QWidget):
     def removeTab(self, index):
         
         item = self.tabBar.tabItem(index)
+        print(f"removeTab: {item.routeKey()}")
+
         self.signal_delete_table.emit(item.routeKey())
 
         widget = self.findChild(TableView, item.routeKey())
-
+        # print(f"table:{widget}")
         self.stackedWidget.removeWidget(widget)
         self.tabBar.removeTab(index)
-        widget.deleteLater()
+        # widget.deleteLater()
 
         
 class CustomTableView(TableView):

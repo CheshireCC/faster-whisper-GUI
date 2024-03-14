@@ -9,6 +9,7 @@ import codecs
 import torch
 import numpy as np 
 import av
+import json
 
 from faster_whisper import (
                             WhisperModel
@@ -410,7 +411,37 @@ def writeSubtitles(outputFileName:str,
         wirteLRC(outputFileName, segments,language=language, file_code=file_code)
     elif format == "SMI":
         writeSMI(outputFileName, segments, language=language, avFile=fileName, file_code=file_code)
+    elif format == "JSON":
+        writeJson(outputFileName, segments, language=language, avFile=fileName, file_code=file_code)
+
     print(f"write over | {outputFileName}")
+    
+def writeJson(fileName:str,segments:List[segment_Transcribe],language:str,avFile="",file_code="utf8"):
+    result = {}
+    result["language"] = language
+    result["file"]=avFile
+
+    result["body"] = []
+    
+    for segment in segments:
+        result["body"].append(
+                                {
+                                    "from":segment.start,
+                                    "to":segment.end,
+                                    "location":2,
+                                    "content":segment.text,
+                                    "speaker":segment.speaker or "",
+                                    "words":[{"start":word.start,"end":word.end,"word":word.word,"probability":word.probability }for word in segment.words]
+                                }
+                            )
+    with open(os.path.abspath(fileName),'w',encoding=file_code) as fp:
+    
+        json.dump(
+                    result,
+                    fp,
+                    ensure_ascii=False,
+                    indent=4
+                )
     
 
 def writeSMI(fileName:str, segments:List[segment_Transcribe], language:str, avFile = "",file_code="utf8"):
