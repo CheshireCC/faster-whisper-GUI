@@ -61,6 +61,10 @@ class DemucsWorker(QThread):
                 self.signal_vr_over.emit(False)
                 self.stop()
 
+        samples = None
+        sources = None
+        audio = None
+        
         for audio in self.audio:
             
             if not self.is_running:
