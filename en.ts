@@ -1982,8 +1982,9 @@ of symbols as defined in the model config.json file.</translation>
     </message>
     <message>
         <location filename="faster_whisper_gui/tranccribePageNavigationInterface.py" line="173"/>
-        <source>按顺序讲相同说话人的内容聚合到一起，仅支持 txt 格式输出</source>
-        <translation>aggregate contents according to speakers</translation>
+        <source>按顺序将相同说话人的内容聚合到一起，仅支持 txt 格式输出</source>
+        <oldsource>按顺序讲相同说话人的内容聚合到一起，仅支持 txt 格式输出</oldsource>
+        <translation>aggregate contents according to speakers, only for txt format output</translation>
     </message>
     <message>
         <location filename="faster_whisper_gui/tranccribePageNavigationInterface.py" line="292"/>

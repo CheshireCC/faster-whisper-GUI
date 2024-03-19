@@ -3,14 +3,14 @@
     "demucs": {
         "overlap": 0.1,
         "segment": 7.8,
-        "tracks": 1
+        "tracks": 0
     },
     "model_param": {
         "localModel": true,
         "onlineModel": false,
-        "model_path": "F:/WhisperModels/faster-whisper/whisper-tiny",
+        "model_path": "F:/WhisperModels/faster-whisper/large-v3-float32",
         "modelName": 0,
-        "use_v3_model": false,
+        "use_v3_model": true,
         "device": 1,
         "deviceIndex": "0",
         "preciese": 0,
@@ -39,7 +39,7 @@
     },
     "Transcription_param": {
         "aggregate_contents": true,
-        "language": 1,
+        "language": 0,
         "task": false,
         "beam_size": "5",
         "best_of": "5",

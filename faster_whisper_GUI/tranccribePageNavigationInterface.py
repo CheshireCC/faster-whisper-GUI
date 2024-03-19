@@ -170,7 +170,7 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         self.switchButton_aggregate_contents_according_to_the_speaker = SwitchButton()
         self.switchButton_aggregate_contents_according_to_the_speaker.setChecked(False)
         self.aggregate_contents_param_widget = ParamWidget(self.__tr("根据说话人聚合内容"),
-                                                                self.__tr("按顺序讲相同说话人的内容聚合到一起，仅支持 txt 格式输出"),
+                                                                self.__tr("按顺序将相同说话人的内容聚合到一起，仅支持 txt 格式输出"),
                                                                 self.switchButton_aggregate_contents_according_to_the_speaker
                                                             )
         widget_list.append(self.aggregate_contents_param_widget)
