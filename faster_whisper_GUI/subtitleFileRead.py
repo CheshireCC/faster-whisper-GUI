@@ -9,15 +9,26 @@ from faster_whisper import Word
 def readJSONFileToSegments(file:str, file_code = "utf8") -> List[segment_Transcribe]:
     
     with open(os.path.abspath(file),"r", encoding= file_code) as fp:
-        subtitles_str = json.load(fp=fp)["body"]
-    segments = [ segment_Transcribe(
-                                start=subtitle["from"], 
-                                end=subtitle["to"], 
-                                text=subtitle["content"],
-                                words=[ Word(word["start"],word["end"],word["word"],word["probability"]) for word in subtitle["words"]],
-                                speaker=subtitle["speaker"] or None
-                            ) for subtitle in subtitles_str
-                ]
+        subtitles_str = json.load(fp=fp)["data"]
+    try:
+        segments = [ segment_Transcribe(
+                                        start=subtitle["start"]["time"] / 1000.0, 
+                                        end=subtitle["end"]["time"] / 1000.0, 
+                                        text=subtitle["content"],
+                                        words=[ Word(word["start"],word["end"],word["word"],word["probability"]) for word in subtitle["words"]],
+                                        speaker=subtitle["speaker"] or None
+                                    ) for subtitle in subtitles_str
+                    ]
+    except Exception as e:
+        print(f"{str(e)}")
+        segments = [ segment_Transcribe(
+                                    start=subtitle["from"], 
+                                    end=subtitle["to"], 
+                                    text=subtitle["content"],
+                                    words=[],
+                                    speaker=subtitle["speaker"] or None
+                                ) for subtitle in subtitles_str
+                    ]
     return segments
 
 

@@ -259,17 +259,17 @@ class SettingPageNavigationInterface(ScrollArea):
         
         self.themeColor_str = THEME_COLORS[index]
         self.colorPickerButton.setColor(self.themeColor_str)
-        setThemeColor(self.themeColor_str)
+        setThemeColor(self.themeColor_str, save=True, lazy=True)
         self.themeColorLineEdit.setText(self.themeColor_str)
 
     def setThemeColorAndText(self):
         self.themeColor_str = self.colorPickerButton.color.name()
         self.themeColorLineEdit.setText(self.themeColor_str)
-        setThemeColor(self.themeColor_str)
+        setThemeColor(self.themeColor_str, save=True, lazy=True)
 
     def setThemeColorWithLineEditText(self,text):
         if len(text) == 7:
             self.colorPickerButton.setColor(text)
-            setThemeColor(text)
+            setThemeColor(text, save=True, lazy=True)
             self.themeColor_str = text
         

@@ -26,7 +26,7 @@ from qfluentwidgets import (
                             , InfoBarPosition
                             , InfoBarIcon
                             , MessageBox
-                            , TableView
+                            # , TableView
                             , FluentIcon
                             , isDarkTheme
                         )
@@ -526,7 +526,10 @@ class MainWindows(UIMainWin):
             # 标签名存在文件名列表中且文件路径在目录列表中的时候 更新相关表格的数据
             if tabBarItem_objectName_fileName in file_list:
                 # 转写结果已经存在的情况下更新数据
-                self.tableModel_list[tabBarItem_objectName_fileName]._data = results[file_list.index(tabBarItem_objectName_fileName)][0]
+                self.tableModel_list.pop(tabBarItem_objectName_fileName)
+                table_model = TableModel(results[file_list.index(tabBarItem_objectName_fileName)][0])
+                self.tableModel_list[tabBarItem_objectName_fileName] = table_model
+                # self.tableModel_list[tabBarItem_objectName_fileName]._data = results[file_list.index(tabBarItem_objectName_fileName)][0]
 
         # 遍历转写结果列表，查找当前不存在的表格
         tabBarItems_objectName_fileName = ["_".join(tabBarItem.objectName().split("_")[1:]).replace("\\", "/") for tabBarItem in self.page_output.tableTab.tabBar.items]
@@ -535,6 +538,24 @@ class MainWindows(UIMainWin):
                 self.createResultInTable([results[file_list.index(file)]])
 
     def showResultInTable(self, results):
+
+        # tabBarItems = self.page_output.tableTab.tabBar.items
+
+        # # 遍历表格标签 
+        # for tabBarItem in tabBarItems:
+        #     #　清理掉已经过时的结果
+        #     index = tabBarItems.index(tabBarItem)
+        #     self.page_output.tableTab.tabBar.removeTab(index)
+        
+        # # 遍历stack下的表格控件
+        # for i in range(self.page_output.tableTab.stackedWidget.count()):
+        #     widget = self.page_output.tableTab.stackedWidget.widget(i)
+        #     # 移除全部表格控件
+        #     self.page_output.tableTab.stackedWidget.removeWidget(widget)
+        
+        # 创建数据表
+        # self.createResultInTable(results=results)
+
         if len(self.tableModel_list) == 0:
             print("Create Tables")
             self.createResultInTable(results=results)
@@ -927,12 +948,12 @@ class MainWindows(UIMainWin):
 
         self.result_whisperx_aligment = segments_path_info
         if self.result_whisperx_aligment is not None:
-            self.showResultInTable(results=self.result_whisperx_aligment)
+            self.current_result = self.result_whisperx_aligment
+            self.showResultInTable(results=self.current_result)
             self.raiseSuccessInfoBar(
                                     title=self.tr("WhisperX")
                                     , content=self.tr("时间戳对齐结束")
                                 )
-            self.current_result = self.result_whisperx_aligment
 
         else:
             self.raiseErrorInfoBar(
@@ -1044,13 +1065,13 @@ class MainWindows(UIMainWin):
         
         self.result_whisperx_speaker_diarize = segments_path_info
         if self.result_whisperx_speaker_diarize is not None:
-            self.showResultInTable(results=self.result_whisperx_speaker_diarize)
+            self.current_result = self.result_whisperx_speaker_diarize
+            self.showResultInTable(results=self.current_result)
             self.raiseSuccessInfoBar(
                                     title=self.tr("WhisperX")
                                     , content=self.tr("声源分离结束")
                                 )
-            self.current_result = self.result_whisperx_speaker_diarize
-        
+            
         # for segments in self.result_whisperx_speaker_diarize:
         #         segment_, path, info = segments
         #         print(path, info.language)
@@ -1155,7 +1176,7 @@ class MainWindows(UIMainWin):
             file_subtitle_fileName,ext_ = QFileDialog.getOpenFileName(
                                                                     self, 
                                                                     self.tr("选择字幕文件"), 
-                                                                    file_subtitle_fileName, 
+                                                                    "", 
                                                                     # self.page_process.fileNameListView.avDataRootDir, 
                                                                     "JSON file(*.json);;SRT file(*.srt)",
                                                                 )
@@ -1208,8 +1229,10 @@ class MainWindows(UIMainWin):
             else:
                 self.current_result = [(segments, file, info)]
             # self.tableModel_list[file] = file_subtitle_fileName
+            
+            self.createResultInTable(self.current_result)
                 
-            self.showResultInTable(self.current_result)
+            # self.showResultInTable(self.current_result)
 
     def reSetButton_demucs_process(self):
         self.page_demucs.process_button.setText(self.tr("提取"))
@@ -1521,8 +1544,6 @@ class MainWindows(UIMainWin):
             )
         
     def deleteResultTableEvent(self, routeKey:str):
-        
-        self.outputWithDateTime("deleteTable")
 
         print(f"len_DataModel:{len(self.tableModel_list)}")
         for tb in self.tableModel_list.items():
@@ -1545,6 +1566,7 @@ class MainWindows(UIMainWin):
                 self.current_result = None
         except Exception:
             pass
+
         try:
             print(f"len_result_faster_whisper_after_pop: {len(self.result_faster_whisper)}")
             if self.result_faster_whisper is not None and len(self.result_faster_whisper) == 0:

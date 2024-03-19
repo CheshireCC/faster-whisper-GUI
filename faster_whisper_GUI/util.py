@@ -19,26 +19,28 @@ def secondsToHMS(t) -> str:
     S = (t_f - H *3600 - M *60)
     
     H = str(H)
+
     M = str(M)
+
     S = str(round(S,4))
     S = S.replace(".", ",")
     S = S.split(",")
     
+    # 当只有整数秒数值的时候
     if len(S) < 2 :
         S.append("000")
     
-    if len(S[0]) < 2:
-        S[0] = "0" + S[0]
+    # 当整数位秒数值不够两位时，向前填充0
+    S[0] = S[0].zfill(2)
     
-    while(len(S[1]) < 3):
-        S[1] = S[1] + "0"
+    # 当小数位秒数值不够三位时，向后填充0
+    S[1] = S[1].ljust(3, "0")
     
     S = ",".join(S)
     
-    if len(H) < 2:
-        H = "0" + H
-    if len(M) < 2:
-        M = "0" + M
+    # H 与 M 至少有两位
+    H = H.zfill(2)
+    M = M.zfill(2)
     
     return H + ":" + M + ":" + S
 

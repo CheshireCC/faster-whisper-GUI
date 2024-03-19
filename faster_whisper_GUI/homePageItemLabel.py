@@ -1,6 +1,6 @@
 # coding:utf-8
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QObject, Qt
 from PySide6.QtWidgets import (
                                 QHBoxLayout, 
                                 QPushButton, 
@@ -11,10 +11,15 @@ from qfluentwidgets import (ImageLabel, CaptionLabel, TitleLabel)
 from .style_sheet import StyleSheet
 
 class ItemLabel(QWidget):
+
+    def parent(self) -> QObject:
+        return super().parent()
+    
     def __init__(self, parent, title:str, subTitle:str) -> None:
+        # self.parent = parent
         super().__init__(parent=parent)
 
-        self.parent = parent
+        # self.parent = parent
 
         self.vBoxLayout = QVBoxLayout()
         self.setLayout(self.vBoxLayout)

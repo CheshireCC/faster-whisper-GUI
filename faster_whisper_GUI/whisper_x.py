@@ -79,7 +79,7 @@ class WhisperXWorker(QThread):
                     result_a = whisperx.align(segment_dict_list, self.model_alignment, self.metadata_alignment, audio, device, return_char_alignments=False)
 
                     # 清理结果
-                    print("after alignment: ")
+                    # print("after alignment: ")
 
                     # 清理可能存在的重复内容 时间戳完全一致的将会被合并 开启 faster-whisper 时间戳细分模式的情况下可能会出现此类结果
                     result_a_c = Removerepetition(result_a=result_a)
@@ -108,10 +108,11 @@ class WhisperXWorker(QThread):
                     if self.diarize_model is None:
                         print("load speaker brain model...")
                         self.setStateTool("load models...", False)
-                        self.diarize_model = whisperx.DiarizationPipeline(use_auth_token=self.use_auth_token
-                                                                        , device=device
-                                                                        , cache_dir=r"./cache"
-                                                                    )
+                        self.diarize_model = whisperx.DiarizationPipeline(
+                                                                            use_auth_token=self.use_auth_token
+                                                                            , device=device
+                                                                            , cache_dir=r"./cache"
+                                                                        )
                         
                     # 检查结果
                     if self.diarize_model is None:
@@ -141,12 +142,12 @@ class WhisperXWorker(QThread):
                         self.signal_process_over.emit(None)
                         return
                     
-                    print("alignment result: ")
-                    for segment in result_s['segments']:
-                        try:
-                            print(f"  [{segment['start']:.2f}s -> {segment['end']:.2f}s] | {segment['speaker']}: {segment['text']}")
-                        except Exception:
-                            print(f"  [{segment['start']:.2f}s -> {segment['end']:.2f}s] | {segment['text']}")
+                    # print("alignment result: ")
+                    # for segment in result_s['segments']:
+                    #     try:
+                    #         print(f"  [{segment['start']:.2f}s -> {segment['end']:.2f}s] | {segment['speaker']}: {segment['text']}")
+                    #     except Exception:
+                    #         print(f"  [{segment['start']:.2f}s -> {segment['end']:.2f}s] | {segment['text']}")
 
                 except Exception as e:
                     print("failed to diarize speaker!")

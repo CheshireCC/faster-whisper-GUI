@@ -1,6 +1,6 @@
 # coding:utf-8
 
-from PySide6.QtCore import QEasingCurve, Qt
+from PySide6.QtCore import QEasingCurve, QObject, Qt
 from .navigationInterface import NavigationBaseInterface
 
 from .homePageItemLabel import ItemLabel
@@ -10,7 +10,11 @@ from resource import rc_Image
 
 
 class HomePageNavigationinterface(NavigationBaseInterface):
+    def parent(self) -> QObject:
+        return super().parent()
+    
     def __init__(self, parent=None):
+        # self.parent = parent
         super().__init__(title=self.tr("Home"), subtitle=self.tr("faster-whisper 为主要后端的 ASR 及 AVE 软件"), parent=parent)
         self.steupUI()
 
@@ -27,8 +31,8 @@ class HomePageNavigationinterface(NavigationBaseInterface):
         self.hBoxLayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.hBoxLayout.setAnimation(250, QEasingCurve.OutQuad)
         self.addLayout(self.hBoxLayout)
-        
-        self.itemLabel_demucs = ItemLabel(  self,     
+    
+        self.itemLabel_demucs = ItemLabel(  self,
                                             self.tr("Demucs"), 
                                             self.tr("自动人声提取")
                                         )

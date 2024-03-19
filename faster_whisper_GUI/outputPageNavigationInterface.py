@@ -98,7 +98,7 @@ class OutputPageNavigationInterface(NavigationBaseInterface):
         
         # =============================================================================================
         # 添加放置表格的标签导航页
-        self.tableTab = TabInterface()
+        self.tableTab = TabInterface(self)
         self.tableTab.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.addWidget(self.tableTab)
         self.tableTab.setFixedHeight(735)
@@ -113,10 +113,10 @@ class OutputPageNavigationInterface(NavigationBaseInterface):
         self.SpinBox_max_speaker = SpinBox()
         self.SpinBox_max_speaker.setToolTip(self.tr("音频中需分出来的最多的说话人的人数"))
 
-        self.controlLabel_wshiperx = StrongBodyLabel(self.tr("whisperX 参数控制"))
+        self.controlLabel_whisperx = StrongBodyLabel(self.tr("whisperX 参数控制"))
 
         self.tableTab.panelLayout.addSpacing(15)
-        self.tableTab.panelLayout.addWidget(self.controlLabel_wshiperx)
+        self.tableTab.panelLayout.addWidget(self.controlLabel_whisperx)
         self.tableTab.panelLayout.addWidget(HorizontalSeparator())
         
         self.tableTab.panelLayout.addSpacing(4)

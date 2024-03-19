@@ -42,6 +42,7 @@ from qfluentwidgets.components.dialog_box.message_box_base import MessageBoxBase
 from qfluentwidgets.components.widgets.label import SubtitleLabel
 
 from .style_sheet import StyleSheet
+from .util import outputWithDateTime
 
 class CustomTableItemDelegate(TableItemDelegate):
     """ Custom table item delegate """
@@ -88,6 +89,9 @@ class TabInterface(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
+
+        self.outputWithDateTime = outputWithDateTime
+        
         self.tabCount = 1
 
         self.tabBar = TabBar(self)
@@ -146,6 +150,8 @@ class TabInterface(QWidget):
         # self.tabBar.tabAddRequested.connect(self.addTab)
         self.tabBar.tabCloseRequested.connect(self.removeTab)
 
+        # self.tabBar.currentChanged()
+
         self.stackedWidget.currentChanged.connect(self.onCurrentIndexChanged)
 
     def initLayout(self):
@@ -179,9 +185,7 @@ class TabInterface(QWidget):
         self.panelLayout.addSpacing(4)
         self.panelLayout.addWidget(self.closeDisplayModeLabel)
         self.panelLayout.addWidget(self.closeDisplayModeComboBox)
-
         
-
     def addSubInterface(self
                         , widget: QWidget = None
                         , objectName:str=""
@@ -191,6 +195,7 @@ class TabInterface(QWidget):
 
         if widget is None:
             widget = CustomTableView()
+            widget.setObjectName(objectName)
             
         widget.setObjectName(objectName)
         
@@ -202,6 +207,11 @@ class TabInterface(QWidget):
 
         # 设置缩放策略
         widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+        for i in range(self.stackedWidget.count()):
+            widget_i = self.stackedWidget.widget(i)
+            if widget_i.objectName() == objectName:
+                self.stackedWidget.removeWidget(widget_i)
 
         # 添加子分页
         self.stackedWidget.addWidget(widget)
@@ -238,25 +248,33 @@ class TabInterface(QWidget):
         self.tabBar.setCloseButtonDisplayMode(mode)
 
     def onCurrentIndexChanged(self, index):
+        print(f"currentTabIndexChangedTo:{index}")
         widget = self.stackedWidget.widget(index)
         if not widget:
             return
         
         self.tabBar.setCurrentTab(widget.objectName())
-        self.router.push(self.stackedWidget, widget.objectName())
+        # self.router.push(self.stackedWidget, widget.objectName())
 
     def removeTab(self, index):
+
+        self.outputWithDateTime("deleteTable")
         
         item = self.tabBar.tabItem(index)
         print(f"removeTab: {item.routeKey()}")
 
+        widget = self.stackedWidget.widget(index)
+        
+        print(f"removeTable:{widget.objectName()}")
+        self.stackedWidget.removeWidget(widget)
         self.signal_delete_table.emit(item.routeKey())
 
-        widget = self.findChild(TableView, item.routeKey())
-        # print(f"table:{widget}")
-        self.stackedWidget.removeWidget(widget)
         self.tabBar.removeTab(index)
-        # widget.deleteLater()
+        widget.deleteLater()
+
+        if self.stackedWidget.count() == 0:
+            print("all clear")
+
 
         
 class CustomTableView(TableView):

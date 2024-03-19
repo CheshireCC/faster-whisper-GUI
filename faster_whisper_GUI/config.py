@@ -137,7 +137,7 @@ Task_list = ["transcribe" , "translate"]
 
 STR_BOOL = {"False" : False, "True" : True}
 
-SUBTITLE_FORMAT = ["SRT", "TXT", "VTT", "LRC", "SMI", "JSON"]
+SUBTITLE_FORMAT = ["ASS", "JSON", "LRC", "SMI", "SRT", "TXT", "VTT"]
 
 CAPTURE_PARA = [
     {"rate": 44100
