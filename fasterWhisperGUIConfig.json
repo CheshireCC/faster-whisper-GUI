@@ -8,9 +8,9 @@
     "model_param": {
         "localModel": true,
         "onlineModel": false,
-        "model_path": "F:/WhisperModels/faster-whisper/large-v3-float32",
+        "model_path": "F:/WhisperModels/faster-whisper/whisper-tiny",
         "modelName": 0,
-        "use_v3_model": true,
+        "use_v3_model": false,
         "device": 1,
         "deviceIndex": "0",
         "preciese": 0,
@@ -21,7 +21,7 @@
     },
     "vad_param": {
         "use_VAD": true,
-        "threshold": 0.5,
+        "threshold": 0.3,
         "minSpeechDuration": "250",
         "minSilenceDuration": "2000",
         "maxSpeechDuration": "inf",
@@ -35,16 +35,16 @@
         "huggingface_user_token": "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",
         "autoGoToOutputPage": 2,
         "autoClearTempFiles": true,
-        "themeColor": "#009faa"
+        "themeColor": "#3522e7"
     },
     "Transcription_param": {
         "aggregate_contents": true,
-        "language": 3,
+        "language": 1,
         "task": false,
         "beam_size": "5",
         "best_of": "5",
         "patience": "1.0",
-        "length_penalty": "1.0",
+        "length_penalty": "1.8",
         "temperature": "0.0,0.2,0.4,0.6,0.8,1.0",
         "compression_ratio_threshold": "2.4",
         "log_prob_threshold": "-1.0",

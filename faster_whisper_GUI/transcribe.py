@@ -10,6 +10,7 @@ import torch
 import numpy as np 
 import av
 import json
+import hashlib
 
 from faster_whisper import (
                             WhisperModel
@@ -413,27 +414,73 @@ def writeSubtitles(outputFileName:str,
         writeSMI(outputFileName, segments, language=language, avFile=fileName, file_code=file_code)
     elif format == "JSON":
         writeJson(outputFileName, segments, language=language, avFile=fileName, file_code=file_code)
+    elif format == "ASS":
+        writeASS(outputFileName, segments, file_code=file_code)
 
     print(f"write over | {outputFileName}")
     
 def writeJson(fileName:str,segments:List[segment_Transcribe],language:str,avFile="",file_code="utf8"):
-    result = {}
-    result["language"] = language
-    result["file"]=avFile
 
-    result["body"] = []
+    _id = getMd5HashId(avFile, file_code=file_code)
+    
+    result = {
+                "id": _id,
+                "title": os.path.split(avFile)[-1],
+                "format": "SubRip",
+                "templates": {
+                                "default": "__CONTENT__",
+                                "italic": "<i>__CONTENT__<\/i>"
+                            },
+                "styles": {
+                            "default": "font-style: 10px; line-height: 1; color: #FFF;"
+                            }
+                }
+    
+    result["data"] = []
     
     for segment in segments:
-        result["body"].append(
+        start_time_HNS = secondsToHMS(segment.start)
+        end_time_HMS = secondsToHMS(segment.end)
+
+        result["data"].append(
                                 {
-                                    "from":segment.start,
-                                    "to":segment.end,
-                                    "location":2,
-                                    "content":segment.text,
-                                    "speaker":segment.speaker or "",
-                                    "words":[{"start":word.start,"end":word.end,"word":word.word,"probability":word.probability }for word in segment.words]
-                                }
-                            )
+                                "trigger": segment.start * 1000,
+                                "lang": language,
+                                "styles": [
+                                    "default"
+                                ],
+                                "templates": [
+                                    "default"
+                                ],
+                                "start": {
+                                    "time": segment.start * 1000,
+                                    "hour": int(start_time_HNS.split(":")[0]),
+                                    "mins": int(start_time_HNS.split(":")[1]),
+                                    "secs": int(start_time_HNS.split(":")[2].split(",")[0]),
+                                    "ms": int(start_time_HNS.split(":")[2].split(",")[0])
+                                },
+                                "end": {
+                                    "time": segment.end * 1000,
+                                    "hour": int(end_time_HMS.split(":")[0]),
+                                    "mins": int(end_time_HMS.split(":")[1]),
+                                    "secs": int(end_time_HMS.split(":")[2].split(",")[0]),
+                                    "ms": int(end_time_HMS.split(":")[2].split(",")[0])
+                                },
+                                "duration": {
+                                    "secs": round(segment.end - segment.start, 3),
+                                    "ms": round(segment.end - segment.start, 3) * 1000
+                                },
+                                "content": segment.text,
+                                "meta": {
+                                    "original": {
+                                        "start": start_time_HNS,
+                                        "end": end_time_HMS
+                                    }
+                                },
+                                "words":[{"start":word.start,"end":word.end,"word":word.word,"probability":word.probability }for word in segment.words],
+                                "speaker":segment.speaker or "",
+                            }
+                        )
     with open(os.path.abspath(fileName),'w',encoding=file_code) as fp:
     
         json.dump(
@@ -524,13 +571,15 @@ def writeSMI(fileName:str, segments:List[segment_Transcribe], language:str, avFi
             else:
                 smi += f"  <P Class={language_type_CC}>"
             for word in segment.words:
-                if not(language in ["ja", "zh"]):
+                if not(language in Language_without_space):
                     word_text = word.word + " "
                 else:
                     word_text = word.word
+
+                # word_text = word.word
                 try:
                     if word.end >= segment.start and word.end <= segment.end:
-                        smi += f"{' '}<{secondsToHMS(word.start).replace(',','.')}><SPAN Class={language_type_CC}>{word_text}</SPAN><{secondsToHMS(word.end).replace(',','.')}>"    
+                        smi += f"<{secondsToHMS(word.start).replace(',','.')}><SPAN Class={language_type_CC}>{word_text}</SPAN>"
                     else:
                         smi += f"<SPAN Class={language_type_CC}>{word_text}</SPAN>"    
                     # smi += f"<SPAN Class={language_type_CC}>{word.word}</SPAN><{secondsToHMS(word.start).replace(',','.')}>"
@@ -628,6 +677,7 @@ def writeVTT(fileName:str, segments:List[segment_Transcribe],language:str,file_c
                     word_text = word.word + " "
                 else:
                     word_text = word.word
+
                 # if i == 0:
                 if i == len(segment.words) - 1:
                     text += f"{word_text}"
@@ -699,6 +749,28 @@ def writeSRT(fileName:str, segments, file_code="UTF-8"):
             f.write(f"{index}\n{start_time} --> {end_time}\n{text.lstrip()}\n\n")
             
             index += 1
+    
+def writeASS(fileName:str, segments, file_code="UTF-8"):
+    with codecs.open(fileName, "w", encoding=file_code) as f:
+        f.write("[Script Info]\n")
+        f.write("; This file was generated by FasterWhisperGUI\n")
+        f.write("; https://github.com/CheshireCC/faster-whisper-GUI\n")
+        f.write("Original Script: FasterWhisperGUI\n")
+        f.write("ScriptType: v4.00+\n")
+        f.write("Collisions: Normal\n")
+        f.write("PlayDepth: 0\n")
+        f.write("Timer: 100.0000\n")
+        f.write("WrapStyle: 0\n")
+
+        f.write("\n[V4+ Styles]\n")
+        f.write("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n")
+        f.write("Style: fwgDefault, Microsoft YaHei, 16, &H00FFFFFF, &H00FFFFFF, &H00000000, &H00000000, 0, 0, 0, 0, 100, 100, 0.00, 0.00, 1, 1, 0, 2, 20, 20, 20, 1\n")
+        
+        f.write("\n[Events]\n")
+        f.write("Format: Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text\n")
+        for segment in segments:
+            f.write(f'Dialogue: 0,{secondsToHMS(segment.start).replace(",",".")[:-1]},{secondsToHMS(segment.end).replace(",",".")[:-1]},fwgDefault,{segment.speaker},0000,0000,0000,,{segment.text}\n')
+
 
 def getSaveFileName(audioFile: str, format:str = "srt", rootDir:str = ""):
     path, fileName = os.path.split(audioFile)
@@ -714,5 +786,10 @@ def getSaveFileName(audioFile: str, format:str = "srt", rootDir:str = ""):
     saveFileName = os.path.join(path, fileName).replace("\\", "/")
     return saveFileName
 
-
+def getMd5HashId(fileName:str, file_code) -> str:
+    
+    md5 = hashlib.md5()
+    md5.update(fileName.encode(file_code))
+    id = md5.hexdigest()
+    return id
 

@@ -141,7 +141,7 @@ class UIMainWin(FramelessMainWindow):
 
     def setConfig(self):
 
-        setTheme(Theme.DARK if self.default_theme == "dark" else Theme.LIGHT)
+        setTheme(Theme.DARK if self.default_theme == "dark" else Theme.LIGHT, save=True, lazy=True)
         # setThemeColor("#aaff009f")
         if self.model_param != {}:
             self.page_model.setParam(self.model_param)

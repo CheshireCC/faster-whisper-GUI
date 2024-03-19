@@ -23,7 +23,6 @@ python39/
 python310/
 python*/
 
-requirements.txt
 requirements_310.txt
 
 .vscode/
