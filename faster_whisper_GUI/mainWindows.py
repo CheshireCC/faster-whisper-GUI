@@ -14,6 +14,7 @@ from PySide6.QtWidgets import QFileDialog
 
 from PySide6.QtGui import QTextCursor
 from PySide6.QtCore import (
+                            QCoreApplication,
                             QObject,
                             QTranslator
                             , Qt
@@ -94,12 +95,15 @@ class MainWindows(UIMainWin):
     #         self.log.write(text)
     #     t1 = Thread(target=go, args=(text))
     #     t1.start()
+
+    def __tr(self, text):
+        return QCoreApplication.translate(self.__class__.__name__, text)
     
     log = open(r"./fasterwhispergui.log" ,"a" ,encoding="utf8", buffering=1)
 
-    def __init__(self, translator:QTranslator= None):
+    def __init__(self):
 
-        self.translator = translator
+        # self.translator = translator
     
         # 重定向输出
         self.redirectErrOutpur = RedirectOutputSignalStore()
@@ -109,7 +113,7 @@ class MainWindows(UIMainWin):
         sys.stderr = self.redirectErrOutpur
         sys.stdout = self.redirectErrOutpur
 
-        super().__init__(translator=self.translator)
+        super().__init__()
 
         self.outputWithDateTime = outputWithDateTime
 
@@ -137,6 +141,19 @@ class MainWindows(UIMainWin):
 
         if self.page_setting.switchButton_autoLoadModel.isChecked():
             self.onModelLoadClicked()
+        
+        self.textOfParentClass()
+
+    def textOfParentClass(self) -> None:
+        # to fixed bug of translator 
+        self.text_home = self.__tr("Home")
+        self.text_AVE = self.__tr("声乐分离")
+        self.text_modelParam = self.__tr("模型参数")
+        self.text_VAD = self.__tr("人声活动检测")
+        self.text_fwParam = self.__tr("转写参数")
+        self.text_process = self.__tr("执行转写")
+        self.text_output = self.__tr("whiperX及字幕编辑")
+        self.text_setting = self.__tr('设置')
 
     def getDownloadCacheDir(self):
         """
@@ -144,7 +161,7 @@ class MainWindows(UIMainWin):
         """
         if path := QFileDialog.getExistingDirectory(
                                                     self
-                                                    , self.tr("选择缓存文件夹")
+                                                    , self.__tr("选择缓存文件夹")
                                                     , self.page_model.LineEdit_download_root.text()
                                                 ):
             
@@ -166,10 +183,6 @@ class MainWindows(UIMainWin):
         sys.stdout = RedirectOutputSignalStore()
         sys.stdout.outputSignal.connect(target)
 
-        # 错误输出已经重定向到 log 文件
-        # sys.stderr = RedirectOutputSignalStore()
-        # sys.stderr.outputSignal.connect(target)
-
     # ==============================================================================================================
 
     def onModelLoadClicked(self):
@@ -186,15 +199,15 @@ class MainWindows(UIMainWin):
 
         if model_size_or_path == "":
             self.raiseErrorInfoBar(
-                            title=self.tr('模型名称错误'),
-                            content=self.tr("需要模型所在目录或者有效的模型名称。"),
+                            title=self.__tr('模型名称错误'),
+                            content=self.__tr("需要模型所在目录或者有效的模型名称。"),
                         )
             return
 
         if os.path.isdir(model_size_or_path):
-            content = self.tr("加载本地模型")
+            content = self.__tr("加载本地模型")
         else:
-            content = self.tr("在线下载模型")
+            content = self.__tr("在线下载模型")
 
         infoBar = InfoBar(
                             icon=InfoBarIcon.INFORMATION,
@@ -223,35 +236,8 @@ class MainWindows(UIMainWin):
         self.loadModelWorker = LoadModelWorker(param_for_model_load, use_v3_model=model_param["use_v3_model"] ,parent = self)
         self.loadModelWorker.setStatusSignal.connect(self.loadModelResult)
         self.loadModelWorker.setStatusSignal.connect(self.setModelStatusLabelTextForAll)
-        self.setStateTool(self.tr("加载模型"), self.tr("模型加载中，请稍候"), False)
-        # self.FasterWhisperModel = self.loadModelWorker.model
-        # self.FasterWhisperModel = self.loadModelWorker.run()
+        self.setStateTool(self.__tr("加载模型"), self.__tr("模型加载中，请稍候"), False)
         self.loadModelWorker.start()
-
-        # def go():
-        #     self.FasterWhisperModel = loadModel(
-        #                 model_size_or_path=model_param["model_size_or_path"]
-        #                 , device          =model_param["device"]
-        #                 , device_index    =model_param["device_index"]
-        #                 , compute_type    =model_param["compute_type"]
-        #                 , cpu_threads     =model_param["cpu_threads"]
-        #                 , num_workers     =model_param["num_workers"]
-        #                 , download_root   =model_param["download_root"]
-        #                 , local_files_only=model_param["local_files_only"]
-        #                 , setStatusSignal =self.statusToolSignalStore.LoadModelSignal
-        #             )
-
-        #     if self.model_param["use_v3_model"]:
-        #         # 修正 V3 模型的 mel 滤波器组参数
-        #         print("\n[Using V3 model, modify  number of mel-filters to 128]")
-        #         self.FasterWhisperModel.feature_extractor.mel_filters = self.FasterWhisperModel.feature_extractor.get_mel_filters(self.FasterWhisperModel.feature_extractor.sampling_rate, self.FasterWhisperModel.feature_extractor.n_fft, n_mels=128)
-        #         # del self.FasterWhisperModel.model.is_multilingual
-        #         # self.FasterWhisperModel.model.is_multilingual = True
-        # thread_go = Thread(target= go, daemon=True)
-        # thread_go.start()
-
-        # sys.stdout = self.oubak
-        # sys.stderr = self.errbak
 
     def getParam_model(self) -> dict:
         """
@@ -291,10 +277,6 @@ class MainWindows(UIMainWin):
 
     def onButtonProcessClicked(self):
         
-        # self.result_whisperx_aligment = None
-        # self.result_faster_whisper = None
-        # self.result_whisperx_speaker_diarize = None
-        
         if self.page_process.transceibe_Files_RadioButton.isChecked():
             self.transcribeProcess()
 
@@ -327,7 +309,7 @@ class MainWindows(UIMainWin):
                 print(f"  {key} : {value}")
 
             if self.FasterWhisperModel is None:
-                print(self.tr("模型未加载！进程退出"))
+                print(self.__tr("模型未加载！进程退出"))
                 self.transcribeOver(None)
                 
                 return
@@ -345,7 +327,7 @@ class MainWindows(UIMainWin):
                                                         )
             self.audio_capture_thread.start()
 
-            self.button_process.setText(self.tr("  取消  "))
+            self.button_process.setText(self.__tr("  取消  "))
             self.button_process.setIcon(":/resource/Image/Cancel_red.svg")
 
         else:
@@ -412,9 +394,9 @@ class MainWindows(UIMainWin):
                 self.log.write(f"    -{key} : {value}\n")
 
             if self.FasterWhisperModel is None:
-                print(self.tr("模型未加载！进程退出"))
+                print(self.__tr("模型未加载！进程退出"))
                 self.log.write("model is not loaded! over")
-                self.raiseErrorInfoBar(title=self.tr("错误") , content=self.tr("模型未加载！"))
+                self.raiseErrorInfoBar(title=self.__tr("错误") , content=self.__tr("模型未加载！"))
                 self.transcribeOver(None)
                 self.stackedWidget.setCurrentWidget(self.page_model)
                 return
@@ -424,8 +406,8 @@ class MainWindows(UIMainWin):
                 print("No input files!")
                 self.log.write("No input files!")
                 self.raiseErrorInfoBar(
-                                        title=self.tr("错误")
-                                        , content=self.tr("没有选择有效的音视频文件作为转写对象") 
+                                        title=self.__tr("错误")
+                                        , content=self.__tr("没有选择有效的音视频文件作为转写对象") 
                                     )
                 
                 self.transcribeOver(None)
@@ -449,14 +431,14 @@ class MainWindows(UIMainWin):
             self.transcribe_thread.signal_process_over.connect(self.transcribeOver)
 
             # 修改按钮 UI
-            self.page_process.button_process.setText(self.tr("取消"))
+            self.page_process.button_process.setText(self.__tr("取消"))
             self.page_process.button_process.setIcon(r":/resource/Image/Cancel_red.svg")
 
             # 启动进程
             self.log.write(f"start transcribe process\n")
             # self.transcribe_thread.is_running == True
             self.transcribe_thread.start()
-            self.setStateTool(self.tr("音频处理"), self.tr("正在处理中"), False)
+            self.setStateTool(self.__tr("音频处理"), self.__tr("正在处理中"), False)
         
         elif self.transcribe_thread is not None and self.transcribe_thread.isRunning():
             # 此处由于输出被重定向只能手动写log文件
@@ -465,8 +447,8 @@ class MainWindows(UIMainWin):
             self.log.write(f"==========Cancel==========\n")
 
             messageBoxW = MessageBox(   
-                                        self.tr("取消")
-                                        , self.tr("是否取消操作？")
+                                        self.__tr("取消")
+                                        , self.__tr("是否取消操作？")
                                         , self
                                     )
             
@@ -474,19 +456,19 @@ class MainWindows(UIMainWin):
                 self.page_process.button_process.setEnabled(False)
                 self.cancelTrancribe()
                 sys.stdout = self.redirectErrOutpur
-                self.setStateTool(text=self.tr("已取消"), status=True)
+                self.setStateTool(text=self.__tr("已取消"), status=True)
                 
     
     def resetButton_process(self):
         self.page_process.button_process.setEnabled(True)
-        self.page_process.button_process.setText(self.tr("开始"))
+        self.page_process.button_process.setText(self.__tr("开始"))
         self.page_process.button_process.setIcon(FasterWhisperGUIIcon.PROCESS)
         
     def cancelTrancribe(self):
         print("Canceling...")
         self.transcribe_thread.stop()
         self.transcribe_thread.requestInterruption()
-        self.raiseErrorInfoBar(title=self.tr("取消"),content=self.tr("操作已被用户取消"))
+        self.raiseErrorInfoBar(title=self.__tr("取消"),content=self.__tr("操作已被用户取消"))
         print("【Process Canceled By User!】")
         self.resetButton_process()
         
@@ -636,9 +618,9 @@ class MainWindows(UIMainWin):
         except Exception:
             pass
         while(self.transcribe_thread and self.transcribe_thread.isRunning()):
-            time.sleep(0.1)
+            time.sleep(0.5)
 
-        self.setStateTool(text=self.tr("结束"), status=True)
+        self.setStateTool(text=self.__tr("结束"), status=True)
         self.transcribe_thread = None
         self.resetButton_process()
         sys.stdout = self.redirectErrOutpur
@@ -646,8 +628,8 @@ class MainWindows(UIMainWin):
         if segments_path_info is not None and len(segments_path_info) > 0:
             
             self.raiseSuccessInfoBar(
-                                title=self.tr("成功")
-                                , content=self.tr("转写完成")
+                                title=self.__tr("成功")
+                                , content=self.__tr("转写完成")
                             )
             
             self.result_faster_whisper = segments_path_info
@@ -666,12 +648,12 @@ class MainWindows(UIMainWin):
             self.current_result = self.result_faster_whisper
 
             if self.page_setting.combox_autoGoToOutputPage.currentIndex() == 0:
-                time.sleep(0.5)
+                time.sleep(0.8)
                 self.stackedWidget.setCurrentWidget(self.page_output)
             elif self.page_setting.combox_autoGoToOutputPage.currentIndex() == 2:
-                mess_ = MessageBox(self.tr("转写结束"),self.tr("是否跳转到输出目录？"),self)
+                mess_ = MessageBox(self.__tr("转写结束"),self.__tr("是否跳转到输出目录？"),self)
                 if mess_.exec():
-                    time.sleep(0.5)
+                    time.sleep(0.8)
                     self.stackedWidget.setCurrentWidget(self.page_output)
             
     def getParamTranscribe(self) -> dict:
@@ -820,10 +802,10 @@ class MainWindows(UIMainWin):
 
         if not self.page_model.model_online_RadioButton.isChecked():
             # QMessageBox.warning(self, "错误", "必须选择在线模型时才能使用本功能", QMessageBox.Yes, QMessageBox.Yes)
-            print(self.tr("Model Convert only Work In Onlie-Mode"))
+            print(self.__tr("Model Convert only Work In Onlie-Mode"))
             self.raiseErrorInfoBar(
-                                    self.tr("错误")
-                                    , self.tr("转换功能仅在在线模式下工作")
+                                    self.__tr("错误")
+                                    , self.__tr("转换功能仅在在线模式下工作")
                                 )
             return
 
@@ -834,7 +816,7 @@ class MainWindows(UIMainWin):
         use_local_files = self.page_model.combox_local_files_only.currentText()
         use_local_files = STR_BOOL[use_local_files]
 
-        print(self.tr("Convert Model: "))
+        print(self.__tr("Convert Model: "))
         print(f"  model_name_or_path : {model_name_or_path}")
         print(f"  model_output_dir   : {model_output_dir}")
         print(f"  download_cache_dir : {download_cache_dir}")
@@ -866,18 +848,18 @@ class MainWindows(UIMainWin):
 
     def loadModelResult(self, state:bool):
         if state and self.stateTool:
-            self.setStateTool(text=self.tr("加载完成"),status=state)
+            self.setStateTool(text=self.__tr("加载完成"),status=state)
             self.raiseSuccessInfoBar(
-                                        title=self.tr('加载结束'),
-                                        content=self.tr("模型加载成功")
+                                        title=self.__tr('加载结束'),
+                                        content=self.__tr("模型加载成功")
                                     )
             self.FasterWhisperModel = self.loadModelWorker.model
             
         elif not state:
-            self.setStateTool(text=self.tr("结束"), status=True)
+            self.setStateTool(text=self.__tr("结束"), status=True)
             self.raiseErrorInfoBar(
-                                    title=self.tr("错误"),
-                                    content=self.tr("加载失败，退出并检查 fasterWhispergui.log 文件可能会获取错误信息。")
+                                    title=self.__tr("错误"),
+                                    content=self.__tr("加载失败，退出并检查 fasterWhispergui.log 文件可能会获取错误信息。")
                                 )
 
     def setModelStatusLabelTextForAll(self, status:bool):
@@ -893,7 +875,7 @@ class MainWindows(UIMainWin):
         get path of local model dir
         """
 
-        path = QFileDialog.getExistingDirectory(self, self.tr("选择模型文件所在的文件夹"), self.modelRootDir)
+        path = QFileDialog.getExistingDirectory(self, self.__tr("选择模型文件所在的文件夹"), self.modelRootDir)
 
         if path:
             self.page_model.lineEdit_model_path.setText(path)
@@ -902,10 +884,10 @@ class MainWindows(UIMainWin):
 
     
     def outputOver(self):
-        self.setStateTool(self.tr("保存文件"), self.tr("结束"), True)
+        self.setStateTool(self.__tr("保存文件"), self.__tr("结束"), True)
         self.raiseSuccessInfoBar(
-                                title=self.tr("保存完成")
-                                , content=self.tr("字幕文件已保存")
+                                title=self.__tr("保存完成")
+                                , content=self.__tr("字幕文件已保存")
                             )
         self.outputWorker = None
 
@@ -923,7 +905,7 @@ class MainWindows(UIMainWin):
         self.outputWorker = OutputWorker(result_to_write, output_dir, format, code_, aggregate_contents_according_to_the_speaker , self)
         self.outputWorker.signal_write_over.connect(self.outputOver)    
         self.outputWorker.start()
-        self.setStateTool(self.tr("保存文件"), self.tr("输出字幕文件"), False)
+        self.setStateTool(self.__tr("保存文件"), self.__tr("输出字幕文件"), False)
 
     def raiseErrorInfoBar(self, title:str, content:str):
         InfoBar.error(
@@ -941,9 +923,9 @@ class MainWindows(UIMainWin):
 
         self.setPageOutButtonStatus()
         
-        self.setStateTool(title=self.tr("WhisperX"), text=self.tr("结束"), status=True)
+        self.setStateTool(title=self.__tr("WhisperX"), text=self.__tr("结束"), status=True)
         # if segments_path_info is None:
-        #     self.raiseErrorInfoBar(self.tr("错误"), content=self.tr("对齐失败，退出软件后检查 fasterwhispergui.log 文件可能会获取错误信息"))
+        #     self.raiseErrorInfoBar(self.__tr("错误"), content=self.__tr("对齐失败，退出软件后检查 fasterwhispergui.log 文件可能会获取错误信息"))
         #     return
 
         self.result_whisperx_aligment = segments_path_info
@@ -951,14 +933,14 @@ class MainWindows(UIMainWin):
             self.current_result = self.result_whisperx_aligment
             self.showResultInTable(results=self.current_result)
             self.raiseSuccessInfoBar(
-                                    title=self.tr("WhisperX")
-                                    , content=self.tr("时间戳对齐结束")
+                                    title=self.__tr("WhisperX")
+                                    , content=self.__tr("时间戳对齐结束")
                                 )
 
         else:
             self.raiseErrorInfoBar(
-                                    self.tr("错误"),
-                                    content=self.tr("对齐失败，检查 fasterwhispergui.log 文件可能会获取更多信息")
+                                    self.__tr("错误"),
+                                    content=self.__tr("对齐失败，检查 fasterwhispergui.log 文件可能会获取更多信息")
                                 )
         try:
             del self.whisperXWorker.model_alignment
@@ -974,8 +956,8 @@ class MainWindows(UIMainWin):
     def whisperXAligmentTimeStample(self):
         if self.result_faster_whisper is None and self.current_result is None:
             self.raiseErrorInfoBar(
-                                    self.tr("错误"),
-                                    self.tr("没有有效的 音频-字幕 转写结果，无法进行对齐")
+                                    self.__tr("错误"),
+                                    self.__tr("没有有效的 音频-字幕 转写结果，无法进行对齐")
             )
             return
 
@@ -985,7 +967,7 @@ class MainWindows(UIMainWin):
         self.setPageOutButtonStatus()
         self.outputWithDateTime("TimeStample_Alignment")
 
-        self.setStateTool(title=self.tr("WhisperX"), text=self.tr("时间戳对齐"), status=False)
+        self.setStateTool(title=self.__tr("WhisperX"), text=self.__tr("时间戳对齐"), status=False)
 
         if self.whisperXWorker is None:
             self.whisperXWorker = WhisperXWorker(self.current_result, alignment=True,speaker_diarize=False, parent=self)
@@ -1011,8 +993,8 @@ class MainWindows(UIMainWin):
 
         if result_needed is None:
             self.raiseErrorInfoBar(
-                                    self.tr("错误"),
-                                    self.tr("没有有效的 音频-字幕 转写结果，无法输出人声分离结果")
+                                    self.__tr("错误"),
+                                    self.__tr("没有有效的 音频-字幕 转写结果，无法输出人声分离结果")
             )
             return
 
@@ -1045,7 +1027,7 @@ class MainWindows(UIMainWin):
                 pass
 
         self.whisperXWorker.signal_process_over.connect(self.speakerDiarizeOver)
-        self.setStateTool(title=self.tr("WhisperX"), text=self.tr("声源分离"), status=False)
+        self.setStateTool(title=self.__tr("WhisperX"), text=self.__tr("声源分离"), status=False)
         self.whisperXWorker.start()
     
     def setPageOutButtonStatus(self):
@@ -1058,9 +1040,9 @@ class MainWindows(UIMainWin):
     def speakerDiarizeOver(self, segments_path_info:list):
         self.setPageOutButtonStatus()
 
-        self.setStateTool(title=self.tr("WhisperX"), text=self.tr("结束"), status=True)
+        self.setStateTool(title=self.__tr("WhisperX"), text=self.__tr("结束"), status=True)
         if segments_path_info is None:
-            self.raiseErrorInfoBar(self.tr("错误"),content=self.tr("声源分离失败，退出软件后检查 fasterwhispergui.log 文件可能会获取错误信息"))
+            self.raiseErrorInfoBar(self.__tr("错误"),content=self.__tr("声源分离失败，退出软件后检查 fasterwhispergui.log 文件可能会获取错误信息"))
             return
         
         self.result_whisperx_speaker_diarize = segments_path_info
@@ -1068,8 +1050,8 @@ class MainWindows(UIMainWin):
             self.current_result = self.result_whisperx_speaker_diarize
             self.showResultInTable(results=self.current_result)
             self.raiseSuccessInfoBar(
-                                    title=self.tr("WhisperX")
-                                    , content=self.tr("声源分离结束")
+                                    title=self.__tr("WhisperX")
+                                    , content=self.__tr("声源分离结束")
                                 )
             
         # for segments in self.result_whisperx_speaker_diarize:
@@ -1132,18 +1114,18 @@ class MainWindows(UIMainWin):
 
         # 必须手动选择正确的语言选项
         if self.page_transcribes.combox_language.currentText().lower() == "auto":
-            messageBoxDia_ = MessageBox(self.tr("选择语言"), self.tr("必须选择正确的字幕语言"),self)
+            messageBoxDia_ = MessageBox(self.__tr("选择语言"), self.__tr("必须选择正确的字幕语言"),self)
             messageBoxDia_.show()
             return
         
-        file,_ = QFileDialog.getOpenFileName(self, self.tr("选择音频文件"), self.page_process.fileNameListView.avDataRootDir)
+        file,_ = QFileDialog.getOpenFileName(self, self.__tr("选择音频文件"), self.page_process.fileNameListView.avDataRootDir)
         if not file:
             return
 
         if not self.is_audio_or_video(file):
             message_W = MessageBox(
-                                    self.tr("文件无效"),
-                                    self.tr("不是音视频文件或文件无法找到音频流，请检查文件及文件格式"),
+                                    self.__tr("文件无效"),
+                                    self.__tr("不是音视频文件或文件无法找到音频流，请检查文件及文件格式"),
                                     self
                                 )
             message_W.show()
@@ -1175,7 +1157,7 @@ class MainWindows(UIMainWin):
         else:
             file_subtitle_fileName,ext_ = QFileDialog.getOpenFileName(
                                                                     self, 
-                                                                    self.tr("选择字幕文件"), 
+                                                                    self.__tr("选择字幕文件"), 
                                                                     "", 
                                                                     # self.page_process.fileNameListView.avDataRootDir, 
                                                                     "JSON file(*.json);;SRT file(*.srt)",
@@ -1185,7 +1167,7 @@ class MainWindows(UIMainWin):
             if file_subtitle_fileName and os.path.isfile(file_subtitle_fileName):
                 print(f"get srt file: {file_subtitle_fileName}")
             else:
-                messageBoxDia_ = MessageBox(self.tr("没有字幕文件"),self.tr("必须要有有效的字幕文件"),self)
+                messageBoxDia_ = MessageBox(self.__tr("没有字幕文件"),self.__tr("必须要有有效的字幕文件"),self)
                 messageBoxDia_.show()
                 return
         
@@ -1199,7 +1181,7 @@ class MainWindows(UIMainWin):
         except Exception as e:
             print("read subtitle file failed:")
             print(f"    {str(e)}")
-            self.raiseErrorInfoBar(self.tr("读取失败"), self.tr("读取字幕文件失败 \n检查日志文件可能会获取更多信息"))
+            self.raiseErrorInfoBar(self.__tr("读取失败"), self.__tr("读取字幕文件失败 \n检查日志文件可能会获取更多信息"))
             return
         # 输出字幕文件内容
         # for segment in segments:
@@ -1235,24 +1217,24 @@ class MainWindows(UIMainWin):
             # self.showResultInTable(self.current_result)
 
     def reSetButton_demucs_process(self):
-        self.page_demucs.process_button.setText(self.tr("提取"))
+        self.page_demucs.process_button.setText(self.__tr("提取"))
         self.page_demucs.process_button.setIcon( FluentIcon.IOT)
         self.page_demucs.process_button.setEnabled(True)
         
 
     def demucs_file_process_status(self, status:dict):
         if status["task"] == "reasmple audio":
-            content = self.tr("音频重采样")
+            content = self.__tr("音频重采样")
         elif status["task"] == "separate sources":
-            content = self.tr("音轨分离")
+            content = self.__tr("音轨分离")
         elif status["task"] == "save files":
-            content = self.tr("保存音频文件")
+            content = self.__tr("保存音频文件")
         elif status["task"] == "load model":
-            content = self.tr("加载模型...")
+            content = self.__tr("加载模型...")
         elif status["task"] == "file over":
-            content = self.tr("结束")
+            content = self.__tr("结束")
         elif status["task"] == "download model":
-            content = self.tr("下载模型...")
+            content = self.__tr("下载模型...")
         
         if status["file"] != "":
             _, fileName = os.path.split(status["file"])
@@ -1264,12 +1246,12 @@ class MainWindows(UIMainWin):
 
     def demucs_process_over(self, status:bool):
         if status:
-            self.setStateTool(text=self.tr("分离完成"), status=True)
-            self.raiseSuccessInfoBar(self.tr("Demucs"), self.tr("音轨分离成功"))
+            self.setStateTool(text=self.__tr("分离完成"), status=True)
+            self.raiseSuccessInfoBar(self.__tr("Demucs"), self.__tr("音轨分离成功"))
 
         else:
-            self.setStateTool(text=self.tr("结束"), status=True)
-            self.raiseErrorInfoBar(self.tr("Demucs"), self.tr("分离失败"))
+            self.setStateTool(text=self.__tr("结束"), status=True)
+            self.raiseErrorInfoBar(self.__tr("Demucs"), self.__tr("分离失败"))
 
         self.reSetButton_demucs_process()
 
@@ -1286,7 +1268,7 @@ class MainWindows(UIMainWin):
         
         if self.demucsWorker is not None and self.demucsWorker.isRunning():
             
-            message_w = MessageBox(self.tr("取消"), self.tr('确定取消？'),self)
+            message_w = MessageBox(self.__tr("取消"), self.__tr('确定取消？'),self)
 
             if not message_w.exec():
                 return
@@ -1298,13 +1280,13 @@ class MainWindows(UIMainWin):
 
             while(self.demucsWorker.isRunning()):
                 if self.stateTool is not None:
-                    self.stateTool.setContent(self.tr("正在取消操作"))
-                    self.stateTool.setTitle(self.tr("取消"))
+                    self.stateTool.setContent(self.__tr("正在取消操作"))
+                    self.stateTool.setTitle(self.__tr("取消"))
                 else:
-                    self.setStateTool(self.tr("取消"), self.tr("正在取消操作"), False)
+                    self.setStateTool(self.__tr("取消"), self.__tr("正在取消操作"), False)
 
             self.reSetButton_demucs_process()
-            self.setStateTool(self.tr("取消"), self.tr("用户取消操作"),True)
+            self.setStateTool(self.__tr("取消"), self.__tr("用户取消操作"),True)
             return
         
         self.outputWithDateTime("Demucs")
@@ -1313,7 +1295,7 @@ class MainWindows(UIMainWin):
 
         if len(param["audio"]) < 1 or(len(param["audio"]) == 1 and param["audio"][0] == ""):
             
-            self.raiseErrorInfoBar(self.tr("文件错误"), self.tr("没有选择有效的音视频文件"))
+            self.raiseErrorInfoBar(self.__tr("文件错误"), self.__tr("没有选择有效的音视频文件"))
             return
 
         for key,value in param.items():
@@ -1340,10 +1322,10 @@ class MainWindows(UIMainWin):
         self.demucsWorker.signal_vr_over.connect(self.demucs_process_over)
         self.demucsWorker.file_process_status.connect(self.demucs_file_process_status)
 
-        self.setStateTool(self.tr("Demucs"), self.tr("音轨分离"), False)
+        self.setStateTool(self.__tr("Demucs"), self.__tr("音轨分离"), False)
         self.demucsWorker.start()
 
-        self.page_demucs.process_button.setText(self.tr("取消"))
+        self.page_demucs.process_button.setText(self.__tr("取消"))
         self.page_demucs.process_button.setIcon(":/resource/Image/Cancel_red")
 
 
@@ -1372,23 +1354,23 @@ class MainWindows(UIMainWin):
         """
         # 转写正在进行时将会直接退出
         if self.FasterWhisperModel is None:
-            self.raiseErrorInfoBar(self.tr("卸载模型失败"), self.tr("未加载模型"))
+            self.raiseErrorInfoBar(self.__tr("卸载模型失败"), self.__tr("未加载模型"))
             return
 
         self.outputWithDateTime("Unload Whisper Model")
 
         if self.transcribe_thread is not None and self.transcribe_thread.isRunning():
             # self.transcribe_thread.terminate()
-            self.raiseErrorInfoBar(self.tr("模型正在使用"), self.tr("语音识别正在运行"))
+            self.raiseErrorInfoBar(self.__tr("模型正在使用"), self.__tr("语音识别正在运行"))
             return
         
         if self.result_faster_whisper is not None and self.page_transcribes.LineEdit_temperature.text().strip() == "0" :
 
             print(f"Temperature: {self.page_transcribes.LineEdit_temperature.text().strip()} and transcript has already been run")
             print("Temperature fallback configuration may take effect, that may take crash when unload model from memory!")
-            messB = MessageBox(self.tr("警告"), self.tr("温度不为 \"0\" 且已运行过转写，\n温度回退配置可能会生效，\n从内存中卸载模型可能导致软件崩溃！"),self)
-            messB.yesButton.setText(self.tr("继续"))
-            messB.cancelButton.setText(self.tr("取消"))
+            messB = MessageBox(self.__tr("警告"), self.__tr("温度不为 \"0\" 且已运行过转写，\n温度回退配置可能会生效，\n从内存中卸载模型可能导致软件崩溃！"),self)
+            messB.yesButton.setText(self.__tr("继续"))
+            messB.cancelButton.setText(self.__tr("取消"))
             if not messB.exec_():
                 print("canceled")
                 return
@@ -1404,13 +1386,13 @@ class MainWindows(UIMainWin):
             self.loadModelWorker = None
 
             self.setModelStatusLabelTextForAll(False)
-            self.raiseSuccessInfoBar(self.tr("卸载模型成功"), self.tr("卸载模型成功"))
+            self.raiseSuccessInfoBar(self.__tr("卸载模型成功"), self.__tr("卸载模型成功"))
             print("unload model succeed")
 
         except Exception as e:
             print("unload model failed")
             print(str(e))
-            self.raiseErrorInfoBar(self.tr("卸载模型失败"), self.tr("卸载模型失败，请在转写之前禁用温度回退配置"))
+            self.raiseErrorInfoBar(self.__tr("卸载模型失败"), self.__tr("卸载模型失败，请在转写之前禁用温度回退配置"))
 
         # 清理缓存
         torch.cuda.empty_cache()
@@ -1420,7 +1402,7 @@ class MainWindows(UIMainWin):
         output audio part with speaker
         """
         if self.current_result is None or len(self.current_result) == 0:
-            self.raiseErrorInfoBar(self.tr("转写结果为空"), self.tr("没有有效的转写结果"))       
+            self.raiseErrorInfoBar(self.__tr("转写结果为空"), self.__tr("没有有效的转写结果"))       
             return
         
         outputWithDateTime("SegmentAudioFileWithSpeaker")
@@ -1433,15 +1415,15 @@ class MainWindows(UIMainWin):
         output_path = self.page_output.outputGroupWidget.LineEdit_output_dir.text()
         self.splitAudioFileWithSpeakerWorker = SplitAudioFileWithSpeakersWorker(self.current_result,output_path,language ,self)
         self.splitAudioFileWithSpeakerWorker.result_signal.connect(self.splitAudioFileWithSpeakerWorkerFinished)
-        self.splitAudioFileWithSpeakerWorker.current_task_signal.connect(lambda file: self.setStateTool(self.tr("分割音频"), self.tr("处理文件：") + file, False))
+        self.splitAudioFileWithSpeakerWorker.current_task_signal.connect(lambda file: self.setStateTool(self.__tr("分割音频"), self.__tr("处理文件：") + file, False))
         self.splitAudioFileWithSpeakerWorker.start()
 
-        self.setStateTool(self.tr("分割音频"), self.tr("按说话人分割音频文件"), False)
+        self.setStateTool(self.__tr("分割音频"), self.__tr("按说话人分割音频文件"), False)
         
     def splitAudioFileWithSpeakerWorkerFinished(self):
         
-        self.setStateTool(self.tr("分割音频"), self.tr("按说话人分割音频文件完成"), True)
-        self.raiseSuccessInfoBar(self.tr("分割音频完成"),self.tr("按说话人分割音频文件完成"))
+        self.setStateTool(self.__tr("分割音频"), self.__tr("按说话人分割音频文件完成"), True)
+        self.raiseSuccessInfoBar(self.__tr("分割音频完成"),self.__tr("按说话人分割音频文件完成"))
 
         # mes = MessageBox("over","ok", self)
         # mes.show()
@@ -1467,7 +1449,7 @@ class MainWindows(UIMainWin):
         self.page_model.button_model_lodar.clicked.connect(self.onModelLoadClicked)
         self.page_process.button_process.clicked.connect(self.onButtonProcessClicked)
         self.page_process.processResultText.textChanged.connect(lambda: self.page_process.processResultText.moveCursor(QTextCursor.MoveOperation.End, mode=QTextCursor.MoveMode.MoveAnchor))
-        self.page_process.fileNameListView.ignore_files_signal.connect(lambda ignore_files_info: self.raiseInfoBar(self.tr("忽略文件"), ignore_files_info["ignore_reason"]+"\n"+"\n".join(ignore_files_info["ignore_files"])))
+        self.page_process.fileNameListView.ignore_files_signal.connect(lambda ignore_files_info: self.raiseInfoBar(self.__tr("忽略文件"), ignore_files_info["ignore_reason"]+"\n"+"\n".join(ignore_files_info["ignore_files"])))
 
         self.page_home.itemLabel_demucs.mainButton.clicked.connect(lambda:self.stackedWidget.setCurrentWidget(self.page_demucs))
         self.page_home.itemLabel_faster_whisper.mainButton.clicked.connect(lambda:self.stackedWidget.setCurrentWidget(self.page_process))
@@ -1483,7 +1465,7 @@ class MainWindows(UIMainWin):
         self.page_output.outputAudioPartWithSpeakerButton.clicked.connect(self.outputAudioPartWithSpeaker)
 
         self.page_demucs.process_button.clicked.connect(self.demucsProcess)
-        self.page_demucs.fileListView.ignore_files_signal.connect(lambda ignore_files_info: self.raiseInfoBar(self.tr("忽略文件"), ignore_files_info["ignore_reason"]+"\n"+"\n".join(ignore_files_info["ignore_files"])))
+        self.page_demucs.fileListView.ignore_files_signal.connect(lambda ignore_files_info: self.raiseInfoBar(self.__tr("忽略文件"), ignore_files_info["ignore_reason"]+"\n"+"\n".join(ignore_files_info["ignore_files"])))
         
         self.page_setting.pushButton_backupConfigFile.clicked.connect(self.backupConfigFile)
         self.page_setting.pushButton_loadConfigFile.clicked.connect(self.loadBackupConfigFile)
@@ -1491,7 +1473,7 @@ class MainWindows(UIMainWin):
     def backupConfigFile(self):
         config_file_path,_ = QFileDialog.getSaveFileName(
                                                             self,
-                                                            self.tr("选择保存位置"), 
+                                                            self.__tr("选择保存位置"), 
                                                             r"./", 
                                                             "json file(*.json)"
                                                         )
@@ -1501,13 +1483,13 @@ class MainWindows(UIMainWin):
         self.saveConfig(config_file_path)
 
         # shutil.copy(config_file_path, config_file_path+".bak")
-        self.raiseInfoBar(self.tr("备份配置文件成功"), self.tr("配置文件已备份到:\n") + config_file_path)
+        self.raiseInfoBar(self.__tr("备份配置文件成功"), self.__tr("配置文件已备份到:\n") + config_file_path)
 
     def loadBackupConfigFile(self):
 
         config_file_name, _ = QFileDialog.getOpenFileName(
                                                             self,
-                                                            self.tr("选择配置文件"),
+                                                            self.__tr("选择配置文件"),
                                                             r"./",
                                                             "json file(*.json)"
                                                         )
@@ -1519,10 +1501,10 @@ class MainWindows(UIMainWin):
             self.readConfigJson(config_file_path=config_file_name)
             self.setConfig()
             self.setWidgetsStatusFromConfig()
-            self.raiseInfoBar(self.tr("加载配置文件成功"), self.tr("配置文件已加载:\n") + config_file_name)
+            self.raiseInfoBar(self.__tr("加载配置文件成功"), self.__tr("配置文件已加载:\n") + config_file_name)
 
         except Exception as e:
-            self.raiseErrorBar(self.tr("加载配置文件失败"), self.tr("配置文件加载失败:\n") + str(e))
+            self.raiseErrorBar(self.__tr("加载配置文件失败"), self.__tr("配置文件加载失败:\n") + str(e))
             print(str(e))
 
         # 根据读取的配置设置完控件状态之后，根据控件状态设置相关属性
@@ -1593,7 +1575,7 @@ class MainWindows(UIMainWin):
         点击窗口关闭按钮时的事件响应
         """
 
-        messageBoxW = MessageBox(self.tr('退出'), self.tr("是否要退出程序？"), self)
+        messageBoxW = MessageBox(self.__tr('退出'), self.__tr("是否要退出程序？"), self)
         if messageBoxW.exec():
 
             outputWithDateTime("Exit")

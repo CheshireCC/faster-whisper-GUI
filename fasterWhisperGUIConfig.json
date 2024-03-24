@@ -21,7 +21,7 @@
     },
     "vad_param": {
         "use_VAD": true,
-        "threshold": 0.3,
+        "threshold": 0.5,
         "minSpeechDuration": "250",
         "minSilenceDuration": "2000",
         "maxSpeechDuration": "inf",
@@ -39,7 +39,7 @@
     },
     "Transcription_param": {
         "aggregate_contents": true,
-        "language": 0,
+        "language": 2,
         "task": false,
         "beam_size": "5",
         "best_of": "5",
@@ -67,10 +67,10 @@
         "tabMovable": false,
         "tabScrollable": false,
         "tabShadowEnabled": false,
-        "tabMaxWidth": 257,
+        "tabMaxWidth": 361,
         "closeDisplayMode": 0,
-        "whisperXMinSpeaker": 2,
-        "whisperXMaxSpeaker": 3,
+        "whisperXMinSpeaker": 0,
+        "whisperXMaxSpeaker": 0,
         "outputFormat": 0,
         "outputEncoding": 1
     }

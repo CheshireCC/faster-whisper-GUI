@@ -69,24 +69,18 @@ from .aboutPageNavigationInterface import AboutPageNavigationInterface
 from .fasterWhisperGuiIcon import FasterWhisperGUIIcon
 from .settingPageNavigation import SettingPageNavigationInterface
 
+class aa(QWidget):
+    def __init__(self, parent: QWidget | None = ..., f: Qt.WindowType = ...) -> None:
+        super().__init__(parent, f)
 # =======================================================================================
 # UI
 # =======================================================================================
 class UIMainWin(FramelessMainWindow):
     """V"""
-
-    def tr(self, text):
-        return QCoreApplication.translate(self.__class__.__name__, text)
-
-    # def install_uninstall_translator(self):
-    #     if self.translator.filePath() == "":
-    #         self.translator.load(":/resource/Translater/en.qm")
-    #     else:
-    #         self.translator.load("")
-    #     app = QApplication.instance()
-    #     app.installTranslator(self.translator)
+    
+    # def tr(self, text):
+    #     return QCoreApplication.translate(self.__class__.__name__, text)
         
-
     def readConfigJson(self, config_file_path: str = ""):
         self.default_theme = "light"
         self.model_param = {}
@@ -168,15 +162,9 @@ class UIMainWin(FramelessMainWindow):
         
         if self.vad_param != {}:
             self.page_VAD.setParam(self.vad_param)
-
-
-    def __init__(self, translator:QTranslator=None):
+    
+    def __init__(self, parent=None, f=None) -> None:
         super().__init__()
-
-        if translator is None:
-            self.translator = TRANSLATOR
-        else:
-            self.translator = translator
 
         # self.setWindowFlags(Qt.FramelessWindowHint)
         # self.setAttribute(Qt.WA_TranslucentBackground)  
@@ -223,7 +211,7 @@ class UIMainWin(FramelessMainWindow):
         StyleSheet.MAIN_WINDOWS.apply(self)
         
         # self.resize(800, 500)
-        self.setGeometry(100, 100, 1250, 825)
+        self.setGeometry(100, 100, 1250, 915)
 
         # TODO: 添加标题栏 
         self.setTitleBar(StandardTitleBar(self))
@@ -287,7 +275,7 @@ class UIMainWin(FramelessMainWindow):
         self.pages.append(self.page_home)
 
         self.page_demucs = DemucsPageNavigation(self)
-        self.addSubInterface(self.page_demucs, "pageDecums", self.tr("声乐移除"), icon=FasterWhisperGUIIcon.DEMUCS)
+        self.addSubInterface(self.page_demucs, "pageDecums", self.tr("声乐分离"), icon=FasterWhisperGUIIcon.DEMUCS)
         self.pages.append(self.page_demucs)
 
         self.page_model = ModelNavigationInterface(self)
@@ -295,7 +283,7 @@ class UIMainWin(FramelessMainWindow):
         self.pages.append(self.page_model)
 
         self.page_VAD = VADNavigationInterface(self)
-        self.addSubInterface(self.page_VAD, "pageVADParameter", self.tr("VAD及WhisperX"), icon=FasterWhisperGUIIcon.VAD_PAGE)
+        self.addSubInterface(self.page_VAD, "pageVADParameter", self.tr("人声活动检测"), icon=FasterWhisperGUIIcon.VAD_PAGE)
         self.pages.append(self.page_VAD)
 
         self.page_transcribes = TranscribeNavigationInterface(self)
@@ -307,7 +295,7 @@ class UIMainWin(FramelessMainWindow):
         self.pages.append(self.page_process)
 
         self.page_output = OutputPageNavigationInterface(self)
-        self.addSubInterface(self.page_output, "pageOutput", self.tr("后处理及输出"), icon=FluentIcon.SAVE_AS)
+        self.addSubInterface(self.page_output, "pageOutput", self.tr("whiperX及字幕编辑"), icon=FluentIcon.SAVE_AS)
         self.pages.append(self.page_output)
 
         self.page_About = AboutPageNavigationInterface(self)

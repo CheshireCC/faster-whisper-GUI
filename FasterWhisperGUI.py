@@ -9,7 +9,6 @@ sys.stderr = log_f
 from faster_whisper_GUI.version import __version__
 from faster_whisper_GUI.util import outputWithDateTime
 
-
 log_f.write(f"\nfaster_whisper_GUI: {__version__}")
 
 outputWithDateTime("Start")
@@ -85,6 +84,7 @@ from PySide6.QtCore import QTranslator
 
 # MainWindows_moudle = LazyImport("faster_whisper_GUI.mainWindows")
 from faster_whisper_GUI.mainWindows import MainWindows
+
 pb.setValue(60)
 
 from resource import rc_Translater
@@ -141,7 +141,13 @@ if __name__ == "__main__":
 
     # splash.showMessage("Load Windows...") #, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, Qt.white)
     
-    mainWindows = MainWindows(translator=translator)
+    splash.showMessage(
+                        "start app...", 
+                        Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, 
+                        Qt.white
+                    )
+    
+    mainWindows = MainWindows()
     pb.setValue(100)
     
     # splash.requestInterruption()

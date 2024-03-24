@@ -15,7 +15,7 @@ class HomePageNavigationinterface(NavigationBaseInterface):
     
     def __init__(self, parent=None):
         # self.parent = parent
-        super().__init__(title=self.tr("Home"), subtitle=self.tr("faster-whisper 为主要后端的 ASR 及 AVE 软件"), parent=parent)
+        super().__init__(title=self.tr("Home"), subtitle=self.tr("faster-whisper 为主要后端的 ASR 及 AVS 软件"), parent=parent)
         self.steupUI()
 
     def steupUI(self):

@@ -22,8 +22,8 @@ from .config import ENCODING_DICT
 class OutputPageNavigationInterface(NavigationBaseInterface):
     def __init__(self, parent=None):
         super().__init__(
-                            title=self.tr("WhisperX And Output"),
-                            subtitle=self.tr("whisperX后处理及字幕文件输出"),
+                            title=self.tr("WhisperX And Subtitle Edit"),
+                            subtitle=self.tr("whisperX后处理、字幕编辑、输出保存"),
                             parent=parent
                         )
         self.setupUI()
