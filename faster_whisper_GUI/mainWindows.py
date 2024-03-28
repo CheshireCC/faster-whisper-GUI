@@ -15,8 +15,7 @@ from PySide6.QtWidgets import QFileDialog
 from PySide6.QtGui import QTextCursor
 from PySide6.QtCore import (
                             QCoreApplication,
-                            QObject,
-                            QTranslator
+                            QObject
                             , Qt
                             , Signal
                         )
@@ -27,7 +26,6 @@ from qfluentwidgets import (
                             , InfoBarPosition
                             , InfoBarIcon
                             , MessageBox
-                            # , TableView
                             , FluentIcon
                             , isDarkTheme
                         )
@@ -494,29 +492,33 @@ class MainWindows(UIMainWin):
 
         # 遍历表格标签 删除已经不存在的转写结果 并改写存在的转写结果
         for tabBarItem in tabBarItems:
-            
+            # print(f"tablBarItem text:{tabBarItem.text()}")
             #　清理掉已经过时的结果, 标签名不存在于结果文件名列表中的时候就直接清理掉项目
             if not(tabBarItem.text() in text_list):
                 index = tabBarItems.index(tabBarItem)
+                # print(f"delete item: {tabBarItem.text()}")
                 self.page_output.tableTab.tabBar.removeTab(index)
                 continue
 
             # 从 objectName 获取文件名
-            print(tabBarItem.objectName())
-            tabBarItem_objectName_fileName = "_".join(tabBarItem.objectName().split("_")[1:]).replace("\\", "/")
-
+            print(tabBarItem.routeKey())
+            tabBarItem_objectName_fileName = "_".join(tabBarItem.routeKey().split("_")[1:]).replace("\\", "/")
+            # print(f"current tabBarItem_objectName_fileName:{tabBarItem_objectName_fileName}")
             # 标签名存在文件名列表中且文件路径在目录列表中的时候 更新相关表格的数据
             if tabBarItem_objectName_fileName in file_list:
                 # 转写结果已经存在的情况下更新数据
-                self.tableModel_list.pop(tabBarItem_objectName_fileName)
-                table_model = TableModel(results[file_list.index(tabBarItem_objectName_fileName)][0])
-                self.tableModel_list[tabBarItem_objectName_fileName] = table_model
-                # self.tableModel_list[tabBarItem_objectName_fileName]._data = results[file_list.index(tabBarItem_objectName_fileName)][0]
+                print(f"updata table:{tabBarItem_objectName_fileName}")
+                # self.tableModel_list.pop(tabBarItem_objectName_fileName)
+                # table_model = TableModel(results[file_list.index(tabBarItem_objectName_fileName)][0])
+                # self.tableModel_list[tabBarItem_objectName_fileName] = table_model
+                self.tableModel_list[tabBarItem_objectName_fileName]._data = results[file_list.index(tabBarItem_objectName_fileName)][0]
 
         # 遍历转写结果列表，查找当前不存在的表格
-        tabBarItems_objectName_fileName = ["_".join(tabBarItem.objectName().split("_")[1:]).replace("\\", "/") for tabBarItem in self.page_output.tableTab.tabBar.items]
+        tabBarItems_objectName_fileName = ["_".join(tabBarItem.routeKey().split("_")[1:]).replace("\\", "/") for tabBarItem in self.page_output.tableTab.tabBar.items]
+        # print(f"-----tabBarItems_objectName_fileName:{tabBarItems_objectName_fileName}")
         for file in file_list:
-            if not (file_list in tabBarItems_objectName_fileName):
+            if not (file in tabBarItems_objectName_fileName):
+                # print(f"table not exist: {[results[file_list.index(file)]]}")
                 self.createResultInTable([results[file_list.index(file)]])
 
     def showResultInTable(self, results):
@@ -618,7 +620,7 @@ class MainWindows(UIMainWin):
         except Exception:
             pass
         while(self.transcribe_thread and self.transcribe_thread.isRunning()):
-            time.sleep(0.5)
+            time.sleep(0.3)
 
         self.setStateTool(text=self.__tr("结束"), status=True)
         self.transcribe_thread = None
@@ -650,7 +652,9 @@ class MainWindows(UIMainWin):
             if self.page_setting.combox_autoGoToOutputPage.currentIndex() == 0:
                 time.sleep(0.8)
                 self.stackedWidget.setCurrentWidget(self.page_output)
+                
             elif self.page_setting.combox_autoGoToOutputPage.currentIndex() == 2:
+                time.sleep(0.8)
                 mess_ = MessageBox(self.__tr("转写结束"),self.__tr("是否跳转到输出目录？"),self)
                 if mess_.exec():
                     time.sleep(0.8)

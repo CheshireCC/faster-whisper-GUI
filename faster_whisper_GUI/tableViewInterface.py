@@ -1,7 +1,8 @@
 # coding:utf-8
 
 import time
-from PySide6.QtCore import (QCoreApplication, QModelIndex, 
+from PySide6.QtCore import (QCoreApplication, 
+                            QModelIndex, 
                             Qt, 
                             Signal
                         )
@@ -36,10 +37,10 @@ from qfluentwidgets import (
                             , TableItemDelegate
                             , HorizontalSeparator
                             , Router
-                            , RoundMenu
+                            , RoundMenu ,
+                            MessageBoxBase,
+                            SubtitleLabel,
                         )
-from qfluentwidgets.components.dialog_box.message_box_base import MessageBoxBase
-from qfluentwidgets.components.widgets.label import SubtitleLabel
 
 from .style_sheet import StyleSheet
 from .util import outputWithDateTime
@@ -195,7 +196,7 @@ class TabInterface(QWidget):
 
         if widget is None:
             widget = CustomTableView()
-            widget.setObjectName(objectName)
+            # widget.setObjectName(objectName)
             
         widget.setObjectName(objectName)
         
@@ -208,17 +209,25 @@ class TabInterface(QWidget):
         # 设置缩放策略
         widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-        for i in range(self.stackedWidget.count()):
-            widget_i = self.stackedWidget.widget(i)
-            if widget_i.objectName() == objectName:
-                self.stackedWidget.removeWidget(widget_i)
+        # print(f"len_stack_items:{self.stackedWidget.count()}")
+        
+        # 移除旧的结果
+        # for i in range(self.stackedWidget.count()):
+        #     widget_i = self.stackedWidget.widget(i)
+        #     if widget_i is None:
+        #         self.stackedWidget.removeWidget(widget_i)
+        #         break
+        #     if widget_i.objectName() == objectName:
+        #         print(f"excited objectName:{objectName}")
+        #         self.stackedWidget.removeWidget(widget_i)
+        #         break
 
         # 添加子分页
+        print(f"addSubInterface:{objectName}")
         self.stackedWidget.addWidget(widget)
 
         # 已经存在的旧结果将会被清除
-        items = self.tabBar.items
-        items_rou = [item.routeKey() for item in items]
+        items_rou = [item.routeKey() for item in self.tabBar.items]
 
         if objectName in items_rou:
             self.tabBar.removeTab(items_rou.index(objectName))
@@ -248,7 +257,7 @@ class TabInterface(QWidget):
         self.tabBar.setCloseButtonDisplayMode(mode)
 
     def onCurrentIndexChanged(self, index):
-        print(f"currentTabIndexChangedTo:{index}")
+        # print(f"currentTabIndexChangedTo:{index}")
         widget = self.stackedWidget.widget(index)
         if not widget:
             return
@@ -429,11 +438,6 @@ class CustomTableView(TableView):
         # content = index.data()
         # content = self.model().index(index.row(), 2).data()
         QApplication.clipboard().setText(content)
-
-    def custom_action_triggered(self):
-        index = self.currentIndex()
-        # 在这里执行自定义操作
-        print(f"Custom action triggered on row {index.row()} and column {index.column()}")
 
 class EditSpeakerMessageBox(MessageBoxBase):
     """ Custom message box """
