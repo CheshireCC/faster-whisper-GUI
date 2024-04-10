@@ -162,7 +162,7 @@ CAPTURE_PARA = [
     }
 ]
 
-STEMS = ["All Stems","Vocals", "Other","Bass", "Drums"]
+STEMS = ["All Stems", "Vocals", "Other","Bass", "Drums", "Vocals and Others dichotomy"]
 ENCODING_DICT = {"UTF-8":"utf8", 
                     "UTF-8 BOM":"utf_8_sig", 
                     "GBK":"gbk", 

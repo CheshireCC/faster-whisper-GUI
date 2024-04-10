@@ -32,6 +32,22 @@ class DemucsParamGroupWidget(QWidget):
         self.mainLayout = QVBoxLayout()
         self.mainWidget.setLayout(self.mainLayout)
 
+        self.__tr_text_all_Stems = self.__tr("所有音轨")
+        self.__tr_text_Vocals = self.__tr("仅人声")
+        self.__tr_text_Other = self.__tr("仅其它")
+        self.__tr_text_Bass = self.__tr("仅贝斯声")
+        self.__tr_text_Drums = self.__tr("仅鼓点声")
+        self.__tr_text_Vocals_Others = self.__tr("人声、背景声二分")
+
+        self.__tr_text_list = [
+            self.__tr_text_all_Stems,
+            self.__tr_text_Vocals,
+            self.__tr_text_Other,
+            self.__tr_text_Bass,
+            self.__tr_text_Drums,
+            self.__tr_text_Vocals_Others
+        ]
+
         self.setupUI()
     
     def addWidget(self, widget, alignment):
@@ -93,7 +109,9 @@ class DemucsParamGroupWidget(QWidget):
         self.param_hBoxLayout.addLayout(self.vBoxLayout_stems)
 
         self.comboBox_stems = ComboBox()
-        self.comboBox_stems.addItems(STEMS)
+        for item in self.__tr_text_list:
+            self.comboBox_stems.addItem(item)
+        # self.comboBox_stems.addItems(STEMS)
         self.comboBox_stems.setCurrentIndex(1)
 
         self.label_stems_param = QLabel(self.tr("输出音轨"))
@@ -111,7 +129,6 @@ class DemucsPageNavigation(NavigationBaseInterface):
 
         StyleSheet.DENUCE_INTERFACE.apply(self.demucs_param_widget)
 
-    
     def setupUI(self):
 
         self.toolBar.modelStatusLabel.setVisible(False)
@@ -127,7 +144,6 @@ class DemucsPageNavigation(NavigationBaseInterface):
         self.outputGroupWidget = OutputGroupWidget(self)
         self.addWidget(self.outputGroupWidget)
 
-        
         # =============================================================================
         self.process_button = PushButton()
         self.addWidget(self.process_button)

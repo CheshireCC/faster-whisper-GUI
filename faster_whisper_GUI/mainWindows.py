@@ -346,7 +346,6 @@ class MainWindows(UIMainWin):
             dict_WhisperXParams["min_speaker"] = None
             dict_WhisperXParams["max_speaker"] = None
 
-
         return dict_WhisperXParams
 
     def transcribeProcess(self):
@@ -644,20 +643,19 @@ class MainWindows(UIMainWin):
 
                     self.simplifiedAndTraditionalChineseConvert(segment_,language_param)
                     
-
             print(f"len_segments_path_info_result: {len(segments_path_info)}")
             self.showResultInTable(self.result_faster_whisper)
             self.current_result = self.result_faster_whisper
-
+            time.sleep(0.8)
+            
             if self.page_setting.combox_autoGoToOutputPage.currentIndex() == 0:
-                time.sleep(0.8)
                 self.stackedWidget.setCurrentWidget(self.page_output)
                 
             elif self.page_setting.combox_autoGoToOutputPage.currentIndex() == 2:
-                time.sleep(0.8)
+                # time.sleep(0.8)
                 mess_ = MessageBox(self.__tr("转写结束"),self.__tr("是否跳转到输出目录？"),self)
                 if mess_.exec():
-                    time.sleep(0.8)
+                    # time.sleep(0.8)
                     self.stackedWidget.setCurrentWidget(self.page_output)
             
     def getParamTranscribe(self) -> dict:
@@ -1344,7 +1342,7 @@ class MainWindows(UIMainWin):
         segment = self.page_demucs.demucs_param_widget.spinBox_segment.value()
         demucs_param["segment"] = segment
 
-        stems = self.page_demucs.demucs_param_widget.comboBox_stems.currentText()
+        stems = self.page_demucs.demucs_param_widget.comboBox_stems.currentIndex()
         demucs_param["stems"] = stems
 
         audio = self.page_demucs.fileListView.avFileList
@@ -1368,7 +1366,7 @@ class MainWindows(UIMainWin):
             self.raiseErrorInfoBar(self.__tr("模型正在使用"), self.__tr("语音识别正在运行"))
             return
         
-        if self.result_faster_whisper is not None and self.page_transcribes.LineEdit_temperature.text().strip() == "0" :
+        if self.current_result is not None and self.page_transcribes.LineEdit_temperature.text().strip() != "0" :
 
             print(f"Temperature: {self.page_transcribes.LineEdit_temperature.text().strip()} and transcript has already been run")
             print("Temperature fallback configuration may take effect, that may take crash when unload model from memory!")

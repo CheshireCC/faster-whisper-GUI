@@ -22,7 +22,7 @@ class DemucsWorker(QThread):
     def __init__(
                     self, parent, 
                     audio:list[str],
-                    stems:str,
+                    stems:int,
                     model_path:str,
                     *,
                     segment:float=10,
@@ -297,46 +297,57 @@ class DemucsWorker(QThread):
         # del samples
         return samples
     
-    def saveResult(self, model, file_path:str, sources:torch.Tensor, stems:str, output_path:str, sample_rate=44100):
-
+    def saveResult(self, model, file_path:str, sources:torch.Tensor, stems:int, output_path:str, sample_rate=44100):
 
         sources_list = model.sources
         print(f"sources_list: {sources_list}")
-        # print(stems.lower() in sources_list)
-        # print(stems.lower())
-        # print(stems.lower()==sources_list[-1])
-        # print(sources.shape)
 
+        # 将不同输出音轨排列成为列表形式存储 元素为 Tensor
         sources = list(sources[0])
 
-        audios = dict(zip(sources_list, sources))
+        # 将输出音轨整合为 字典 形式存储
+        audios:dict = dict(zip(sources_list, sources))
 
+        # 获取文件名、文件路径
+        data_dir,file_name = os.path.split(file_path)
+        file_output = file_name.split(".")
+        file_output = ".".join(file_output[:-1])
 
-        data_dir,file_output = os.path.split(file_path)
+        # 根据用户选择的不同输出音轨，进行相应处理
+        if stems == 0:
+            stems = STEMS[1:-1]
         
-        file_output = file_output.split(".")
-        file_output = file_output[:-1]
+        elif stems != (len(STEMS) - 1):
+            stems = [STEMS[stems]]
 
-        if stems.lower() == "all stems":
-            stems = STEMS[1:]
-        
+        # 人声、背景音乐二分输出需要进行音频内容整合
         else:
-            stems = [stems]
+            stems = ["Vocals", "Others"]
+            audios["others"] = audios["other"] 
+            audios.pop("other")
+            audios["others"] = audios["others"] + audios["bass"] 
+            audios.pop("bass")
+            audios["others"] = audios["others"] + audios["drums"]
+            audios.pop("drums")
         
-        if not output_path:
-            output_path = data_dir
+        print(f"output stems: {stems}")
 
-        # if not os.path.exists(output_path):
-        #     os.mkdir(output_path)
+        if not output_path:
+            output_path = os.path.join(data_dir, file_output)
+        else:
+            output_path = os.path.join(output_path, file_output)
+
+        if not os.path.exists(output_path):
+            print(f"create output folder: {output_path}")
+            os.mkdir(output_path)
 
         for stem in stems:
             spec = audios[stem.lower()][:, :].cpu()
-            output_path_ = os.path.join(output_path, stem)
-            if not os.path.exists(output_path_):
-                print(f"create output folder: {stem}")
-                os.makedirs(output_path_)
+            output_path_ = output_path
+            # if not os.path.exists(output_path_):
+            #     os.makedirs(output_path_)
             
-            output_fileName = os.path.join(output_path_, ".".join(file_output+[f"_{stem.lower()}", "wav"]))
+            output_fileName = os.path.join(output_path_, ".".join([file_output+f"_{stem.lower()}", "wav"]))
             print(f"save file: {output_fileName}")
 
             soundfile.write(output_fileName, spec.numpy().T,  sample_rate)

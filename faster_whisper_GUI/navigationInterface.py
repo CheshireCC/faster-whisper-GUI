@@ -176,7 +176,6 @@ class NavigationBaseInterface(ScrollArea):
 
         self.vBoxLayout.setSpacing(10)
         self.vBoxLayout.setContentsMargins(36, 10, 36, 10)
-        # self.vBoxLayout.setAlignment(Qt.AlignTop)
 
         self.view.setObjectName('view')
         StyleSheet.NAVIGATION_INTERFACE.apply(self)

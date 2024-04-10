@@ -1,31 +1,6 @@
 # coding:utf-8
 
 import sys
-# print输出重定向到文件
-log_f = open('fasterwhispergui.log', 'w', buffering=1)
-sys.stdout = log_f
-sys.stderr = log_f
-
-from faster_whisper_GUI.version import __version__
-from faster_whisper_GUI.util import outputWithDateTime
-
-log_f.write(f"\nfaster_whisper_GUI: {__version__}")
-
-outputWithDateTime("Start")
-
-import logging
-
-# faster_whisper 模块日志
-logger_faster_whisper = logging.getLogger("faster_whisper")
-logger_faster_whisper.setLevel(logging.DEBUG)
-faster_whisper_logger_handler = logging.FileHandler(r"./faster_whisper.log", mode="w")
-faster_whisper_logger_handler.setLevel(logging.DEBUG)
-formatter1 = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s",datefmt='%Y-%m-%d_%H:%M:%S')
-faster_whisper_logger_handler.setFormatter(formatter1)
-logger_faster_whisper.addHandler(faster_whisper_logger_handler)
-
-# # 将默认的递归深度修改为3000
-# sys.setrecursionlimit(7000)  
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import (QFont, QPixmap)
@@ -71,16 +46,39 @@ ly.addSpacing(20)
 # 显示启动界面
 splash.show()
 
-# app.processEvents()  # 处理主进程事件
+app.processEvents()  # 处理主进程事件
+
+# print输出重定向到文件
+log_f = open('fasterwhispergui.log', 'w', buffering=1)
+sys.stdout = log_f
+sys.stderr = log_f
+
+from faster_whisper_GUI.version import __version__
+from faster_whisper_GUI.util import outputWithDateTime
+
+log_f.write(f"\nfaster_whisper_GUI: {__version__}")
+
+outputWithDateTime("Start")
+
+import logging
+
+# faster_whisper 模块日志
+logger_faster_whisper = logging.getLogger("faster_whisper")
+logger_faster_whisper.setLevel(logging.DEBUG)
+faster_whisper_logger_handler = logging.FileHandler(r"./faster_whisper.log", mode="w")
+faster_whisper_logger_handler.setLevel(logging.DEBUG)
+formatter1 = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s",datefmt='%Y-%m-%d_%H:%M:%S')
+faster_whisper_logger_handler.setFormatter(formatter1)
+logger_faster_whisper.addHandler(faster_whisper_logger_handler)
+
 
 import os
 pb.setValue(10)
 
 # splash.showMessage("import translator...") # , Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, Qt.white)
-from PySide6.QtCore import QTranslator
+# from PySide6.QtCore import QTranslator
 
 # splash.showMessage("import windows...") #, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, Qt.white)
-
 
 # MainWindows_moudle = LazyImport("faster_whisper_GUI.mainWindows")
 from faster_whisper_GUI.mainWindows import MainWindows
@@ -92,7 +90,6 @@ from faster_whisper_GUI.translator import TRANSLATOR, language
 
 # 主程序入口
 if __name__ == "__main__":
-
     
     # 修复程序路径依赖
     BASE_DIR = os.path.dirname(os.path.abspath( __file__))
@@ -102,7 +99,6 @@ if __name__ == "__main__":
     sys.path.append(os.path.join(BASE_DIR, 'ffmpeg'))
     sys.path.append(os.path.join(BASE_DIR, 'cache'))
 
-
     # os.environ["CUDA_LAUNCH_BLOCKING"] = "0"
 
     # cudn 环境现随 PyTorch 提供
@@ -110,7 +106,7 @@ if __name__ == "__main__":
     # cudnn_dir = ";" + os.path.join(BASE_DIR, 'cuDNN')
     # os.environ["path"] += cudnn_dir
 
-    # # 修复环境变量 - cuBLAS
+    # 修复环境变量 - cuBLAS
     # cuBLAS_dir = ";" + os.path.join(BASE_DIR, 'cuBLAS')
     # os.environ["path"] += cuBLAS_dir
 
@@ -142,7 +138,7 @@ if __name__ == "__main__":
     # splash.showMessage("Load Windows...") #, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, Qt.white)
     
     splash.showMessage(
-                        "start app...", 
+                        "Launching app...", 
                         Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, 
                         Qt.white
                     )
