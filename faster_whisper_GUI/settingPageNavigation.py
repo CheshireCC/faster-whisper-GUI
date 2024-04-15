@@ -120,18 +120,15 @@ class SettingPageNavigationInterface(ScrollArea):
         
         self.colorPickerButton = ColorPickerButton(self.themeColor_str, "ThemeColor", parent=self)
         # self.colorPickerButton.clicked.disconnect()
-        self.colorPickerButton.colorChanged.connect(self.setThemeColorAndText)
-
+        
         self.randomPickThemeColorToolButton = PrimaryToolButton()
         # self.randomPickThemeColorToolButton = ToolButton()
         self.randomPickThemeColorToolButton.setIcon(FluentIcon.BASKETBALL)
         self.randomPickThemeColorToolButton.setToolTip(self.__tr("切换预置主题色"))
-        self.randomPickThemeColorToolButton.clicked.connect(self.setColorAndThemeColorRandom)
-
+        
         self.themeColorLineEdit = LineEdit()
         self.themeColorLineEdit.setText(self.themeColor_str)
-        self.themeColorLineEdit.textChanged.connect(self.setThemeColorWithLineEditText)
-
+        
         self.paramItemWidget_themeColor = ParamWidget(self.__tr("主题色"), self.__tr("主题配色"), self.themeColorLineEdit, self)
 
         hb = QHBoxLayout()
@@ -203,6 +200,9 @@ class SettingPageNavigationInterface(ScrollArea):
         self.pushButton_openLogFile.clicked.connect(lambda: os.startfile(os.path.abspath(r"./fasterwhispergui.log").replace("\\","/")))
         self.pushButton_openFWLogFile.clicked.connect(lambda: os.startfile(os.path.abspath(r"./faster_whisper.log").replace("\\","/")))  
         self.pushButton_clearTempFiles.clicked.connect(self.deletTempFiles)
+        self.colorPickerButton.colorChanged.connect(self.setThemeColorAndText)
+        self.randomPickThemeColorToolButton.clicked.connect(self.setColorAndThemeColorRandom)
+        self.themeColorLineEdit.textChanged.connect(self.setThemeColorWithLineEditText)
         
 
     def deletTempFiles(self):
@@ -268,8 +268,8 @@ class SettingPageNavigationInterface(ScrollArea):
         setThemeColor(self.themeColor_str, save=True, lazy=True)
 
     def setThemeColorWithLineEditText(self,text):
-        if len(text) == 7:
-            self.colorPickerButton.setColor(text)
-            setThemeColor(text, save=True, lazy=True)
+        if len(text) in [7,9]:
+            self.colorPickerButton.setColor(QColor.fromString(text))
+            setThemeColor(QColor.fromString(text), save=True, lazy=True)
             self.themeColor_str = text
         

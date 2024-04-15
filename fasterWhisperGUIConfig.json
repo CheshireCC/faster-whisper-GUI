@@ -33,9 +33,9 @@
         "autoLoadModel": false,
         "language": 2,
         "huggingface_user_token": "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",
-        "autoGoToOutputPage": 2,
+        "autoGoToOutputPage": 0,
         "autoClearTempFiles": true,
-        "themeColor": "#3522e7"
+        "themeColor": "#ff009f"
     },
     "Transcription_param": {
         "aggregate_contents": true,

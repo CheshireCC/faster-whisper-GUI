@@ -198,3 +198,6 @@ THEME_COLORS = [
     "#FFCC00",
     "#0078D4",
 ]
+
+tableItem_dark_warning_BackGround_color = "#50ffff00" # QColor(255,255,0, a=80)
+tableItem_light_warning_BackGround_color  = "#50ff0000" # QColor(255,0,0,a=127)

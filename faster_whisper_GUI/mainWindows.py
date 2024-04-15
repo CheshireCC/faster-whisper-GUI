@@ -644,19 +644,22 @@ class MainWindows(UIMainWin):
                     self.simplifiedAndTraditionalChineseConvert(segment_,language_param)
                     
             print(f"len_segments_path_info_result: {len(segments_path_info)}")
-            self.showResultInTable(self.result_faster_whisper)
-            self.current_result = self.result_faster_whisper
-            time.sleep(0.8)
+            
             
             if self.page_setting.combox_autoGoToOutputPage.currentIndex() == 0:
                 self.stackedWidget.setCurrentWidget(self.page_output)
                 
             elif self.page_setting.combox_autoGoToOutputPage.currentIndex() == 2:
                 # time.sleep(0.8)
-                mess_ = MessageBox(self.__tr("转写结束"),self.__tr("是否跳转到输出目录？"),self)
+                mess_ = MessageBox(self.__tr("转写结束"), self.__tr("是否跳转到输出目录？"), self)
                 if mess_.exec():
                     # time.sleep(0.8)
                     self.stackedWidget.setCurrentWidget(self.page_output)
+            
+            time.sleep(0.8)
+            self.showResultInTable(self.result_faster_whisper)
+            self.current_result = self.result_faster_whisper
+            
             
     def getParamTranscribe(self) -> dict:
         Transcribe_params = {}
@@ -972,9 +975,9 @@ class MainWindows(UIMainWin):
         self.setStateTool(title=self.__tr("WhisperX"), text=self.__tr("时间戳对齐"), status=False)
 
         if self.whisperXWorker is None:
-            self.whisperXWorker = WhisperXWorker(self.current_result, alignment=True,speaker_diarize=False, parent=self)
+            self.whisperXWorker = WhisperXWorker(self.current_result, alignment=True, speaker_diarize=False, parent=self)
         else:
-            self.whisperXWorker.result_segments_path_info = self.result_faster_whisper
+            self.whisperXWorker.result_segments_path_info = self.current_result
             self.whisperXWorker.alignment = True
             self.whisperXWorker.speaker_diarize = False
         
@@ -1571,7 +1574,6 @@ class MainWindows(UIMainWin):
         except Exception:
             pass
 
-
     def closeEvent(self, event) -> None:
         """
         点击窗口关闭按钮时的事件响应
@@ -1589,10 +1591,14 @@ class MainWindows(UIMainWin):
                 try:
                     temp_list = os.listdir(r"./temp")
                     if len(temp_list) > 0:
-                        os.system(r"del .\temp\*.srt")
+                        temp_dir = os.path.abspath(r"./temp")
+                        temp_cmd = temp_dir + "\\" + "*.srt"
+                        os.system(f"del {temp_cmd}")
                         print("cleared temp files")
+                        
                     else:
                         print("no temp files to clear")
+
                 except Exception as e:
                     print(str(e))
             

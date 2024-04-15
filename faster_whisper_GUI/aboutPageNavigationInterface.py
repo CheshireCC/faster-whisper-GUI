@@ -102,14 +102,11 @@ class AboutPageNavigationInterface(ScrollArea):
 
     def setupUI(self):
 
-        image = r":/resource/Image/pexels-photo-1563356.jpeg"
+        # image = r":/resource/Image/pexels-photo-1563356.jpeg"
 
-        self.imagelabel= ImageViewer(self, image)
-        self.addWidget(self.imagelabel)
-        self.imagelabel.setObjectName("imageViewer")
-
-        self.mainVLayout.addSpacing(15)
-        self.mainVLayout.addWidget(HorizontalSeparator(self))
+        # self.imagelabel= ImageViewer(self, image)
+        # self.addWidget(self.imagelabel)
+        # self.imagelabel.setObjectName("imageViewer")
 
         self.strongBodyLabel = TitleLabel(self)
         self.strongBodyLabel.setText(self.tr("生成式人工智能程序用户协议"))
@@ -122,6 +119,11 @@ class AboutPageNavigationInterface(ScrollArea):
         # self.lisenceLabel.setFont(QFont("Microsoft YaHei", 13))
         self.addWidget(self.lisenceLabel)
 
+        self.mainVLayout.addSpacing(15)
+        self.mainVLayout.addWidget(HorizontalSeparator(self))
+
+        
+
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
     def addWidget(self, widget):
@@ -129,3 +131,4 @@ class AboutPageNavigationInterface(ScrollArea):
     
     def addLayout(self, layout):
         self.mainVLayout.addLayout(layout)
+

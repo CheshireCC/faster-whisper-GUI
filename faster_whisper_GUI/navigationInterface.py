@@ -1,9 +1,8 @@
 # coding:utf-8
 import os
 from PySide6.QtCore import (
-                            Qt
-                            , QUrl
-                            # , QTranslator
+                            Qt,
+                            QUrl
                         )
 
 from PySide6.QtGui import (
@@ -30,7 +29,6 @@ from qfluentwidgets import (ScrollArea
                             , TitleLabel
                             , CaptionLabel
                             , MessageBox
-                            , PrimaryToolButton
                         )
 
 from .style_sheet import StyleSheet
@@ -184,7 +182,7 @@ class NavigationBaseInterface(ScrollArea):
         
 
     def addWidget(self, widget):
-        self.vBoxLayout.addWidget(widget, alignment=Qt.AlignTop)
+        self.vBoxLayout.addWidget(widget, alignment=Qt.AlignmentFlag.AlignTop)
     
     def addLayout(self, layout):
         self.vBoxLayout.addLayout(layout)

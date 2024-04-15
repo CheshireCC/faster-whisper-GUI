@@ -98,6 +98,12 @@ if __name__ == "__main__":
     sys.path.append(os.path.join(BASE_DIR, 'whisperX'))
     sys.path.append(os.path.join(BASE_DIR, 'ffmpeg'))
     sys.path.append(os.path.join(BASE_DIR, 'cache'))
+    sys.path.append(os.path.join(BASE_DIR, 'python'))
+    sys.path.append(os.path.join(BASE_DIR, 'bin'))
+    
+    # 修复环境变量 - ffmpeg
+    ffmpeg_dir = ";" + os.path.join(BASE_DIR, 'ffmpeg')
+    os.environ["path"] += ffmpeg_dir
 
     # os.environ["CUDA_LAUNCH_BLOCKING"] = "0"
 
@@ -110,9 +116,14 @@ if __name__ == "__main__":
     # cuBLAS_dir = ";" + os.path.join(BASE_DIR, 'cuBLAS')
     # os.environ["path"] += cuBLAS_dir
 
-    # 修复环境变量 - ffmpeg
-    ffmpeg_dir = ";" + os.path.join(BASE_DIR, 'ffmpeg')
-    os.environ["path"] += ffmpeg_dir
+    # 修复环境变量 - python 文件夹
+    python_dir = ";" + os.path.join(BASE_DIR, 'python')
+    os.environ["path"] += python_dir
+
+    # 修复环境变量 - bin 文件夹
+    bin_dir = ";" + os.path.join(BASE_DIR, 'bin')
+    os.environ["path"] += bin_dir
+
 
     pb.setValue(65)
 

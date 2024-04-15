@@ -318,7 +318,7 @@ class UIMainWin(FramelessMainWindow):
         self.pages.append(self.page_setting)
         
         self.stackedWidget.currentChanged.connect(self.onCurrentIndexChanged)
-        self.stackedWidget.setCurrentWidget(self.page_process)
+        self.stackedWidget.setCurrentWidget(self.page_home)
         # self.pivot.setCurrentItem(self.page_process.objectName())
 
         # 设置默认 RouteKey 防止返回键功能异常

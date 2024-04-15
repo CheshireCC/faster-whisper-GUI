@@ -6,16 +6,18 @@ from PySide6.QtWidgets import (
                                 QSizePolicy,
                             )
 
-from qfluentwidgets import PushButton,ComboBox
-from qfluentwidgets.components.widgets.label import BodyLabel, StrongBodyLabel
-from qfluentwidgets.components.widgets.separator import HorizontalSeparator
-from qfluentwidgets.components.widgets.spin_box import SpinBox
+from qfluentwidgets import (
+                            PushButton,
+                            ComboBox, 
+                            BodyLabel, 
+                            StrongBodyLabel, 
+                            HorizontalSeparator, 
+                            SpinBox
+                        )
 
 from faster_whisper_GUI.config import SUBTITLE_FORMAT
-                        
 from .navigationInterface import NavigationBaseInterface
 from .tableViewInterface import TabInterface
-
 from .outputLabelLineEditButtonWidget import OutputGroupWidget
 from .config import ENCODING_DICT
 
