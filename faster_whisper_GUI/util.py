@@ -76,7 +76,7 @@ def secondsToMS(t) -> str:
     if len(S[0]) < 2:
         S[0] = "0" + S[0]
     if len(S[1] ) < 2:
-        S[1] = "0" + S[1]
+        S[1] =   S[1] + "0"
     if len(S[1]) >= 3:
         S[1] = S[1][:2]
 

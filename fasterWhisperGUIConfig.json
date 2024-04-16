@@ -8,20 +8,20 @@
     "model_param": {
         "localModel": true,
         "onlineModel": false,
-        "model_path": "F:/WhisperModels/faster-whisper/large-v3-float32",
+        "model_path": "",
         "modelName": 0,
-        "use_v3_model": true,
+        "use_v3_model": false,
         "device": 1,
         "deviceIndex": "0",
         "preciese": 4,
         "thread_num": "4",
         "num_worker": "1",
-        "download_root": "C:/Users/12059/.cache/huggingface/hub",
+        "download_root": "",
         "local_files_only": false
     },
     "vad_param": {
         "use_VAD": true,
-        "threshold": 0.3,
+        "threshold": 0.49999999999999994,
         "minSpeechDuration": "250",
         "minSilenceDuration": "2000",
         "maxSpeechDuration": "inf",
@@ -39,7 +39,7 @@
     },
     "Transcription_param": {
         "aggregate_contents": true,
-        "language": 1,
+        "language": 0,
         "task": false,
         "beam_size": "5",
         "best_of": "5",
