@@ -1,6 +1,17 @@
 # coding:utf-8
 
 import sys
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath( __file__))
+
+# 修复环境变量 - python 文件夹
+python_dir = ";" + os.path.join(BASE_DIR, 'python')
+os.environ["path"] += python_dir
+
+# 修复环境变量 - bin 文件夹
+bin_dir = ";" + os.path.join(BASE_DIR, 'bin')
+os.environ["path"] += bin_dir
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import (QFont, QPixmap)
@@ -71,16 +82,8 @@ formatter1 = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messa
 faster_whisper_logger_handler.setFormatter(formatter1)
 logger_faster_whisper.addHandler(faster_whisper_logger_handler)
 
-
-import os
 pb.setValue(10)
 
-# splash.showMessage("import translator...") # , Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, Qt.white)
-# from PySide6.QtCore import QTranslator
-
-# splash.showMessage("import windows...") #, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, Qt.white)
-
-# MainWindows_moudle = LazyImport("faster_whisper_GUI.mainWindows")
 from faster_whisper_GUI.mainWindows import MainWindows
 
 pb.setValue(60)
@@ -92,7 +95,6 @@ from faster_whisper_GUI.translator import TRANSLATOR, language
 if __name__ == "__main__":
     
     # 修复程序路径依赖
-    BASE_DIR = os.path.dirname(os.path.abspath( __file__))
     sys.path.append(os.path.join(BASE_DIR, 'resource'))
     sys.path.append(os.path.join(BASE_DIR, 'faster_whisper_GUI'))
     sys.path.append(os.path.join(BASE_DIR, 'whisperX'))
@@ -106,24 +108,6 @@ if __name__ == "__main__":
     os.environ["path"] += ffmpeg_dir
 
     # os.environ["CUDA_LAUNCH_BLOCKING"] = "0"
-
-    # cudn 环境现随 PyTorch 提供
-    # 修复环境变量 - cudnn
-    # cudnn_dir = ";" + os.path.join(BASE_DIR, 'cuDNN')
-    # os.environ["path"] += cudnn_dir
-
-    # 修复环境变量 - cuBLAS
-    # cuBLAS_dir = ";" + os.path.join(BASE_DIR, 'cuBLAS')
-    # os.environ["path"] += cuBLAS_dir
-
-    # 修复环境变量 - python 文件夹
-    python_dir = ";" + os.path.join(BASE_DIR, 'python')
-    os.environ["path"] += python_dir
-
-    # 修复环境变量 - bin 文件夹
-    bin_dir = ";" + os.path.join(BASE_DIR, 'bin')
-    os.environ["path"] += bin_dir
-
 
     pb.setValue(65)
 

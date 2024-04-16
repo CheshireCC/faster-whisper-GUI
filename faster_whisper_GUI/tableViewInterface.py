@@ -259,12 +259,13 @@ class TabInterface(QWidget):
         widget.setColumnWidth(1,115)
         widget.setColumnWidth(3,400)
         widget.setColumnWidth(2,110)
+        widget.setColumnWidth(4,50)
 
         # 设置列宽适应内容
-        # widget.resizeColumnToContents(0)
-        # widget.resizeColumnToContents(1)
-        # widget.resizeColumnToContents(3)
-        # widget.resizeColumnToContents(2)
+        widget.resizeColumnToContents(0)
+        widget.resizeColumnToContents(1)
+        widget.resizeColumnToContents(3)
+        widget.resizeColumnToContents(2)
         
         # 设置行高度固定
         # widget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
@@ -591,91 +592,93 @@ class CustomMessageBox(MessageBoxBase):
         self.accept_value_signal.emit(self.value)
         return super().exec()
 
-# class EditTimeStampMessageBox(MessageBoxBase):
-#     """ Custom message box """
+'''
+class EditTimeStampMessageBox(MessageBoxBase):
+    """ Custom message box """
 
-#     accept_time_stamp_signal = Signal(int, int)
+    accept_time_stamp_signal = Signal(int, int)
 
-#     def __init__(self, parent=None):
-#         super().__init__(parent)
-#         self.value = ""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.value = ""
 
-#         self.titleLabel = SubtitleLabel(self.tr('调整时间戳'), self)
-#         self.speakerLineEdit = LineEdit(self)
+        self.titleLabel = SubtitleLabel(self.tr('调整时间戳'), self)
+        self.speakerLineEdit = LineEdit(self)
 
-#         self.speakerLineEdit.setPlaceholderText(self.tr('输入调整时长(ms)'))
-#         self.speakerLineEdit.setClearButtonEnabled(True)
+        self.speakerLineEdit.setPlaceholderText(self.tr('输入调整时长(ms)'))
+        self.speakerLineEdit.setClearButtonEnabled(True)
 
-#         # add widget to view layout
-#         self.viewLayout.addWidget(self.titleLabel)
-#         self.viewLayout.addWidget(self.speakerLineEdit)
+        # add widget to view layout
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self.speakerLineEdit)
 
-#         # change the text of button
-#         self.yesButton.setText(self.tr('确定'))
-#         self.cancelButton.setText(self.tr('取消'))
+        # change the text of button
+        self.yesButton.setText(self.tr('确定'))
+        self.cancelButton.setText(self.tr('取消'))
 
-#         self.widget.setMinimumWidth(350)
-#         self.yesButton.setDisabled(True)
-#         self.speakerLineEdit.textChanged.connect(self._validateUrl)
+        self.widget.setMinimumWidth(350)
+        self.yesButton.setDisabled(True)
+        self.speakerLineEdit.textChanged.connect(self._validateUrl)
 
-#         self.yesButton.setDefault(True)
+        self.yesButton.setDefault(True)
 
-#         # self.hideYesButton()
+        # self.hideYesButton()
 
-#     def _validateUrl(self, text:str):
-#         # print("text:",text)
-#         self.yesButton.setEnabled(text != "" and text.isdigit())
-#         self.value=text
-#         self.accept_time_stamp_signal.emit(self.value)
+    def _validateUrl(self, text:str):
+        # print("text:",text)
+        self.yesButton.setEnabled(text != "" and text.isdigit())
+        self.value=text
+        self.accept_time_stamp_signal.emit(self.value)
 
-#     def exec(self) -> int:
-#         # print("value:",self.value)
-#         # self.value = self.speakerLineEdit.text()
-#         self.accept_time_stamp_signal.emit(self.value)
-#         return super().exec()
+    def exec(self) -> int:
+        # print("value:",self.value)
+        # self.value = self.speakerLineEdit.text()
+        self.accept_time_stamp_signal.emit(self.value)
+        return super().exec()
     
 
 
-# class EditSpeakerMessageBox(MessageBoxBase):
-#     """ Custom message box """
+class EditSpeakerMessageBox(MessageBoxBase):
+    """ Custom message box """
 
-#     accept_speaker_signal = Signal(str)
+    accept_speaker_signal = Signal(str)
 
-#     def __init__(self, parent=None):
-#         super().__init__(parent)
-#         self.value = ""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.value = ""
 
-#         self.titleLabel = SubtitleLabel(self.tr('说话人'), self)
-#         self.speakerLineEdit = LineEdit(self)
+        self.titleLabel = SubtitleLabel(self.tr('说话人'), self)
+        self.speakerLineEdit = LineEdit(self)
 
-#         self.speakerLineEdit.setPlaceholderText(self.tr('输入说话人'))
-#         self.speakerLineEdit.setClearButtonEnabled(True)
+        self.speakerLineEdit.setPlaceholderText(self.tr('输入说话人'))
+        self.speakerLineEdit.setClearButtonEnabled(True)
 
-#         # add widget to view layout
-#         self.viewLayout.addWidget(self.titleLabel)
-#         self.viewLayout.addWidget(self.speakerLineEdit)
+        # add widget to view layout
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self.speakerLineEdit)
 
-#         # change the text of button
-#         self.yesButton.setText(self.tr('确定'))
-#         self.cancelButton.setText(self.tr('取消'))
+        # change the text of button
+        self.yesButton.setText(self.tr('确定'))
+        self.cancelButton.setText(self.tr('取消'))
 
-#         self.widget.setMinimumWidth(350)
-#         self.yesButton.setDisabled(True)
-#         self.speakerLineEdit.textChanged.connect(self._validateUrl)
+        self.widget.setMinimumWidth(350)
+        self.yesButton.setDisabled(True)
+        self.speakerLineEdit.textChanged.connect(self._validateUrl)
 
-#         self.yesButton.setDefault(True)
+        self.yesButton.setDefault(True)
 
-#         # self.hideYesButton()
+        # self.hideYesButton()
 
-#     def _validateUrl(self, text):
-#         print("text:",text)
-#         self.yesButton.setEnabled(text != "")
-#         self.value=text
-#         self.accept_speaker_signal.emit(self.value)
+    def _validateUrl(self, text):
+        print("text:",text)
+        self.yesButton.setEnabled(text != "")
+        self.value=text
+        self.accept_speaker_signal.emit(self.value)
 
-#     def exec(self) -> int:
-#         # print("value:",self.value)
-#         # self.value = self.speakerLineEdit.text()
-#         self.accept_speaker_signal.emit(self.value)
-#         return super().exec()
+    def exec(self) -> int:
+        # print("value:",self.value)
+        # self.value = self.speakerLineEdit.text()
+        self.accept_speaker_signal.emit(self.value)
+        return super().exec()
+'''
     

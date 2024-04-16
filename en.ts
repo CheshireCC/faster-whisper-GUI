@@ -127,7 +127,7 @@ By using this software, you have read and agreed to the following user agreement
         </translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/aboutPageNavigationInterface.py" line="115"/>
+        <location filename="faster_whisper_gui/aboutPageNavigationInterface.py" line="112"/>
         <source>生成式人工智能程序用户协议</source>
         <translation>Agreement</translation>
     </message>
@@ -137,26 +137,79 @@ By using this software, you have read and agreed to the following user agreement
     </message>
 </context>
 <context>
+    <name>CustomMessageBox</name>
+    <message>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="572"/>
+        <source>确定</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="573"/>
+        <source>取消</source>
+        <translation>Cancel</translation>
+    </message>
+</context>
+<context>
     <name>CustomTableView</name>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="311"/>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="329"/>
         <source>复制</source>
         <translation>copy</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="316"/>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="334"/>
         <source>复制字幕内容</source>
         <translation>only copy content</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="324"/>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="339"/>
+        <source>提前开始时间戳</source>
+        <translation>advance start timestamp</translation>
+    </message>
+    <message>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="344"/>
+        <source>延后开始时间戳</source>
+        <translation>delay start timestamp</translation>
+    </message>
+    <message>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="349"/>
+        <source>提前结束时间戳</source>
+        <translation>advance end timestamp</translation>
+    </message>
+    <message>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="354"/>
+        <source>延后结束时间戳</source>
+        <translation>delay end timestamp</translation>
+    </message>
+    <message>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="362"/>
         <source>设置说话人</source>
         <translation>set speaker</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="329"/>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="367"/>
         <source>合并字幕行</source>
         <translation>merge subtitle lines</translation>
+    </message>
+    <message>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="388"/>
+        <source>调整时间戳</source>
+        <translation>adjust timestamp</translation>
+    </message>
+    <message>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="389"/>
+        <source>输入调整时长(ms)</source>
+        <translation>enter duration to adjust (ms)</translation>
+    </message>
+    <message>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="497"/>
+        <source>说话人</source>
+        <translation>Speaker</translation>
+    </message>
+    <message>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="498"/>
+        <source>输入说话人</source>
+        <translation>Input speaker</translation>
     </message>
 </context>
 <context>
@@ -168,7 +221,7 @@ By using this software, you have read and agreed to the following user agreement
         <translation>AVS(Automatic Vocal Separation) based on Demucs4.0</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/demucsPageNavigationInterface.py" line="152"/>
+        <location filename="faster_whisper_gui/demucsPageNavigationInterface.py" line="150"/>
         <source>提取</source>
         <translation>Extraction</translation>
     </message>
@@ -267,24 +320,20 @@ Therefore, the data will be processed in segments according to the number of sec
 <context>
     <name>EditSpeakerMessageBox</name>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="451"/>
         <source>说话人</source>
-        <translation>Speaker</translation>
+        <translation type="vanished">Speaker</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="454"/>
         <source>输入说话人</source>
-        <translation>Input speaker</translation>
+        <translation type="vanished">Input speaker</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="462"/>
         <source>确定</source>
-        <translation>OK</translation>
+        <translation type="vanished">OK</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="463"/>
         <source>取消</source>
-        <translation>Cancel</translation>
+        <translation type="vanished">Cancel</translation>
     </message>
 </context>
 <context>
@@ -428,12 +477,12 @@ Therefore, the data will be processed in segments according to the number of sec
         <translation>Select cache folder</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="946"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="949"/>
         <source>对齐失败，检查 fasterwhispergui.log 文件可能会获取更多信息</source>
         <translation>Alignment failed. Checking the fasterwhispergui.log file may get error messages</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1123"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1126"/>
         <source>选择音频文件</source>
         <translation>Select Target File</translation>
     </message>
@@ -517,12 +566,12 @@ Therefore, the data will be processed in segments according to the number of sec
     <message>
         <location filename="faster_whisper_gui/mainWindows.py" line="396"/>
         <location filename="faster_whisper_gui/mainWindows.py" line="407"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="810"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="863"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="944"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="961"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="998"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1047"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="813"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="866"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="947"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="964"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1001"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1050"/>
         <source>错误</source>
         <translation>Error</translation>
     </message>
@@ -553,12 +602,12 @@ Therefore, the data will be processed in segments according to the number of sec
         <location filename="faster_whisper_gui/mainWindows.py" line="431"/>
         <location filename="faster_whisper_gui/mainWindows.py" line="448"/>
         <location filename="faster_whisper_gui/mainWindows.py" line="468"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1273"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1286"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1288"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1276"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1289"/>
         <location filename="faster_whisper_gui/mainWindows.py" line="1291"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1330"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1375"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1294"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1333"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1378"/>
         <source>取消</source>
         <translation>Cancel</translation>
     </message>
@@ -598,12 +647,12 @@ Therefore, the data will be processed in segments according to the number of sec
     </message>
     <message>
         <location filename="faster_whisper_gui/mainWindows.py" line="624"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="861"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="889"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="928"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1045"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1238"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1255"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="864"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="892"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="931"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1048"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1241"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1258"/>
         <source>结束</source>
         <translation>Over</translation>
     </message>
@@ -618,83 +667,83 @@ Therefore, the data will be processed in segments according to the number of sec
         <translation>Over</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="656"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="654"/>
         <source>转写结束</source>
         <translation>transcribe over</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="656"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="654"/>
         <source>是否跳转到输出目录？</source>
         <translation>Go To Output Page?</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="807"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="810"/>
         <source>Model Convert only Work In Onlie-Mode</source>
         <translation>Model Convert only Work In Onlie-Mode</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="811"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="814"/>
         <source>转换功能仅在在线模式下工作</source>
         <translation>Convert function only work in online-mode</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="821"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="824"/>
         <source>Convert Model: </source>
         <translation>Convert Model: </translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="853"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="856"/>
         <source>加载完成</source>
         <translation>Load Over</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="855"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="858"/>
         <source>加载结束</source>
         <translation>Load Over</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="857"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="860"/>
         <source>模型加载成功</source>
         <translation>Model load successful</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="865"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="868"/>
         <source>加载失败，退出并检查 fasterWhispergui.log 文件可能会获取错误信息。</source>
         <translation>Failed to load Model, exit and check for file &quot;fasterwhispergui.log&quot; may get error information.</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="880"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="883"/>
         <source>选择模型文件所在的文件夹</source>
         <translation>Select the folder where the model file is located</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="889"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="910"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="892"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="913"/>
         <source>保存文件</source>
         <translation>Save to files</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="892"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="895"/>
         <source>保存完成</source>
         <translation>Saved</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="893"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="896"/>
         <source>字幕文件已保存</source>
         <translation>Subtitle Files saved</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="910"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="913"/>
         <source>输出字幕文件</source>
         <translation>Output to files</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="928"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="939"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="972"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1032"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1045"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1056"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="931"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="942"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="975"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1035"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1048"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1059"/>
         <source>WhisperX</source>
         <translation>WhisperX</translation>
     </message>
@@ -703,7 +752,7 @@ Therefore, the data will be processed in segments according to the number of sec
         <translation type="vanished">Alignment failed. Checking the fasterwhispergui.log file after exiting the software may get error messages</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="940"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="943"/>
         <source>时间戳对齐结束</source>
         <translation>Over</translation>
     </message>
@@ -712,57 +761,57 @@ Therefore, the data will be processed in segments according to the number of sec
         <translation type="vanished">Alignment failed. Checking the fasterwhispergui.log file after exiting the software may get error messages</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="963"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="966"/>
         <source>没有有效的 音频-字幕 转写结果，无法进行对齐</source>
         <translation>No valid audio-subtitle transliteration result, unable to align</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="972"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="975"/>
         <source>时间戳对齐</source>
         <translation>Timestamp alignment</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1000"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1003"/>
         <source>没有有效的 音频-字幕 转写结果，无法输出人声分离结果</source>
         <translation>No valid audio-subtitle transliteration result, unable to output human voice separation result</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1032"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1035"/>
         <source>声源分离</source>
         <translation>Speaker diarize</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1047"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1050"/>
         <source>声源分离失败，退出软件后检查 fasterwhispergui.log 文件可能会获取错误信息</source>
         <translation>Sound source separation failed. Checking the fasterwhispergui.log file after exiting the software may get error messages</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1057"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1060"/>
         <source>声源分离结束</source>
         <translation>Over</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1119"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1122"/>
         <source>选择语言</source>
         <translation>Choose Language</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1119"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1122"/>
         <source>必须选择正确的字幕语言</source>
         <translation>Must choose the correct subtitle language</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1129"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1132"/>
         <source>文件无效</source>
         <translation>The file is invalid</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1130"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1133"/>
         <source>不是音视频文件或文件无法找到音频流，请检查文件及文件格式</source>
         <translation>Not an audio / video file or the file cannot find the audio stream. Please check the file and file format</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1162"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1165"/>
         <source>选择字幕文件</source>
         <translation>Select a subtitle file</translation>
     </message>
@@ -771,7 +820,7 @@ Therefore, the data will be processed in segments according to the number of sec
         <translation type="vanished">Invalid file</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1172"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1175"/>
         <source>必须要有有效的字幕文件</source>
         <translation>There must be a valid subtitle file</translation>
     </message>
@@ -786,128 +835,128 @@ Therefore, the data will be processed in segments according to the number of sec
 Checking the fasterwhispergui.log file after exiting the software may get error messages</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1172"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1175"/>
         <source>没有字幕文件</source>
         <translation>No Subtitle Files</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1186"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1189"/>
         <source>读取失败</source>
         <translation>Failed to read subtitle file</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1186"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1189"/>
         <source>读取字幕文件失败 
 检查日志文件可能会获取更多信息</source>
         <translation>Failed to read subtitle file \n check log file to get more information</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1222"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1225"/>
         <source>提取</source>
         <translation>Extraction</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1230"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1233"/>
         <source>音频重采样</source>
         <translation>Resample Audio</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1232"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1327"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1235"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1330"/>
         <source>音轨分离</source>
         <translation>Tracks Separation</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1234"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1237"/>
         <source>保存音频文件</source>
         <translation>Save To Audio Files</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1236"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1239"/>
         <source>加载模型...</source>
         <translation>Load Model ...</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1241"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1244"/>
         <source>下载模型...</source>
         <translation>Download Model ...</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1251"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1254"/>
         <source>分离完成</source>
         <translation>Separation Over</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1252"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1256"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1327"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1255"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1259"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1330"/>
         <source>Demucs</source>
         <translation>Demucs</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1252"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1255"/>
         <source>音轨分离成功</source>
         <translation>Separation Succeed</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1256"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1259"/>
         <source>分离失败</source>
         <translation>Separation Failed</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1273"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1276"/>
         <source>确定取消？</source>
         <translation>Cancel?</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1285"/>
         <location filename="faster_whisper_gui/mainWindows.py" line="1288"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1291"/>
         <source>正在取消操作</source>
         <translation>Cancaling</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1291"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1294"/>
         <source>用户取消操作</source>
         <translation>The user cancels the operation</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1300"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1303"/>
         <source>文件错误</source>
         <translation>File Error</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1300"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1303"/>
         <source>没有选择有效的音视频文件</source>
         <translation>No valid audio and video file is selected</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1359"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1397"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1362"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1400"/>
         <source>卸载模型失败</source>
         <translation>failed to unload model</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1359"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1362"/>
         <source>未加载模型</source>
         <translation>model is not loaded</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1366"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1369"/>
         <source>模型正在使用</source>
         <translation>model is running</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1366"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1369"/>
         <source>语音识别正在运行</source>
         <translation>ASR is running</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1373"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1376"/>
         <source>警告</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1373"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1376"/>
         <source>温度不为 &quot;0&quot; 且已运行过转写，
 温度回退配置可能会生效，
 从内存中卸载模型可能导致软件崩溃！</source>
@@ -916,117 +965,117 @@ fallback configuration may take effect,
 that may take crash when unload model from memory!</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1374"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1377"/>
         <source>继续</source>
         <translation>Continue</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1391"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1394"/>
         <source>卸载模型成功</source>
         <translation>Unload the model successfully</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1397"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1400"/>
         <source>卸载模型失败，请在转写之前禁用温度回退配置</source>
         <translation>Failed to uninstall model, disable temperature fallback configuration before transcribing</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1407"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1410"/>
         <source>转写结果为空</source>
         <translation>empty result</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1407"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1410"/>
         <source>没有有效的转写结果</source>
         <translation>no subtitle result</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1420"/>
         <location filename="faster_whisper_gui/mainWindows.py" line="1423"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1427"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1426"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1430"/>
         <source>分割音频</source>
         <translation>Split Audio</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1420"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1423"/>
         <source>处理文件：</source>
         <translation>current task:</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1423"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1426"/>
         <source>按说话人分割音频文件</source>
         <translation>split audio file with speakers and timestamples</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1427"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1428"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1430"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1431"/>
         <source>按说话人分割音频文件完成</source>
         <translation>split audio over</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1428"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1431"/>
         <source>分割音频完成</source>
         <translation>split audio successed</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1454"/>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1470"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1457"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1473"/>
         <source>忽略文件</source>
         <translation>ignore files</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1478"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1481"/>
         <source>选择保存位置</source>
         <translation>choose folder to save</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1488"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1491"/>
         <source>备份配置文件成功</source>
         <translation>backup config file over</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1488"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1491"/>
         <source>配置文件已备份到:
 </source>
         <translation>backup config file to:
 </translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1494"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1497"/>
         <source>选择配置文件</source>
         <translation>choose config file</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1506"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1509"/>
         <source>加载配置文件成功</source>
         <translation>load config file over</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1506"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1509"/>
         <source>配置文件已加载:
 </source>
         <translation>config file loaded:
 </translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1509"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1512"/>
         <source>加载配置文件失败</source>
         <translation>failed to load config file</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1509"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1512"/>
         <source>配置文件加载失败:
 </source>
         <translation>failed to load file:
 </translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1580"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1582"/>
         <source>退出</source>
         <translation>Quit</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/mainWindows.py" line="1580"/>
+        <location filename="faster_whisper_gui/mainWindows.py" line="1582"/>
         <source>是否要退出程序？</source>
         <translation>DoYou want to Quit？</translation>
     </message>
@@ -1235,12 +1284,12 @@ It&apos;s a force item for load model,but a Optional item for convert model.</tr
 <context>
     <name>NavigationBaseInterface</name>
     <message>
-        <location filename="faster_whisper_gui/navigationInterface.py" line="201"/>
+        <location filename="faster_whisper_gui/navigationInterface.py" line="199"/>
         <source>模型已加载!</source>
         <translation>Model Loaded!</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/navigationInterface.py" line="204"/>
+        <location filename="faster_whisper_gui/navigationInterface.py" line="202"/>
         <source>模型未加载!</source>
         <translation>Model Not Loaded!</translation>
     </message>
@@ -1271,13 +1320,13 @@ It&apos;s a force item for load model,but a Optional item for convert model.</tr
 <context>
     <name>OutputPageNavigationInterface</name>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="25"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="27"/>
         <source>WhisperX And Subtitle Edit</source>
         <oldsource>WhisperX And Output</oldsource>
         <translation>WhisperX And Subtitle Edit</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="26"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="28"/>
         <source>whisperX后处理、字幕编辑、输出保存</source>
         <oldsource>whisperX后处理及字幕文件输出</oldsource>
         <translation>WhisperX post-processing and subtitle edit</translation>
@@ -1299,102 +1348,102 @@ It&apos;s a force item for load model,but a Optional item for convert model.</tr
         <translation type="vanished">Select output dir</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="67"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="69"/>
         <source>WhisperX 时间戳对齐</source>
         <translation>WhisperX engine Timestamp alignment</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="68"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="70"/>
         <source>wav2vec2 模型进行音素分析，并进行字幕时间戳对齐，该功能需要有对应的语言的模型支持。</source>
         <translation>The wav2vec2 model carries on the phoneme analysis and the subtitle timestamp alignment, which needs to be supported by the corresponding language model.</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="71"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="73"/>
         <source>WhisperX 说话人分离</source>
         <translation>WhisperX engine Speaker Diarize</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="72"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="74"/>
         <source>speachBrain 模型声纹聚类分析，将不同语音段的不同说话人进行分离</source>
         <translation>SpeachBrain model voiceprint cluster analysis to separate different speakers in different speech segments</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="75"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="77"/>
         <source>输出音频分段</source>
         <translation>Split Audio</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="76"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="78"/>
         <source>将音频按照说话人和时间戳进行分段处理，并输出</source>
         <translation>split audio with speakers and timestamples, and save</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="85"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="87"/>
         <source>保存字幕文件</source>
         <translation>Save To Files</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="86"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="88"/>
         <source>保存结果到字幕文件</source>
         <translation>Save result to files</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="92"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="94"/>
         <source>卸载 Whisper 模型</source>
         <translation>Unload Whisper Model</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="93"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="95"/>
         <source>卸载当前使用的 Whisper 模型</source>
         <translation>Unload current whispe rmodel</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="108"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="110"/>
         <source>最少声源数</source>
         <translation>min speaker</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="110"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="112"/>
         <source>音频中需分出来的最少的说话人的人数</source>
         <translation>min-num speakers to diarize</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="112"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="114"/>
         <source>最大声源数</source>
         <translation>mac speaker</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="114"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="116"/>
         <source>音频中需分出来的最多的说话人的人数</source>
         <translation>max-num speakers to diarize</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="116"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="118"/>
         <source>whisperX 参数控制</source>
         <translation>whisperX control</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="132"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="134"/>
         <source>输出参数控制</source>
         <translation>output param control</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="134"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="136"/>
         <source>输出文件格式</source>
         <translation>Output Format</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="136"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="138"/>
         <source>输出字幕文件的格式</source>
         <translation>format of output subtitles</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="140"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="142"/>
         <source>输出文件编码</source>
         <translation>Output files encoding</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="142"/>
+        <location filename="faster_whisper_gui/outputPageNavigationInterface.py" line="144"/>
         <source>输出文件的编码</source>
         <translation>The encoding of output files</translation>
     </message>
@@ -1523,27 +1572,27 @@ It&apos;s a force item for load model,but a Optional item for convert model.</tr
         <translation>Interface Language, Restart takes effect after modification</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="128"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="127"/>
         <source>切换预置主题色</source>
         <translation>Preset theme color</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="135"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="132"/>
         <source>主题色</source>
         <translation>Theme Color</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="135"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="132"/>
         <source>主题配色</source>
         <translation>Change theme Color</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="149"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="146"/>
         <source>HuggingFace用户令牌</source>
         <translation>Hugging Face User Token</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="150"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="147"/>
         <source>访问声源分析、分离模型需要提供经过许可的 HuggingFace 用户令牌。
 如果默认令牌失效可以尝试自行注册账号并生成、刷新令牌</source>
         <translation>To access the sound source analysis and separation model, 
@@ -1551,90 +1600,90 @@ a licensed HuggingFace user token is required. If the default token is invalid,
 you can try to register your account and generate and refresh the token</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="160"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="157"/>
         <source>总是</source>
         <translation>Always</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="160"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="157"/>
         <source>从不</source>
         <translation>Never</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="160"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="157"/>
         <source>询问</source>
         <translation>Ask me</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="163"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="160"/>
         <source>转写结束后自动跳转</source>
         <translation>Automatically jump to the output page after rewriting</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="163"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="160"/>
         <source>转写结束后是否自动跳转到输出页, 目前怀疑自动跳转功能和窗体崩溃有关</source>
         <translation>Whether to automatically jump to the output page after rewriting is finished. 
 It is suspected that the automatic jump function is related to the crash of the form</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="167"/>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="176"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="164"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="173"/>
         <source>清除</source>
         <translation>Clear</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="168"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="165"/>
         <source>不清除</source>
         <translation>Not Clear</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="170"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="167"/>
         <source>自动清除临时文件</source>
         <translation>Automatically clear temporary files</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="170"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="167"/>
         <source>程序退出时是否自动清除临时文件</source>
         <translation>Automatically clear temporary files when the program exits</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="178"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="175"/>
         <source>打开目录</source>
         <translation>Open temp folder</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="180"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="177"/>
         <source>临时文件</source>
         <translation>Temp Files</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="180"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="177"/>
         <source>转写完成后, 临时文件将保存在该目录下, 仅保存 srt 格式文件</source>
         <translation>After transcribing, temporary files will be saved in this directory, only srt files will be saved</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="186"/>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="192"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="183"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="189"/>
         <source>打开</source>
         <translation>Open</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="187"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="184"/>
         <source>日志文件</source>
         <translation>Log</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="187"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="184"/>
         <source>程序运行的日志将保存到该文件中</source>
         <translation>The log of the program running will be saved to this file</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="193"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="190"/>
         <source>faster-whisper 日志文件</source>
         <translation>faster-whisper Log</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/settingPageNavigation.py" line="193"/>
+        <location filename="faster_whisper_gui/settingPageNavigation.py" line="190"/>
         <source>faster-whisper 转写的日志将保存到该文件中，
 转写过程中如果发生崩溃请参看</source>
         <translation>The log transferred by faster-whisper will be saved to this file
@@ -1674,27 +1723,27 @@ If a crash occurs during the transfer process, please see</translation>
 <context>
     <name>TabInterface</name>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="103"/>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="120"/>
         <source>标签移动</source>
         <translation>isTabScrollAble</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="104"/>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="121"/>
         <source>标签滚动</source>
         <translation>isTabMoveable</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="105"/>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="122"/>
         <source>标签阴影</source>
         <translation>isTabShadowEnble</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="106"/>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="123"/>
         <source>最大宽度</source>
         <translation>TabMaxWidth</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="108"/>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="125"/>
         <source>关闭按钮显示模式</source>
         <translation>TabCloseButtonDisplayMode</translation>
     </message>
@@ -1715,7 +1764,7 @@ If a crash occurs during the transfer process, please see</translation>
         <translation type="vanished">max-num speakers to diarize</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="111"/>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="128"/>
         <source>表格样式控制</source>
         <translation>TabStyleControl</translation>
     </message>
@@ -1724,17 +1773,17 @@ If a crash occurs during the transfer process, please see</translation>
         <translation type="vanished">whisperX control</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="131"/>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="148"/>
         <source>始终显示</source>
         <translation>Always</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="132"/>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="149"/>
         <source>进入时显示</source>
         <translation>onHover</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/tableViewInterface.py" line="133"/>
+        <location filename="faster_whisper_gui/tableViewInterface.py" line="150"/>
         <source>从不显示</source>
         <translation>Nerver</translation>
     </message>
@@ -1742,12 +1791,12 @@ If a crash occurs during the transfer process, please see</translation>
 <context>
     <name>TableModel</name>
     <message>
-        <location filename="faster_whisper_gui/tableModel_segments_path_info.py" line="67"/>
+        <location filename="faster_whisper_gui/tableModel_segments_path_info.py" line="97"/>
         <source>提示</source>
         <translation>Info</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/tableModel_segments_path_info.py" line="67"/>
+        <location filename="faster_whisper_gui/tableModel_segments_path_info.py" line="97"/>
         <source>是否修改所有相同说话人？</source>
         <translation>Change all same speakers?</translation>
     </message>
@@ -1755,38 +1804,38 @@ If a crash occurs during the transfer process, please see</translation>
 <context>
     <name>ToolBar</name>
     <message>
-        <location filename="faster_whisper_gui/navigationInterface.py" line="77"/>
+        <location filename="faster_whisper_gui/navigationInterface.py" line="75"/>
         <source>软件更新</source>
         <translation>Update</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/navigationInterface.py" line="87"/>
+        <location filename="faster_whisper_gui/navigationInterface.py" line="85"/>
         <source>模型状态：</source>
         <translation>Model Status:</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/navigationInterface.py" line="91"/>
+        <location filename="faster_whisper_gui/navigationInterface.py" line="89"/>
         <source>软件目录</source>
         <translation>Folder</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/navigationInterface.py" line="131"/>
+        <location filename="faster_whisper_gui/navigationInterface.py" line="129"/>
         <source>切换主题</source>
         <translation>Change Theme</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/navigationInterface.py" line="133"/>
-        <location filename="faster_whisper_gui/navigationInterface.py" line="142"/>
+        <location filename="faster_whisper_gui/navigationInterface.py" line="131"/>
+        <location filename="faster_whisper_gui/navigationInterface.py" line="140"/>
         <source>关于</source>
         <translation>About</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/navigationInterface.py" line="134"/>
+        <location filename="faster_whisper_gui/navigationInterface.py" line="132"/>
         <source>打开主目录</source>
         <translation>Open Software Folder</translation>
     </message>
     <message>
-        <location filename="faster_whisper_gui/navigationInterface.py" line="142"/>
+        <location filename="faster_whisper_gui/navigationInterface.py" line="140"/>
         <source>version: {__version__}
 faster-whisper: {__FasterWhisper_version__}
 whisperX: {__WhisperX_version__}

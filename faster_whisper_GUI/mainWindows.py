@@ -656,7 +656,7 @@ class MainWindows(UIMainWin):
                     # time.sleep(0.8)
                     self.stackedWidget.setCurrentWidget(self.page_output)
             
-            time.sleep(0.8)
+            # time.sleep(0.8)
             self.showResultInTable(self.result_faster_whisper)
             self.current_result = self.result_faster_whisper
             
@@ -1170,7 +1170,7 @@ class MainWindows(UIMainWin):
             # print(ext_)
             
             if file_subtitle_fileName and os.path.isfile(file_subtitle_fileName):
-                print(f"get srt file: {file_subtitle_fileName}")
+                print(f"get subtitle file: {file_subtitle_fileName}")
             else:
                 messageBoxDia_ = MessageBox(self.__tr("没有字幕文件"),self.__tr("必须要有有效的字幕文件"),self)
                 messageBoxDia_.show()
@@ -1217,10 +1217,8 @@ class MainWindows(UIMainWin):
                 self.current_result = [(segments, file, info)]
             # self.tableModel_list[file] = file_subtitle_fileName
             
-            self.createResultInTable(self.current_result)
-                
-            # self.showResultInTable(self.current_result)
-
+            self.showResultInTable(self.current_result)
+            
     def reSetButton_demucs_process(self):
         self.page_demucs.process_button.setText(self.__tr("提取"))
         self.page_demucs.process_button.setIcon( FluentIcon.IOT)

@@ -3,7 +3,7 @@
     "demucs": {
         "overlap": 0.1,
         "segment": 7.8,
-        "tracks": 0
+        "tracks": 5
     },
     "model_param": {
         "localModel": true,
