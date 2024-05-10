@@ -284,10 +284,10 @@ class DemucsWorker(QThread):
             stream_ = next(s for s in av_file.streams if s.codec_context.type == 'audio')
             audio_channel_num = stream_.channels
             if audio_channel_num < 2:
-                print("单声道音频")
+                print("single-channel audio")
                 split_setore = False
             else:
-                print("双声道音频")
+                print("multi-channel audio")
 
         print("resample audio data")
         samples = decode_audio(file_path, sample_rate, split_setore)
