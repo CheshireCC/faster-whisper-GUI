@@ -29,7 +29,12 @@ from .config import (
                 )
 
 from .seg_ment import segment_Transcribe
-from .util import secondsToHMS, secondsToMS
+from .util import (
+                    secondsToHMS, 
+                    secondsToMS, 
+                    WhisperParameters
+                )
+
 from .config import ENCODING_DICT, Task_list
 
 
@@ -195,7 +200,7 @@ class TranscribeWorker(QThread):
     def __init__(self
                 ,parent=None
                 ,model : WhisperModel = None
-                ,parameters : dict = None
+                ,parameters : WhisperParameters = None
                 ,vad_filter : bool = False
                 ,vad_parameters : dict = None
                 ,num_workers : int = 1
@@ -250,6 +255,13 @@ class TranscribeWorker(QThread):
                                                 word_timestamps=self.parameters["word_timestamps"],
                                                 prepend_punctuations=self.parameters["prepend_punctuations"],
                                                 append_punctuations=self.parameters["append_punctuations"],
+                                                max_new_tokens=self.parameters["max_new_tokens"],
+                                                chunk_length=self.parameters["chunk_length"],
+                                                clip_timestamps=self.parameters["clip_timestamps"],
+                                                hallucination_silence_threshold=self.parameters["hallucination_silence_threshold"],
+                                                hotwords = self.parameters["hotwords"],
+                                                language_detection_threshold = self.parameters["language_detection_threshold"],
+                                                language_detection_segments = self.parameters["language_detection_segments"],
                                                 vad_filter=self.vad_filter,
                                                 vad_parameters=self.vad_parameters
                                             )

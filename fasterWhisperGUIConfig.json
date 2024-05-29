@@ -16,12 +16,12 @@
         "preciese": 4,
         "thread_num": "4",
         "num_worker": "1",
-        "download_root": "",
+        "download_root": "C:/Users/12059/.cache/huggingface/hub",
         "local_files_only": false
     },
     "vad_param": {
         "use_VAD": true,
-        "threshold": 0.49999999999999994,
+        "threshold": 0.5,
         "minSpeechDuration": "250",
         "minSilenceDuration": "2000",
         "maxSpeechDuration": "inf",
@@ -61,7 +61,15 @@
         "append_punctuations": "\"'.。,，!！?？:：”)]}、",
         "repetition_penalty": "1.0",
         "no_repeat_ngram_size": "0",
-        "prompt_reset_on_temperature": "0.5"
+        "prompt_reset_on_temperature": "0.5",
+        "chunk_length": "30",
+        "clip_mode": 1,
+        "max_new_tokens": "448",
+        "clip_timestamps": "",
+        "hallucination_silence_threshold": "0",
+        "hotwords": "",
+        "language_detection_threshold": "",
+        "language_detection_segments": "1"
     },
     "output_whisperX": {
         "tabMovable": true,

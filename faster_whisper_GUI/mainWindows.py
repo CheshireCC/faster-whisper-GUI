@@ -59,7 +59,12 @@ from .de_mucs import DemucsWorker
 # from .style_sheet import StyleSheet
 from .subtitleFileRead import readSRTFileToSegments, readJSONFileToSegments
 from .config import ENCODING_DICT
-from .util import outputWithDateTime
+from .util import (
+                    outputWithDateTime,
+                    HMSToSeconds,
+                    MSToSeconds,
+                    WhisperParameters
+                )
 from .split_audio import SplitAudioFileWithSpeakersWorker
 
 import opencc
@@ -662,7 +667,8 @@ class MainWindows(UIMainWin):
             
             
     def getParamTranscribe(self) -> dict:
-        Transcribe_params = {}
+
+        Transcribe_params = WhisperParameters()
 
         # audio = self.page_process.LineEdit_audio_fileName.text().strip()
         # audio = audio.split(";;") if audio != "" else []
@@ -771,9 +777,76 @@ class MainWindows(UIMainWin):
         prompt_reset_on_temperature = float(prompt_reset_on_temperature)
         Transcribe_params['prompt_reset_on_temperature']  = prompt_reset_on_temperature 
 
+        max_new_tokens = self.page_transcribes.LineEdit_max_new_tokens.text().strip()
+        if max_new_tokens != "":
+            if max_new_tokens.isdigit():
+                max_new_tokens = int(max_new_tokens)
+                if max_new_tokens == 448:
+                    max_new_tokens = None
+            else:
+                max_new_tokens = None
+        else :
+            max_new_tokens = None
+        Transcribe_params["max_new_tokens"] = max_new_tokens
+
+        chunk_length = self.page_transcribes.LineEdit_chunk_length.text().strip()
+        if chunk_length != "":
+            if chunk_length.isdigit():
+                chunk_length = float(chunk_length)
+            else:
+                chunk_length = None
+        else :
+            chunk_length = None
+        Transcribe_params["chunk_length"] = chunk_length
+
+        clip_mode = self.page_transcribes.ComboBox_clip_mode.currentIndex()
+        Transcribe_params["clip_mode"] = clip_mode
+
+        clip_timestamps = self.page_transcribes.LineEdit_clip_timestamps.text().strip()
+        clip_timestamps = self.getClipTimestamps(clip_mode, clip_timestamps)
+        Transcribe_params["clip_timestamps"] = clip_timestamps
+
+        hallucination_silence_threshold = self.page_transcribes.lineEdit_hallucination_silence_threshold.text().strip()
+        Transcribe_params["hallucination_silence_threshold"] = float(hallucination_silence_threshold)
+
+        hotwords = self.page_transcribes.LineEdit_hotwords.text().strip()
+        Transcribe_params["hotwords"] = hotwords
+
+        language_detaction_th = self.page_transcribes.LineEdit_language_detection_threshold.text().strip()
+        Transcribe_params["language_detection_th"] = float(language_detaction_th)
+
+        language_detaction_segments = self.page_transcribes.lienEdit_language_detection_segments.text().strip()
+        Transcribe_params["language_detaction_segments"] = int(language_detaction_segments)
+
         return Transcribe_params
 
+    def getClipTimestamps(self, clip_mode:int, clip_timestamps:str):
+        if clip_timestamps == "0":
+            return clip_timestamps
         
+        if clip_mode == 0:
+            clip_timestamps_ = "0"
+        elif clip_mode == 1:
+            clip_timestamps_ = []
+            clip_timestamps = clip_timestamps.split(";")
+            for item in clip_timestamps:
+                items = item.split("-")
+                for item in items:
+                    clip_timestamps_.append(item)
+            
+        elif clip_mode == 2:
+            clip_timestamps_ = []
+            clip_timestamps = clip_timestamps.split(";")
+            for item in clip_timestamps:
+                items = item.split("-")
+                for item in items:
+                    if len(item.split(":")) == 2:
+                        clip_timestamps_.append(float(MSToSeconds(item)))
+                    elif len(item.split(":")) == 3:
+                        clip_timestamps_.append(float(HMSToSeconds(item)))
+
+        return clip_timestamps_
+    
     def getVADparam(self) -> dict:
         """
         get param of VAD

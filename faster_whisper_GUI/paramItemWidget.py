@@ -62,5 +62,5 @@ class ParamWidget(QWidget):
         self.titleVLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
         self.widgetVLayout.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
 
-        self.mainHLayout.setStretch(0,8)
+        # self.mainHLayout.setStretch(0,8)
         self.mainHLayout.setStretch(1,1)

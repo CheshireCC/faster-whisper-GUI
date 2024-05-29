@@ -16,6 +16,7 @@ from qfluentwidgets import (
                             , InfoBarPosition
                             , TitleLabel
                             , SwitchButton
+                            , ComboBox
                         )
 
 from .config import Language_dict
@@ -24,7 +25,7 @@ from .navigationInterface import NavigationBaseInterface
 # import datetime
 import json
 
-from .util import outputWithDateTime
+from .util import outputWithDateTime, WhisperParameters
 from .style_sheet import StyleSheet
 
 from .paramItemWidget import ParamWidget
@@ -95,10 +96,23 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
 
         else:
             return
-        
+    
+    def setClipTimestampsStatus(self):
+        if self.ComboBox_clip_mode.currentIndex() == 0:
+            self.LineEdit_clip_timestamps.setPlaceholderText("")
+            self.LineEdit_clip_timestamps.setEnabled(False)
+        elif self.ComboBox_clip_mode.currentIndex() == 1:
+            self.LineEdit_clip_timestamps.setPlaceholderText("0.0-10.0;25.0-36.0;......")
+            self.LineEdit_clip_timestamps.setEnabled(True)
+        elif self.ComboBox_clip_mode.currentIndex() == 2:
+            self.LineEdit_clip_timestamps.setPlaceholderText("00:00:10.0-00:00:20.0;00:00:25.0-00:00:36.0;......")
+            self.LineEdit_clip_timestamps.setEnabled(True)
+            
     def SignalAndSlotConnect(self):
         self.saveParamButton.clicked.connect(self.saveParams)
         self.loadParamsButton.clicked.connect(self.loadParamsFromFile)
+        self.ComboBox_clip_mode.currentIndexChanged.connect(self.setClipTimestampsStatus)
+        # self.ComboBox_language.currentIndexChanged.connect(lambda:self.deta)
 
     def setupUI(self):
         # 使用网格布局存放参数列表
@@ -133,6 +147,25 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         
         widget_list.append(self.language_param_widget)
         
+        # --------------------------------------------------------------------------------------------
+        self.LineEdit_language_detection_threshold = LineEdit()
+        self.language_detection_threshold_param_widget = ParamWidget(
+                                                                        self.__tr("语言检测阈值"),
+                                                                        self.__tr("自动检测音频时，语言检测的阈值。如果某种语言的最大概率高于此值，则会检测为该语言。"),
+                                                                        self.LineEdit_language_detection_threshold
+                                                                    )    
+        widget_list.append(self.language_detection_threshold_param_widget)
+
+        # --------------------------------------------------------------------------------------------
+        self.lienEdit_language_detection_segments:LineEdit =  LineEdit()
+        self.lienEdit_language_detection_segments.setText("1")
+        self.language_detection_segments_param_widget = ParamWidget(
+                                                                        self.__tr("语言检测段落数"),
+                                                                        self.__tr("自动检测音频时，语言检测需考虑的分段数。"),
+                                                                        self.lienEdit_language_detection_segments
+                                                                    )
+        widget_list.append(self.language_detection_segments_param_widget)
+
         # --------------------------------------------------------------------------------------------
     
         self.switchButton_Translate_to_English = SwitchButton()
@@ -176,8 +209,69 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         widget_list.append(self.aggregate_contents_param_widget)
 
         # =======================================================================================================
+        self.titleLabel_audio_segments = TitleLabel(self.__tr("音频分段设置"))
+        widget_list.append(self.titleLabel_audio_segments)
+
+        # --------------------------------------------------------------------------------------------
+        self.LineEdit_max_new_tokens:LineEdit = LineEdit()
+        self.LineEdit_max_new_tokens.setText("448")
+        self.max_new_tokens_param_widget = ParamWidget(self.__tr("最大新令牌数"),
+                                                    self.__tr("Whisper 为每个音频块生成的新令牌的最大数量。"),
+                                                    self.LineEdit_max_new_tokens
+                                                )
+        
+        widget_list.append(self.max_new_tokens_param_widget)
+
+        # --------------------------------------------------------------------------------------------
+        self.LineEdit_chunk_length:LineEdit = LineEdit()
+        self.LineEdit_chunk_length.setText("30")
+        self.chunk_length_param_widget = ParamWidget(self.__tr("音频块长度"),
+                                                    self.__tr("音频段的长度，默认为 30 秒"),
+                                                    self.LineEdit_chunk_length
+                                                )
+        
+        widget_list.append(self.chunk_length_param_widget)
+
+        # --------------------------------------------------------------------------------------------
+        
+        self.ComboBox_clip_mode:ComboBox = ComboBox()
+
+        self.ComboBox_clip_mode.addItems([self.__tr("不启用手动分段"),self.__tr("按秒分割"),self.__tr("按时间按戳分割")])
+        self.ComboBox_clip_mode.setCurrentIndex(0)
+        self.clip_mode_param_widget = ParamWidget(self.__tr("音频分段模式"),
+                                                    self.__tr("手动输入音频分段时要使用的分段标记方式,启用的情况下可以输入分段起止时间戳、秒为单位的分段起止点。"),
+                                                    self.ComboBox_clip_mode
+                                                )
+        
+        widget_list.append(self.clip_mode_param_widget)
+
+        # --------------------------------------------------------------------------------------------
+        
+        self.LineEdit_clip_timestamps:LineEdit = LineEdit()
+        self.LineEdit_clip_timestamps.setClearButtonEnabled(True)
+        self.LineEdit_clip_timestamps.setEnabled(False)
+        self.clip_timestamps_param_widget = ParamWidget(
+                                                            self.__tr("分段时间戳"),
+                                                            self.__tr("手动输入音频分段，可输入分段时间戳，或者分段的起止秒数点，\n用\"-\"分隔起止点，用\";\"分隔不同段，最后一个结束时间戳默认为音频结尾。"),
+                                                            self.LineEdit_clip_timestamps
+                                                        )
+        
+        self.clip_timestamps_param_widget.mainHLayout.setStretch(2,6)
+        widget_list.append(self.clip_timestamps_param_widget)
+
+        # =======================================================================================================
         self.titleLabel_auditory_hallucination = TitleLabel(self.__tr("幻听参数"))
         widget_list.append(self.titleLabel_auditory_hallucination)
+
+        # --------------------------------------------------------------------------------------------
+        
+        self.lineEdit_hallucination_silence_threshold:LineEdit = LineEdit()
+        self.lineEdit_hallucination_silence_threshold.setText("0")
+        self.hallucination_silence_threshold_param_widget = ParamWidget(self.__tr("幻听静音阈值"),
+                                                    self.__tr("如果开启 单词级时间戳 ，当检测到可能的幻觉时，跳过长于此阈值（以秒为单位）的静默期。"),
+                                                    self.lineEdit_hallucination_silence_threshold                           
+        )
+        widget_list.append(self.hallucination_silence_threshold_param_widget)
 
         # --------------------------------------------------------------------------------------------
         
@@ -354,6 +448,16 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
                                         )
         
         widget_list.append(self.prefix_param_widget)
+
+        # --------------------------------------------------------------------------------------------
+        self.LineEdit_hotwords:LineEdit = LineEdit()
+        self.LineEdit_hotwords.setText("")
+        self.hotwords_param_widget = ParamWidget(
+                                                    self.__tr("热词/提示短语"), 
+                                                    self.__tr("为模型提供的热词/提示短语。如果给定了 初始文本前缀 则热词无效。"),
+                                                    self.LineEdit_hotwords
+                                                )
+        widget_list.append(self.hotwords_param_widget)
 
         # --------------------------------------------------------------------------------------------
         self.LineEdit_suppress_tokens = LineEdit()
@@ -552,9 +656,20 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         self.LineEdit_prompt_reset_on_temperature.setText(str(Transcribe_params['prompt_reset_on_temperature']  ))
         # Transcribe_params['prompt_reset_on_temperature']  = prompt_reset_on_temperature 
 
+        try:
+            self.LineEdit_chunk_length.setText(Transcribe_params["chunk_length"])
+            self.ComboBox_clip_mode.setCurrentIndex(Transcribe_params["clip_mode"])
+            self.LineEdit_max_new_tokens.setText(Transcribe_params["max_new_tokens"])
+            self.LineEdit_clip_timestamps.setText(Transcribe_params["clip_timestamps"])
+            self.lineEdit_hallucination_silence_threshold.setText(Transcribe_params["hallucination_silence_threshold"])
+            self.LineEdit_hotwords.setText(Transcribe_params["hotwords"])
+            self.LineEdit_language_detection_threshold.setText(Transcribe_params["language_detection_threshold"])
+            self.language_detection_segments_param_widget.setText(Transcribe_params["language_detection_segments"])
+        except:
+            pass
 
     def getParam(self) -> dict:
-        Transcribe_params = {}
+        Transcribe_params = WhisperParameters()
 
         # 从数据模型获取文件列表
 
@@ -650,6 +765,16 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         prompt_reset_on_temperature  = self.LineEdit_prompt_reset_on_temperature.text().strip()
         # prompt_reset_on_temperature = float(prompt_reset_on_temperature)
         Transcribe_params['prompt_reset_on_temperature']  = prompt_reset_on_temperature 
+
+        Transcribe_params["chunk_length"] = self.LineEdit_chunk_length.text().strip()
+        Transcribe_params["clip_mode"] = self.ComboBox_clip_mode.currentIndex()
+        Transcribe_params["max_new_tokens"] = self.LineEdit_max_new_tokens.text().strip()
+        Transcribe_params["clip_timestamps"] = self.LineEdit_clip_timestamps.text().strip()
+        Transcribe_params["hallucination_silence_threshold"] = self.lineEdit_hallucination_silence_threshold.text().strip()
+        Transcribe_params["hotwords"] = self.LineEdit_hotwords.text().strip()
+        Transcribe_params["language_detection_threshold"] = self.LineEdit_language_detection_threshold.text().strip()
+        Transcribe_params["language_detection_segments"] = self.lienEdit_language_detection_segments.text().strip()
+
 
         return Transcribe_params
     
