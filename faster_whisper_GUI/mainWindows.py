@@ -59,12 +59,15 @@ from .de_mucs import DemucsWorker
 # from .style_sheet import StyleSheet
 from .subtitleFileRead import readSRTFileToSegments, readJSONFileToSegments
 from .config import ENCODING_DICT
+
 from .util import (
                     outputWithDateTime,
                     HMSToSeconds,
                     MSToSeconds,
-                    WhisperParameters
+                    WhisperParameters,
+                    VADParameters
                 )
+
 from .split_audio import SplitAudioFileWithSpeakersWorker
 
 import opencc
@@ -813,10 +816,10 @@ class MainWindows(UIMainWin):
         Transcribe_params["hotwords"] = hotwords
 
         language_detaction_th = self.page_transcribes.LineEdit_language_detection_threshold.text().strip()
-        Transcribe_params["language_detection_th"] = float(language_detaction_th)
+        Transcribe_params["language_detection_threshold"] = float(language_detaction_th) if language_detaction_th != "" else None
 
         language_detaction_segments = self.page_transcribes.lienEdit_language_detection_segments.text().strip()
-        Transcribe_params["language_detaction_segments"] = int(language_detaction_segments)
+        Transcribe_params["language_detection_segments"] = int(language_detaction_segments) if language_detaction_segments != "" else None
 
         return Transcribe_params
 
@@ -866,7 +869,7 @@ class MainWindows(UIMainWin):
         window_size_samples = int(self.page_VAD.combox_VAD_param_window_size_samples.currentText())
         speech_pad_ms = int(self.page_VAD.LineEdit_VAD_param_speech_pad_ms.text().replace(" ", ""))
 
-        VAD_param["param"] = {}
+        VAD_param["param"] = VADParameters()
         VAD_param["param"]["threshold"] = threshold
         VAD_param["param"]["min_speech_duration_ms"] = min_speech_duration_ms
         VAD_param["param"]["max_speech_duration_s"] = max_speech_duration_s

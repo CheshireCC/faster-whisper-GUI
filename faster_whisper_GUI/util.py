@@ -4,6 +4,14 @@ import datetime
 
 from typing import List, TypedDict, Union
 
+class VADParameters(TypedDict):
+    threshold:float = 0.5
+    min_speech_duration_ms:float = 250
+    max_speech_duration_s:float = float("inf")
+    min_silence_duration_ms:float = 2000
+    window_size_samples:int = 1024
+    speech_pad_ms:float = 400
+
 class WhisperParameters(TypedDict):
     language:str = ""
     task:str = "transcribe"
@@ -27,7 +35,7 @@ class WhisperParameters(TypedDict):
     max_initial_timestamp:float = 0.0
     word_timestamps:bool = False
     prepend_punctuations:str = ""
-    append_punctuations: str = ""
+    append_punctuations:str = ""
     max_new_tokens:int = None
     chunk_length:int = None
     clip_mode:int = 0
@@ -51,7 +59,7 @@ def secondsToHMS(t) -> str:
     
     H = int(t_f // 3600)
     M = int((t_f - H * 3600) // 60)
-    S = (t_f - H *3600 - M *60)
+    S = (t_f - H * 3600 - M * 60)
     
     H = str(H)
 
