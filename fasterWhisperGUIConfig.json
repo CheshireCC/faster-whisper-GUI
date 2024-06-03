@@ -21,7 +21,7 @@
     },
     "vad_param": {
         "use_VAD": true,
-        "threshold": 0.30000000000000004,
+        "threshold": 0.5,
         "minSpeechDuration": "250",
         "minSilenceDuration": "2000",
         "maxSpeechDuration": "inf",
@@ -35,11 +35,11 @@
         "huggingface_user_token": "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",
         "autoGoToOutputPage": 0,
         "autoClearTempFiles": true,
-        "themeColor": "#ff009f"
+        "themeColor": "#152cff"
     },
     "Transcription_param": {
         "aggregate_contents": true,
-        "language": 3,
+        "language": 2,
         "task": false,
         "beam_size": "5",
         "best_of": "5",
@@ -67,7 +67,7 @@
         "max_new_tokens": "448",
         "clip_timestamps": "",
         "hallucination_silence_threshold": "0.5",
-        "hotwords": "这个音频是关于酒窝的",
+        "hotwords": "",
         "language_detection_threshold": "",
         "language_detection_segments": "1"
     },

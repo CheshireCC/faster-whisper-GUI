@@ -98,6 +98,3 @@ class OutputGroupWidget(QWidget):
         self.LineEdit_output_dir.setText(dir_)
 
 
-
-
-        

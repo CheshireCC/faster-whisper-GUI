@@ -25,7 +25,7 @@ class OutputPageNavigationInterface(NavigationBaseInterface):
     def __init__(self, parent=None):
         super().__init__(
                             title=self.tr("WhisperX And Subtitle Edit"),
-                            subtitle=self.tr("whisperX后处理、字幕编辑、输出保存"),
+                            subtitle=self.tr("whisperX 后处理、字幕编辑、输出保存"),
                             parent=parent
                         )
         self.setupUI()
@@ -106,7 +106,6 @@ class OutputPageNavigationInterface(NavigationBaseInterface):
         self.tableTab.setFixedHeight(735)
 
         # =============================================================================================
-
         self.Label_min_speaker = BodyLabel(self.tr("最少声源数"))
         self.SpinBox_min_speaker = SpinBox()
         self.SpinBox_min_speaker.setToolTip(self.tr("音频中需分出来的最少的说话人的人数"))
@@ -130,7 +129,6 @@ class OutputPageNavigationInterface(NavigationBaseInterface):
         self.tableTab.panelLayout.addWidget(self.SpinBox_max_speaker)
         
         # =====================================================================================
-        
         self.controlLabel_output = StrongBodyLabel(self.tr("输出参数控制"))
 
         self.label_output_format = BodyLabel(self.tr("输出文件格式"))
@@ -156,4 +154,6 @@ class OutputPageNavigationInterface(NavigationBaseInterface):
         self.tableTab.panelLayout.addSpacing(4)
         self.tableTab.panelLayout.addWidget(self.label_output_code)
         self.tableTab.panelLayout.addWidget(self.combox_output_code)
+        
+
         

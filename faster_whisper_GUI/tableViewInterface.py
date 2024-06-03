@@ -62,9 +62,20 @@ class CustomTableItemDelegate(TableItemDelegate):
     #         size.setWidth(115)
     #     return size
 
+    # def paint(self, painter, option, index):
+    #     if index.column() in [0,1,2]:
+    #         option.displayAlignment = Qt.AlignCenter
+    #     super().paint(painter, option, index)
+        
     def initStyleOption(self, option: QStyleOptionViewItem, index: QModelIndex):
         super().initStyleOption(option, index)
+
+        # 设置单元格的对齐方式
+        if index.column() in [0,1,2]:
+            option.displayAlignment = Qt.AlignCenter
+
         if index.column() == 1:
+            
             if isDarkTheme():
                 option.palette.setColor(QPalette.Text, Qt.GlobalColor.cyan)
                 option.palette.setColor(QPalette.HighlightedText, Qt.GlobalColor.cyan)
@@ -82,6 +93,7 @@ class CustomTableItemDelegate(TableItemDelegate):
             else:
                 option.palette.setColor(QPalette.Text, Qt.GlobalColor.magenta)
                 option.palette.setColor(QPalette.HighlightedText, Qt.GlobalColor.magenta)
+            
         
     # 设置编辑框的提示内容为原本的内容
     def createEditor(self, parent, option, index):
@@ -97,7 +109,6 @@ class CustomTableItemDelegate(TableItemDelegate):
         text = index.model().data(index, Qt.DisplayRole) or ""
         editor.setText(str(text))
         
-    
 
 class TabInterface(QWidget):
     """ Tab interface """
@@ -253,7 +264,7 @@ class TabInterface(QWidget):
                             icon=icon,
                             onClick=lambda: self.stackedWidget.setCurrentWidget(widget)
                         )
-
+        
         # 设置列宽
         widget.setColumnWidth(0,115)
         widget.setColumnWidth(1,115)
@@ -326,8 +337,8 @@ class CustomTableView(TableView):
             # 显示单行内容菜单
             menu = RoundMenu(self)
 
-            copy_action = QAction(self.__tr("复制"), self)
-            copy_action.setShortcut("Ctrl+C")
+            copy_action = QAction(self.__tr("复制字幕"), self)
+            # copy_action.setShortcut("Ctrl+C")
             menu.addAction(copy_action)
             copy_action.triggered.connect(self.copy_all_content)
 
@@ -354,6 +365,10 @@ class CustomTableView(TableView):
             delay_end_time_action = QAction(self.__tr("延后结束时间戳"), self)
             menu.addAction(delay_end_time_action)
             delay_end_time_action.triggered.connect(self.delay_end_time_action)
+
+            delete_subtitles_line = QAction(self.__tr("删除字幕行"), self)
+            menu.addAction(delete_subtitles_line)
+            delete_subtitles_line.triggered.connect(self.delete_subtitles_line)
             
             if len(rows) > 1:
                 # 显示多行内容菜单
@@ -369,6 +384,18 @@ class CustomTableView(TableView):
                 merge_subtitel_line_action.triggered.connect(self.merge_subtitles)
 
             menu.exec(self.mapToGlobal(position))
+    
+    def delete_subtitles_line(self):
+        indexs = self.selectedIndexes()
+
+        rows = list(set([index.row() for index in indexs]))
+        
+        items = []
+        for i in rows:
+            items.append(self.model()._data[i])
+        for item in items:
+            self.model()._data.remove(item)
+        
     
     def advance_start_time_action(self):
         self.adjust_time_stamp("advance", "start")
@@ -523,7 +550,10 @@ class CustomTableView(TableView):
                 rows.append(index.row())
 
         for row in rows:
-            content += f"{row+1}\n{self.model().index(row, 0).data()} --> {self.model().index(row, 1).data()}\n{self.model().index(row,2)}: {self.model().index(row, 3).data()}\n\n"
+            if self.model().index(row,2).data():
+                content += f"{row+1}\n{self.model().index(row, 0).data()} --> {self.model().index(row, 1).data()}\n{self.model().index(row,2).data()}: {self.model().index(row, 3).data()}\n\n"
+            else:
+                content += f"{row+1}\n{self.model().index(row, 0).data()} --> {self.model().index(row, 1).data()}\n{self.model().index(row, 3).data()}\n\n"
 
         # for column in range(self.model().columnCount()-1):
         #     row_data.append(self.model().index(index.row(), column).data())
@@ -559,7 +589,7 @@ class CustomMessageBox(MessageBoxBase):
         self.value = ""
 
         self.titleLabel = SubtitleLabel(title, self)
-        self.speakerLineEdit = LineEdit(self)
+        self.speakerLineEdit:LineEdit = LineEdit(self)
 
         self.speakerLineEdit.setPlaceholderText(text)
         self.speakerLineEdit.setClearButtonEnabled(True)
@@ -579,6 +609,9 @@ class CustomMessageBox(MessageBoxBase):
         self.yesButton.setDefault(True)
 
         # self.hideYesButton()
+        self.speakerLineEdit.setFocus()
+        
+        
 
     def _validateUrl(self, text:str):
         # print("text:",text)

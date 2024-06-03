@@ -54,49 +54,50 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         StyleSheet.TRANSCRIBEPAGEINTERFACE.apply(self.view)
 
 
-    def saveParams(self):
-        outputWithDateTime("SaveParaments")
+    # def saveParams(self):
+    #     outputWithDateTime("SaveParaments")
 
-        params = self.getParam()
-        for key, value in params.items():
-            print(f"{key}:{value}")
-        print("")
-        file, _ = QFileDialog.getSaveFileName(
-                                                self, 
-                                                self.__tr("选择保存文件"),
-                                                self.paramDir,
-                                                "file(*.pa)"
-                                        )
+    #     params = self.getParam()
+    #     for key, value in params.items():
+    #         print(f"{key}:{value}")
+    #     print("")
+    #     file, _ = QFileDialog.getSaveFileName(
+    #                                             self, 
+    #                                             self.__tr("选择保存文件"),
+    #                                             self.paramDir,
+    #                                             "file(*.pa)"
+    #                                     )
         
-        paraDir, _ = os.path.split(file)
+    #     paraDir, _ = os.path.split(file)
 
-        self.paramDir = paraDir
+    #     self.paramDir = paraDir
 
-        if file:
-            print(f"save params to: {file}")
+    #     if file:
+    #         print(f"save params to: {file}")
 
-            try:
-                with open(file, "w", encoding="utf8") as f:
-                    json.dump(params, f, ensure_ascii=False, indent=4)
+    #         try:
+    #             with open(file, "w", encoding="utf8") as f:
+    #                 json.dump(params, f, ensure_ascii=False, indent=4)
                 
-                InfoBar.success(self.__tr("保存参数"),
-                                self.__tr("保存成功"),
-                                duration=-1,
-                                position=InfoBarPosition.TOP,
-                                parent=self.toolBar
-                            )
-            except Exception as e:
-                print(f"Error In Save Process:\n{str(e)}")
-                InfoBar.error(self.__tr("保存参数"),
-                                self.__tr("保存失败 查看 fasterWhisperGUI.log 可能会获取更多信息"),
-                                duration=-1,
-                                position=InfoBarPosition.TOP,
-                                parent=self.toolBar
-                            )
+    #             InfoBar.success(self.__tr("保存参数"),
+    #                             self.__tr("保存成功"),
+    #                             duration=-1,
+    #                             position=InfoBarPosition.TOP,
+    #                             parent=self.toolBar
+    #                         )
+    #         except Exception as e:
+    #             print(f"Error In Save Process:\n{str(e)}")
+    #             InfoBar.error(self.__tr("保存参数"),
+    #                             self.__tr("保存失败 查看 fasterWhisperGUI.log 可能会获取更多信息"),
+    #                             duration=-1,
+    #                             position=InfoBarPosition.TOP,
+    #                             parent=self.toolBar
+    #                         )
 
-        else:
-            return
-    
+    #     else:
+    #         return
+
+
     def setClipTimestampsStatus(self):
         if self.ComboBox_clip_mode.currentIndex() == 0:
             self.LineEdit_clip_timestamps.setPlaceholderText("")
@@ -109,8 +110,8 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
             self.LineEdit_clip_timestamps.setEnabled(True)
             
     def SignalAndSlotConnect(self):
-        self.saveParamButton.clicked.connect(self.saveParams)
-        self.loadParamsButton.clicked.connect(self.loadParamsFromFile)
+        # self.saveParamButton.clicked.connect(self.saveParams)
+        # self.loadParamsButton.clicked.connect(self.loadParamsFromFile)
         self.ComboBox_clip_mode.currentIndexChanged.connect(self.setClipTimestampsStatus)
         # self.ComboBox_language.currentIndexChanged.connect(lambda:self.deta)
 
@@ -144,7 +145,7 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
                                                 self.__tr("音频中使用的语言。如果选择 Auto，则自动在音频的前30秒内检测语言。也可使用此参数做强制翻译输出，但效果不佳"),
                                                 self.combox_language
                                             )
-        
+        self.language_param_widget.mainHLayout.setStretch(2,3)
         widget_list.append(self.language_param_widget)
         
         # --------------------------------------------------------------------------------------------
@@ -236,7 +237,7 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         
         self.ComboBox_clip_mode:ComboBox = ComboBox()
 
-        self.ComboBox_clip_mode.addItems([self.__tr("不启用手动分段"),self.__tr("按秒分割"),self.__tr("按时间按戳分割")])
+        self.ComboBox_clip_mode.addItems([self.__tr("不启用手动分段"),self.__tr("按秒分割"),self.__tr("按时间戳分割")])
         self.ComboBox_clip_mode.setCurrentIndex(0)
         self.clip_mode_param_widget = ParamWidget(self.__tr("音频分段模式"),
                                                     self.__tr("手动输入音频分段时要使用的分段标记方式,启用的情况下可以输入分段起止时间戳、秒为单位的分段起止点。"),
@@ -452,11 +453,14 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         # --------------------------------------------------------------------------------------------
         self.LineEdit_hotwords:LineEdit = LineEdit()
         self.LineEdit_hotwords.setText("")
+        self.LineEdit_hotwords.setPlaceholderText(self.__tr("这是一个关于xxx的音频文件......"))
         self.hotwords_param_widget = ParamWidget(
                                                     self.__tr("热词/提示短语"), 
                                                     self.__tr("为模型提供的热词/提示短语。如果给定了 初始文本前缀 则热词无效。"),
                                                     self.LineEdit_hotwords
                                                 )
+        
+        self.hotwords_param_widget.mainHLayout.setStretch(2,6)
         widget_list.append(self.hotwords_param_widget)
 
         # --------------------------------------------------------------------------------------------
@@ -513,75 +517,75 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
     
         self.toolBar.buttonLayout.insertSpacing(1,10)
 
-        self.saveParamButton = PushButton()
-        self.saveParamButton.setText(self.__tr("保存参数"))
-        self.saveParamButton.setToolTip(self.__tr("将转写参数保存到文件"))
-        self.toolBar.buttonLayout.insertWidget(2, self.saveParamButton)
+        # self.saveParamButton = PushButton()
+        # self.saveParamButton.setText(self.__tr("保存参数"))
+        # self.saveParamButton.setToolTip(self.__tr("将转写参数保存到文件"))
+        # self.toolBar.buttonLayout.insertWidget(2, self.saveParamButton)
         
-        self.loadParamsButton = PushButton()
-        self.loadParamsButton.setText(self.__tr("载入参数"))
-        self.loadParamsButton.setToolTip(self.__tr("从参数文件中加载以前保存的参数"))
-        self.toolBar.buttonLayout.insertWidget(3, self.loadParamsButton)
+        # self.loadParamsButton = PushButton()
+        # self.loadParamsButton.setText(self.__tr("载入参数"))
+        # self.loadParamsButton.setToolTip(self.__tr("从参数文件中加载以前保存的参数"))
+        # self.toolBar.buttonLayout.insertWidget(3, self.loadParamsButton)
         
+
+    # def loadParamsFromFile(self):
+
+    #     outputWithDateTime("LoadParaments")
+
+    #     file,_ = QFileDialog.getOpenFileName(   self,
+    #                                             self.__tr("选择参数文件"),
+    #                                             self.paramDir,
+    #                                             "file(*.pa)"
+    #                                         )
+
+    #     paraDir, _ = os.path.split(file)
+    #     self.paramDir = paraDir
+
+    #     if not file:
+    #         return
+
+    #     params = None
+    #     try:
+    #         with open(file, "r", encoding="utf8") as f:
+    #             params:dict = json.load(f)
+    #     except Exception as e:
+    #         print(f"read paraments error: \n{str(e)}")
+    #         InfoBar.error(self.__tr("读取参数"),
+    #                             self.__tr("读取失败 查看 fasterWhisperGUI.log 可能会获取更多信息"),
+    #                             duration=-1,
+    #                             position=InfoBarPosition.TOP,
+    #                             parent=self.toolBar
+    #                         )
+    #         params = None
+
+    #     if params is None:
+    #         return
         
-    def loadParamsFromFile(self):
-
-        outputWithDateTime("LoadParaments")
-
-        file,_ = QFileDialog.getOpenFileName(   self,
-                                                self.__tr("选择参数文件"),
-                                                self.paramDir,
-                                                "file(*.pa)"
-                                            )
-
-        paraDir, _ = os.path.split(file)
-        self.paramDir = paraDir
-
-        if not file:
-            return
-
-        params = None
-        try:
-            with open(file, "r", encoding="utf8") as f:
-                params:dict = json.load(f)
-        except Exception as e:
-            print(f"read paraments error: \n{str(e)}")
-            InfoBar.error(self.__tr("读取参数"),
-                                self.__tr("读取失败 查看 fasterWhisperGUI.log 可能会获取更多信息"),
-                                duration=-1,
-                                position=InfoBarPosition.TOP,
-                                parent=self.toolBar
-                            )
-            params = None
-
-        if params is None:
-            return
+    #     for key,value in params.items():
+    #         print(f"{key}:{value}")
         
-        for key,value in params.items():
-            print(f"{key}:{value}")
-        
-        print("")
+    #     print("")
 
-        try:
-            self.setParam(params)
-            print("set paraments over")
-        except Exception as e:
-            print(f"set paraments error: \n{str(e)}")
-            InfoBar.error(self.__tr("设置参数"),
-                                self.__tr("设置失败 查看 fasterWhisperGUI.log 可能会获取更多信息"),
-                                duration=-1,
-                                position=InfoBarPosition.TOP,
-                                parent=self.toolBar
-                            )
-            return
+    #     try:
+    #         self.setParam(params)
+    #         print("set paraments over")
+    #     except Exception as e:
+    #         print(f"set paraments error: \n{str(e)}")
+    #         InfoBar.error(self.__tr("设置参数"),
+    #                             self.__tr("设置失败 查看 fasterWhisperGUI.log 可能会获取更多信息"),
+    #                             duration=-1,
+    #                             position=InfoBarPosition.TOP,
+    #                             parent=self.toolBar
+    #                         )
+    #         return
 
-        InfoBar.success(
-            self.__tr("设置参数"),
-            self.__tr("设置成功"),
-            duration=-1,
-            position=InfoBarPosition.TOP,
-            parent=self.toolBar
-        )
+    #     InfoBar.success(
+    #         self.__tr("设置参数"),
+    #         self.__tr("设置成功"),
+    #         duration=-1,
+    #         position=InfoBarPosition.TOP,
+    #         parent=self.toolBar
+    #     )
 
     def setParam(self, Transcribe_params:dict) -> None:
 
