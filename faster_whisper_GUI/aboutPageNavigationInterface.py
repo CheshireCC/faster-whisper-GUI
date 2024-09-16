@@ -8,6 +8,7 @@ from PySide6.QtWidgets import  (
                                 QGraphicsView, 
                                 QGraphicsScene
                             )
+
 from qfluentwidgets import (
                             DisplayLabel, 
                             ScrollArea, 

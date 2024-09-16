@@ -5,7 +5,7 @@ from PySide6.QtCore import QAbstractTableModel, QCoreApplication, QSize, Qt
 from typing import List
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QApplication
-from faster_whisper import  Word
+from faster_whisper.transcribe import Word
 from qfluentwidgets import MessageBox, isDarkTheme
 
 from .seg_ment import segment_Transcribe

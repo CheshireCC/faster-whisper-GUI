@@ -8,9 +8,9 @@
     "model_param": {
         "localModel": true,
         "onlineModel": false,
-        "model_path": "F:/WhisperModels/faster-whisper/large-v3-float32",
+        "model_path": "F:/WhisperModels/faster-whisper/whisper-large-v2-ct2-32",
         "modelName": 11,
-        "use_v3_model": true,
+        "use_v3_model": false,
         "device": 1,
         "deviceIndex": "0",
         "preciese": 5,
@@ -21,11 +21,10 @@
     },
     "vad_param": {
         "use_VAD": true,
-        "threshold": 0.5,
+        "threshold": 0.2,
         "minSpeechDuration": "250",
         "minSilenceDuration": "2000",
         "maxSpeechDuration": "inf",
-        "windowSize": 1,
         "speechPad": "400"
     },
     "setting": {
@@ -33,15 +32,15 @@
         "autoLoadModel": false,
         "language": 2,
         "huggingface_user_token": "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",
-        "autoGoToOutputPage": 0,
+        "autoGoToOutputPage": 2,
         "autoClearTempFiles": true,
-        "themeColor": "#152cff"
+        "themeColor": "#e64ecf"
     },
     "Transcription_param": {
         "aggregate_contents": true,
-        "language": 2,
+        "language": -1,
         "task": false,
-        "beam_size": "5",
+        "beam_size": "1",
         "best_of": "5",
         "patience": "1.0",
         "length_penalty": "1.0",
@@ -56,7 +55,7 @@
         "suppress_tokens": "-1",
         "without_timestamps": false,
         "max_initial_timestamp": "1.0",
-        "word_timestamps": false,
+        "word_timestamps": true,
         "prepend_punctuations": "\"'“¿([{-",
         "append_punctuations": "\"'.。,，!！?？:：”)]}、",
         "repetition_penalty": "1.0",

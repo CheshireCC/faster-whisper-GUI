@@ -4,7 +4,7 @@ import os
 from typing import List
 from .seg_ment import segment_Transcribe
 import json
-from faster_whisper import Word
+from faster_whisper.transcribe import Word
 
 def readJSONFileToSegments(file:str, file_code = "utf8") -> List[segment_Transcribe]:
     

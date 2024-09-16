@@ -73,6 +73,7 @@ class WhisperXWorker(QThread):
                                                                                                 ,model_dir=r"./cache"
                                                                                                 ,cache_dir=r"./cache"
                                                                                             )
+                        
                     print("start alignment...")
                     self.setStateTool(text="start alignment...",status=False)
     

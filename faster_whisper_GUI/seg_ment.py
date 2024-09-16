@@ -1,6 +1,6 @@
 # coding:utf-8
 
-from faster_whisper import  (Segment, Word)
+from faster_whisper.transcribe import Segment, Word
 from typing import List
 
 class segment_Transcribe():

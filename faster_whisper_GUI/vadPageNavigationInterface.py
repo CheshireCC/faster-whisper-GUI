@@ -73,6 +73,10 @@ class VADNavigationInterface(NavigationBaseInterface):
                                                             self.__tr("语音概率阈值。 Silero VAD为每个音频块输出语音概率, 概率高于此值的认为是语音。\n最好对每个数据集单独调整此参数, 但“懒散”的 0.5 对大多数数据集来说都非常好。"),
                                                             self.doubleSpin_VAD_param_threshold
                                                         )
+        
+        
+        # self.VAD_param_threshold_param_widget.mainHLayout.setStretch(2,5)
+        
 
         self.GridLayout_VAD_param.addWidget(self.VAD_param_threshold_param_widget, 0, 0)
 
@@ -113,12 +117,14 @@ class VADNavigationInterface(NavigationBaseInterface):
         
         combox_VAD_param_window_size_samples = ComboBox()
         combox_VAD_param_window_size_samples.addItems(["512", "1024", "1536"])
-        combox_VAD_param_window_size_samples.setCurrentIndex(1)
+        combox_VAD_param_window_size_samples.setCurrentIndex(0)
         combox_VAD_param_window_size_samples.setToolTip(self.__tr("警告!\nSilero VAD模型使用16000采样率训练得到512,1024,1536样本。其他值可能会影响模型性能!"))
+        combox_VAD_param_window_size_samples.setEnabled(False)
+
         self.combox_VAD_param_window_size_samples = combox_VAD_param_window_size_samples
 
         self.VAD_param_window_size_samples_param_widget = ParamWidget(self.__tr("采样窗口大小"),
-                                                                    self.__tr("指定大小的音频块被馈送到silero VAD模型。"),
+                                                                    self.__tr("指定大小的音频块被馈送到silero VAD模型。Silero V5 已经将该参数固定为 512 。"),
                                                                     self.combox_VAD_param_window_size_samples
                                                                 )
         
@@ -169,7 +175,7 @@ class VADNavigationInterface(NavigationBaseInterface):
         param["minSpeechDuration"] = self.LineEdit_VAD_param_min_speech_duration_ms.text().strip()
         param["minSilenceDuration"] = self.LineEdit_VAD_param_min_silence_duration_ms.text().strip()
         param["maxSpeechDuration"] = self.LineEdit_VAD_param_max_speech_duration_s.text().strip()
-        param["windowSize"] = self.combox_VAD_param_window_size_samples.currentIndex()
+        # param["windowSize"] = self.combox_VAD_param_window_size_samples.currentIndex()
         param["speechPad"] = self.LineEdit_VAD_param_speech_pad_ms.text().strip()
         
         return param
@@ -181,6 +187,6 @@ class VADNavigationInterface(NavigationBaseInterface):
         self.LineEdit_VAD_param_min_speech_duration_ms.setText(param["minSpeechDuration"])
         self.LineEdit_VAD_param_min_silence_duration_ms.setText(param["minSilenceDuration"])
         self.LineEdit_VAD_param_max_speech_duration_s.setText(param["maxSpeechDuration"])
-        self.combox_VAD_param_window_size_samples.setCurrentIndex(param["windowSize"])
+        # self.combox_VAD_param_window_size_samples.setCurrentIndex(param["windowSize"])
         self.LineEdit_VAD_param_speech_pad_ms.setText(param["speechPad"])
         

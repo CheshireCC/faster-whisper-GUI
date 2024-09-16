@@ -244,7 +244,7 @@ class UIMainWin(FramelessMainWindow):
         # 设置窗体中心控件
         self.setCentralWidget(self.mainWindowsWidget)
 
-        # TODO: 创建一个空对象 用于改善布局顶部
+        # 创建一个空对象 用于改善布局顶部
         self.spacer_main = QSpacerItem(0,25)
         self.vBoxLayout.addItem(self.spacer_main)
 

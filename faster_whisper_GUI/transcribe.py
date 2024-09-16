@@ -12,10 +12,8 @@ import av
 import json
 import hashlib
 
-from faster_whisper import (
-                            WhisperModel
-                            , TranscriptionInfo
-                        )
+from faster_whisper import WhisperModel
+from faster_whisper.transcribe import TranscriptionInfo
 
 import webvtt
 from PySide6.QtCore import (QThread, Signal, QDateTime)

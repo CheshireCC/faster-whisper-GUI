@@ -31,7 +31,7 @@ from qfluentwidgets import (
                         )
 
 from faster_whisper.transcribe import TranscriptionInfo
-from faster_whisper import Word
+from faster_whisper.transcribe import Word
 
 import torch
 
@@ -866,7 +866,7 @@ class MainWindows(UIMainWin):
         min_speech_duration_ms = int(self.page_VAD.LineEdit_VAD_param_min_speech_duration_ms.text().replace(" ", ""))
         max_speech_duration_s = float(self.page_VAD.LineEdit_VAD_param_max_speech_duration_s.text().replace(" ", ""))
         min_silence_duration_ms = int(self.page_VAD.LineEdit_VAD_param_min_silence_duration_ms.text().replace(" ", ""))
-        window_size_samples = int(self.page_VAD.combox_VAD_param_window_size_samples.currentText())
+        # window_size_samples = int(self.page_VAD.combox_VAD_param_window_size_samples.currentText())
         speech_pad_ms = int(self.page_VAD.LineEdit_VAD_param_speech_pad_ms.text().replace(" ", ""))
 
         VAD_param["param"] = VADParameters()
@@ -874,7 +874,7 @@ class MainWindows(UIMainWin):
         VAD_param["param"]["min_speech_duration_ms"] = min_speech_duration_ms
         VAD_param["param"]["max_speech_duration_s"] = max_speech_duration_s
         VAD_param["param"]["min_silence_duration_ms"] = min_silence_duration_ms
-        VAD_param["param"]["window_size_samples"] = window_size_samples
+        # VAD_param["param"]["window_size_samples"] = window_size_samples
         VAD_param["param"]["speech_pad_ms"] = speech_pad_ms
 
         return VAD_param
@@ -1659,7 +1659,7 @@ class MainWindows(UIMainWin):
             outputWithDateTime("Exit")
             
             if self.page_setting.switchButton_saveConfig.isChecked():
-                self.saveConfig(config_file_name=r'./fasterWhisperGUIConfig.json')
+                self.saveConfig(config_file_name=os.path.abspath(r'./fasterWhisperGUIConfig.json'))
             
             if self.page_setting.switchButton_autoClearTempFiles.isChecked():
                 try:
