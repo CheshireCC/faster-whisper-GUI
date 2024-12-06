@@ -150,6 +150,7 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         
         # --------------------------------------------------------------------------------------------
         self.LineEdit_language_detection_threshold = LineEdit()
+        self.LineEdit_language_detection_threshold.setText("0.5")
         self.language_detection_threshold_param_widget = ParamWidget(
                                                                         self.__tr("语言检测阈值"),
                                                                         self.__tr("自动检测音频时，语言检测的阈值。如果某种语言的最大概率高于此值，则会检测为该语言。"),
@@ -177,6 +178,17 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
                                                 self.switchButton_Translate_to_English
                                             )
         widget_list.append(self.task_param_widget)
+
+        # --------------------------------------------------------------------------------------------
+    
+        self.switchButton_multilingual = SwitchButton()
+        self.switchButton_multilingual.setChecked(False)
+
+        self.multilingual_param_widget = ParamWidget(self.__tr("多语言模式"),
+                                                self.__tr("多语言模式，允许模型处理包含多种语言的音频。"),
+                                                self.switchButton_multilingual
+                                            )
+        widget_list.append(self.multilingual_param_widget)
 
         # --------------------------------------------------------------------------------------------
         self.switchButton_without_timestamps = SwitchButton()
@@ -668,7 +680,8 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
             self.lineEdit_hallucination_silence_threshold.setText(Transcribe_params["hallucination_silence_threshold"])
             self.LineEdit_hotwords.setText(Transcribe_params["hotwords"])
             self.LineEdit_language_detection_threshold.setText(Transcribe_params["language_detection_threshold"])
-            self.language_detection_segments_param_widget.setText(Transcribe_params["language_detection_segments"])
+            self.lienEdit_language_detection_segments.setText(Transcribe_params["language_detection_segments"])
+            self.switchButton_multilingual.setChecked(Transcribe_params["multilingual"])
         except:
             pass
 
@@ -686,6 +699,9 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         task = self.switchButton_Translate_to_English.isChecked()
         # task = STR_BOOL[task]
         Transcribe_params["task"] = task
+
+        multilingual = self.switchButton_multilingual.isChecked()
+        Transcribe_params["multilingual"] = multilingual
 
         beam_size = self.LineEdit_beam_size.text().replace(" ", "")
         Transcribe_params["beam_size"] = beam_size
@@ -778,7 +794,6 @@ class TranscribeNavigationInterface(NavigationBaseInterface):
         Transcribe_params["hotwords"] = self.LineEdit_hotwords.text().strip()
         Transcribe_params["language_detection_threshold"] = self.LineEdit_language_detection_threshold.text().strip()
         Transcribe_params["language_detection_segments"] = self.lienEdit_language_detection_segments.text().strip()
-
 
         return Transcribe_params
     

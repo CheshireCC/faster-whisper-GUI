@@ -15,6 +15,7 @@ class VADParameters(TypedDict):
 class WhisperParameters(TypedDict):
     language:str = ""
     task:str = "transcribe"
+    log_progress: bool = False
     beam_size:int = 5
     best_of:int = 5
     patience:float = 0.0
@@ -36,6 +37,7 @@ class WhisperParameters(TypedDict):
     word_timestamps:bool = False
     prepend_punctuations:str = ""
     append_punctuations:str = ""
+    multilingual: bool = False
     max_new_tokens:int = None
     chunk_length:int = None
     clip_mode:int = 0
@@ -50,6 +52,7 @@ def outputWithDateTime(text:str):
     print(f"\n=========={dateTime_}==========")
     print(f"=========={text}==========\n")
 
+# ---------------------------------------------------------------------------------------------------------------------------
 def secondsToHMS(t) -> str:
     try:
         t_f:float = float(t)
@@ -95,7 +98,7 @@ def HMSToSeconds(t:str) -> float:
 
     return float(hh) * 3600 + float(mm) * 60 + float(ss)
 
-
+# ---------------------------------------------------------------------------------------------------------------------------
 def secondsToMS(t) -> str:
     try:
         t_f:float = float(t)

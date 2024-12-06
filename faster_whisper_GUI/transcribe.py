@@ -232,6 +232,7 @@ class TranscribeWorker(QThread):
                                                 audio=file,
                                                 language=self.parameters["language"],
                                                 task=Task_list[int(self.parameters["task"])],
+                                                log_progress = False,
                                                 beam_size=self.parameters["beam_size"],
                                                 best_of=self.parameters["best_of"],
                                                 patience=self.parameters["patience"],
@@ -253,6 +254,7 @@ class TranscribeWorker(QThread):
                                                 word_timestamps=self.parameters["word_timestamps"],
                                                 prepend_punctuations=self.parameters["prepend_punctuations"],
                                                 append_punctuations=self.parameters["append_punctuations"],
+                                                multilingual = self.parameters["multilingual"],
                                                 max_new_tokens=self.parameters["max_new_tokens"],
                                                 chunk_length=self.parameters["chunk_length"],
                                                 clip_timestamps=self.parameters["clip_timestamps"],
@@ -385,7 +387,7 @@ class TranscribeWorker(QThread):
                 # 保存临时文件
                 temp_output_save_file = getSaveFileName(audioFile=path, format="SRT", rootDir=r"./temp")
                 writeSubtitles(temp_output_save_file, segments=segments, format="SRT",language=info.language, fileName=path)
-                print(f"save temp file: {temp_output_save_file}")
+                print(f"save temp file: {os.path.abspath(temp_output_save_file)}")
                 
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
@@ -427,9 +429,9 @@ def writeSubtitles(outputFileName:str,
     elif format == "ASS":
         writeASS(outputFileName, segments, file_code=file_code)
 
-    print(f"write over | {outputFileName}")
+    print(f"write over | {os.path.abspath(outputFileName)}")
     
-def writeJson(fileName:str,segments:List[segment_Transcribe],language:str,avFile="",file_code="utf8"):
+def writeJson(fileName:str, segments:List[segment_Transcribe], language:str,avFile="", file_code="utf8"):
 
     _id = getMd5HashId(avFile, file_code=file_code)
     

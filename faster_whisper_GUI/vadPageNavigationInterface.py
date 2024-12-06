@@ -5,6 +5,7 @@ from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import (
                                 QGridLayout
                                 , QHBoxLayout
+                                , QSizePolicy
                             )
 
 from qfluentwidgets import (
@@ -64,19 +65,23 @@ class VADNavigationInterface(NavigationBaseInterface):
         # ------------------------------------------------------------------------------------------------------------------------------------
         
         self.doubleSpin_VAD_param_threshold = DoubleSpinBox()
+        # self.doubleSpin_VAD_param_threshold = LineEdit()
         self.doubleSpin_VAD_param_threshold.setRange(0.0, 1.0)
         self.doubleSpin_VAD_param_threshold.setSingleStep(0.05)
         self.doubleSpin_VAD_param_threshold.setValue(0.50)
         # self.doubleSpin_VAD_param_threshold.setSuffix("%")
+        # self.doubleSpin_VAD_param_threshold.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.doubleSpin_VAD_param_threshold.setFixedWidth(200)
         
-        self.VAD_param_threshold_param_widget = ParamWidget(self.__tr("概率阈值"), 
-                                                            self.__tr("语音概率阈值。 Silero VAD为每个音频块输出语音概率, 概率高于此值的认为是语音。\n最好对每个数据集单独调整此参数, 但“懒散”的 0.5 对大多数数据集来说都非常好。"),
-                                                            self.doubleSpin_VAD_param_threshold
-                                                        )
+        self.VAD_param_threshold_param_widget = ParamWidget(
+                                                                self.__tr("概率阈值"), 
+                                                                self.__tr("语音概率阈值。 Silero VAD为每个音频块输出语音概率, 概率高于此值的认为是语音。\n最好对每个数据集单独调整此参数, 但“懒散”的 0.5 对大多数数据集来说都非常好。"),
+                                                                self.doubleSpin_VAD_param_threshold
+                                                            )
         
         
-        # self.VAD_param_threshold_param_widget.mainHLayout.setStretch(2,5)
-        
+        # self.VAD_param_threshold_param_widget.mainHLayout.setStretch(1,10)
+        # self.VAD_param_threshold_param_widget.setFixedSize(300, 50)
 
         self.GridLayout_VAD_param.addWidget(self.VAD_param_threshold_param_widget, 0, 0)
 

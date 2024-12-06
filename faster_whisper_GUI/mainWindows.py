@@ -83,8 +83,11 @@ class RedirectOutputSignalStore(QObject):
     def fileno( self ):
         return -1
     def write( self, text ):
-        if ( not self.signalsBlocked() ):
-            self.outputSignal.emit(str(text))
+        try:
+            if ( not self.signalsBlocked() ):
+                self.outputSignal.emit(str(text))
+        except:
+            pass
 
 class statusToolsSignalStore(QObject):
     StateToolSignal = Signal(bool)
@@ -697,6 +700,8 @@ class MainWindows(UIMainWin):
         # task = Task_list[int(task)]
         Transcribe_params["task"] = task
 
+        Transcribe_params["log_progress"] = False
+
         beam_size = int(self.page_transcribes.LineEdit_beam_size.text().replace(" ", ""))
         Transcribe_params["beam_size"] = beam_size
 
@@ -768,6 +773,9 @@ class MainWindows(UIMainWin):
         append_punctuations = self.page_transcribes.LineEdit_append_punctuations.text().replace(" ","")
         Transcribe_params["append_punctuations"] = append_punctuations
 
+        multilingual = self.page_transcribes.switchButton_multilingual.isChecked()
+        Transcribe_params["multilingual"] = multilingual
+
         repetition_penalty = self.page_transcribes.LineEdit_repetition_penalty.text().strip()
         repetition_penalty = float(repetition_penalty)
         Transcribe_params['repetition_penalty'] = repetition_penalty  
@@ -795,7 +803,7 @@ class MainWindows(UIMainWin):
         chunk_length = self.page_transcribes.LineEdit_chunk_length.text().strip()
         if chunk_length != "":
             if chunk_length.isdigit():
-                chunk_length = float(chunk_length)
+                chunk_length = int(chunk_length)
             else:
                 chunk_length = None
         else :
@@ -862,7 +870,7 @@ class MainWindows(UIMainWin):
         if not vad_filter:
             return VAD_param
         
-        threshold = round(self.page_VAD.doubleSpin_VAD_param_threshold.value(),2)
+        onset = round(self.page_VAD.doubleSpin_VAD_param_threshold.value(),2)
         min_speech_duration_ms = int(self.page_VAD.LineEdit_VAD_param_min_speech_duration_ms.text().replace(" ", ""))
         max_speech_duration_s = float(self.page_VAD.LineEdit_VAD_param_max_speech_duration_s.text().replace(" ", ""))
         min_silence_duration_ms = int(self.page_VAD.LineEdit_VAD_param_min_silence_duration_ms.text().replace(" ", ""))
@@ -870,7 +878,7 @@ class MainWindows(UIMainWin):
         speech_pad_ms = int(self.page_VAD.LineEdit_VAD_param_speech_pad_ms.text().replace(" ", ""))
 
         VAD_param["param"] = VADParameters()
-        VAD_param["param"]["threshold"] = threshold
+        VAD_param["param"]["onset"] = onset
         VAD_param["param"]["min_speech_duration_ms"] = min_speech_duration_ms
         VAD_param["param"]["max_speech_duration_s"] = max_speech_duration_s
         VAD_param["param"]["min_silence_duration_ms"] = min_silence_duration_ms

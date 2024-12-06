@@ -8,12 +8,12 @@
     "model_param": {
         "localModel": true,
         "onlineModel": false,
-        "model_path": "F:/WhisperModels/faster-whisper/whisper-large-v2-ct2-32",
+        "model_path": "F:/WhisperModels/faster-whisper/large-v3-turbo",
         "modelName": 11,
-        "use_v3_model": false,
+        "use_v3_model": true,
         "device": 1,
         "deviceIndex": "0",
-        "preciese": 5,
+        "preciese": 4,
         "thread_num": "4",
         "num_worker": "1",
         "download_root": "C:/Users/12059/.cache/huggingface/hub",
@@ -22,7 +22,7 @@
     "vad_param": {
         "use_VAD": true,
         "threshold": 0.2,
-        "minSpeechDuration": "250",
+        "minSpeechDuration": "0",
         "minSilenceDuration": "2000",
         "maxSpeechDuration": "inf",
         "speechPad": "400"
@@ -30,7 +30,7 @@
     "setting": {
         "saveConfig": true,
         "autoLoadModel": false,
-        "language": 2,
+        "language": 0,
         "huggingface_user_token": "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",
         "autoGoToOutputPage": 2,
         "autoClearTempFiles": true,
@@ -38,8 +38,9 @@
     },
     "Transcription_param": {
         "aggregate_contents": true,
-        "language": -1,
+        "language": 0,
         "task": false,
+        "multilingual": false,
         "beam_size": "1",
         "best_of": "5",
         "patience": "1.0",
@@ -67,7 +68,7 @@
         "clip_timestamps": "",
         "hallucination_silence_threshold": "0.5",
         "hotwords": "",
-        "language_detection_threshold": "",
+        "language_detection_threshold": "0.5",
         "language_detection_segments": "1"
     },
     "output_whisperX": {
