@@ -5,11 +5,17 @@
 - ## model download
 
   - https://huggingface.co/models?sort=trending&search=faster-whisper
+  
   - you can also download and convert models in software
-  - large-v3 model float32 :
 
+  - large-v3 model float32 :
+  
     - [Huggingface](https://huggingface.co/CheshireCC/faster-whisper-large-v3-float32)
-    - [百度云网盘链接](https://pan.baidu.com/s/1JJJASDFd6iNyZkcEXEkq3g?pwd=sif3)
+    
+    - [百度云网盘链接](https://pan.baidu.com/s/1qltCehSq3pWMlIJ06sWLCQ?pwd=5xq8)
+    
+        
+  
 - ### Links
 
   - [pyside6-fluent-widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)
@@ -21,6 +27,7 @@
 
     - [UVR](https://github.com/Anjok07/ultimatevocalremovergui#installation)
     - [Demucs-Gui](https://github.com/CarlGao4/Demucs-Gui)
+  
 - ## What's this
 
   - this is a GUI software of faster-whisper , you can:
