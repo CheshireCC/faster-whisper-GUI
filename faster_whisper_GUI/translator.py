@@ -10,12 +10,14 @@ try:
     config_json = json.load(open("./fasterWhisperGUIConfig.json", "r", encoding="utf-8"))
     language_config = config_json["setting"]["language"]
 except:
-    language_config = 2
+    language_config = 3
 
 if language_config == 0:
     language = "zh"
 elif language_config == 1:
     language = "en"
+elif language_config == 2:
+    language = "ko"
 else:
     # 获取当前计算机语言
     language_localtion, _ = locale.getdefaultlocale()
@@ -26,7 +28,14 @@ print(f"language: {language}")
 
 def __translator() -> QTranslator:
     translator = QTranslator()
-    if language != "zh" :  
+    if language == "ko":
+        try:
+            translator.load(":/resource/Translater/ko.qm")
+            # splash.showMessage("set Language: Korean") #, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, Qt.white)
+        except Exception as e:
+            print(f"load translator files error: {str(e)}")
+            translator.load("")
+    elif language != "zh":  
         try:
             translator.load(":/resource/Translater/en.qm")
             # splash.showMessage("set Language: English") #, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, Qt.white)

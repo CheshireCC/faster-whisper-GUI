@@ -111,8 +111,8 @@ class SettingPageNavigationInterface(ScrollArea):
 
         # --------------------------------------------------------------------------------------------------------------------------------------------------------------
         self.combox_language = ComboBox()
-        self.combox_language.addItems(["中文","English",self.__tr("自动")])
-        self.combox_language.setCurrentIndex(2)
+        self.combox_language.addItems(["中文","English","한국어",self.__tr("自动")])
+        self.combox_language.setCurrentIndex(3)
         self.paramItemWidget_language = ParamWidget(self.__tr("语言"), self.__tr("程序界面语言，修改后重启生效"),self.combox_language, self)
         self.addWidget(self.paramItemWidget_language)
         
