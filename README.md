@@ -61,7 +61,7 @@
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=CheshireCC/faster-whisper-GUI&type=Timeline)](https://star-history.com/#CheshireCC/faster-whisper-GUI&Timeline)
+[![Star History Chart](https://www.star-history.com/?repos=CheshireCC%2Ffaster-whisper-GUI&type=date&legend=bottom-right)](https://www.star-history.com/?repos=CheshireCC%2Ffaster-whisper-GUI&type=date&legend=bottom-right)
 
 - ### UI Language ###
 
